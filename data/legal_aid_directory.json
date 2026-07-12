@@ -1,0 +1,445 @@
+{
+  "helplines": [
+    {
+      "name": "NALSA Helpline",
+      "name_hi": "नालसा हेल्पलाइन",
+      "number": "15100",
+      "description": "National Legal Services Authority - Free legal aid for eligible persons",
+      "description_hi": "राष्ट्रीय विधिक सेवा प्राधिकरण - पात्र व्यक्तियों के लिए निःशुल्क कानूनी सहायता",
+      "hours": "24x7",
+      "toll_free": true
+    },
+    {
+      "name": "Tele-Law Helpline",
+      "name_hi": "टेली-लॉ हेल्पलाइन",
+      "number": "14454",
+      "description": "Free legal advice via phone/video call through Common Service Centres",
+      "description_hi": "कॉमन सर्विस सेंटर के माध्यम से फोन/वीडियो कॉल पर निःशुल्क कानूनी सलाह",
+      "hours": "9 AM - 5 PM (Mon-Sat)",
+      "toll_free": true
+    },
+    {
+      "name": "Women Helpline",
+      "name_hi": "महिला हेल्पलाइन",
+      "number": "181",
+      "description": "Women in distress - domestic violence, harassment, abuse",
+      "description_hi": "संकट में महिलाएं - घरेलू हिंसा, उत्पीड़न, दुर्व्यवहार",
+      "hours": "24x7",
+      "toll_free": true
+    },
+    {
+      "name": "Police Emergency",
+      "name_hi": "पुलिस आपातकालीन",
+      "number": "112",
+      "description": "Emergency response for immediate police/ambulance/fire assistance",
+      "description_hi": "तत्काल पुलिस/एम्बुलेंस/अग्निशमन सहायता के लिए आपातकालीन प्रतिक्रिया",
+      "hours": "24x7",
+      "toll_free": true
+    },
+    {
+      "name": "Child Helpline",
+      "name_hi": "चाइल्ड हेल्पलाइन",
+      "number": "1098",
+      "description": "For children in distress - abuse, trafficking, missing children",
+      "description_hi": "संकट में बच्चों के लिए - दुर्व्यवहार, तस्करी, लापता बच्चे",
+      "hours": "24x7",
+      "toll_free": true
+    },
+    {
+      "name": "SC/ST Helpline",
+      "name_hi": "अनुसूचित जाति/जनजाति हेल्पलाइन",
+      "number": "14566",
+      "description": "For reporting atrocities against SC/ST communities",
+      "description_hi": "अनुसूचित जाति/जनजाति समुदायों पर अत्याचार की रिपोर्ट के लिए",
+      "hours": "24x7",
+      "toll_free": true
+    },
+    {
+      "name": "Cyber Crime Helpline",
+      "name_hi": "साइबर क्राइम हेल्पलाइन",
+      "number": "1930",
+      "description": "Report cyber crime, online fraud, financial fraud",
+      "description_hi": "साइबर अपराध, ऑनलाइन धोखाधड़ी, वित्तीय धोखाधड़ी की रिपोर्ट",
+      "hours": "24x7",
+      "toll_free": true
+    },
+    {
+      "name": "Consumer Helpline",
+      "name_hi": "उपभोक्ता हेल्पलाइन",
+      "number": "1915",
+      "description": "Consumer complaints, product/service grievances",
+      "description_hi": "उपभोक्ता शिकायतें, उत्पाद/सेवा शिकायतें",
+      "hours": "9:30 AM - 5:30 PM (Mon-Fri)",
+      "toll_free": true
+    },
+    {
+      "name": "Senior Citizen Helpline",
+      "name_hi": "वरिष्ठ नागरिक हेल्पलाइन",
+      "number": "14567",
+      "description": "For senior citizens facing abuse, property disputes, or neglect",
+      "description_hi": "दुर्व्यवहार, संपत्ति विवाद या उपेक्षा का सामना कर रहे वरिष्ठ नागरिकों के लिए",
+      "hours": "24x7",
+      "toll_free": true
+    }
+  ],
+  "states": [
+    {
+      "name": "Delhi",
+      "name_hi": "दिल्ली",
+      "slsa": {
+        "name": "Delhi State Legal Services Authority (DSLSA)",
+        "website": "https://dslsa.org",
+        "phone": "011-23384781",
+        "email": "dslsa-dla@nic.in",
+        "address": "Patiala House Courts Complex, New Delhi - 110001"
+      },
+      "districts": [
+        {"name": "Central Delhi", "name_hi": "मध्य दिल्ली", "dlsa_address": "Tis Hazari Court Complex, Delhi", "phone": "011-23911051"},
+        {"name": "New Delhi", "name_hi": "नई दिल्ली", "dlsa_address": "Patiala House Courts, New Delhi", "phone": "011-23384781"},
+        {"name": "South Delhi", "name_hi": "दक्षिण दिल्ली", "dlsa_address": "Saket Court Complex, New Delhi", "phone": "011-26530100"},
+        {"name": "East Delhi", "name_hi": "पूर्वी दिल्ली", "dlsa_address": "Karkardooma Court Complex, Delhi", "phone": "011-22372615"},
+        {"name": "North Delhi", "name_hi": "उत्तर दिल्ली", "dlsa_address": "Rohini Court Complex, Delhi", "phone": "011-27562100"},
+        {"name": "West Delhi", "name_hi": "पश्चिम दिल्ली", "dlsa_address": "Dwarka Court Complex, New Delhi", "phone": "011-28085242"},
+        {"name": "North-West Delhi", "name_hi": "उत्तर-पश्चिम दिल्ली", "dlsa_address": "Rohini Court Complex, Delhi", "phone": "011-27562107"},
+        {"name": "South-West Delhi", "name_hi": "दक्षिण-पश्चिम दिल्ली", "dlsa_address": "Dwarka Court Complex, New Delhi", "phone": "011-28085249"},
+        {"name": "North-East Delhi", "name_hi": "उत्तर-पूर्वी दिल्ली", "dlsa_address": "Karkardooma Court Complex, Delhi", "phone": "011-22372618"},
+        {"name": "South-East Delhi", "name_hi": "दक्षिण-पूर्वी दिल्ली", "dlsa_address": "Saket Court Complex, New Delhi", "phone": "011-26530105"},
+        {"name": "Shahdara", "name_hi": "शाहदरा", "dlsa_address": "Karkardooma Court Complex, Delhi", "phone": "011-22372620"}
+      ]
+    },
+    {
+      "name": "Maharashtra",
+      "name_hi": "महाराष्ट्र",
+      "slsa": {
+        "name": "Maharashtra State Legal Services Authority",
+        "website": "https://mahalsa.gov.in",
+        "phone": "022-22617612",
+        "email": "mahalsa@mah.nic.in",
+        "address": "High Court Building, Fort, Mumbai - 400032"
+      },
+      "districts": [
+        {"name": "Mumbai City", "name_hi": "मुंबई शहर", "dlsa_address": "City Civil Court, Mumbai", "phone": "022-22617700"},
+        {"name": "Mumbai Suburban", "name_hi": "मुंबई उपनगर", "dlsa_address": "Dindoshi Court, Mumbai", "phone": "022-28400200"},
+        {"name": "Pune", "name_hi": "पुणे", "dlsa_address": "District Court, Pune", "phone": "020-26122636"},
+        {"name": "Nagpur", "name_hi": "नागपुर", "dlsa_address": "District Court, Nagpur", "phone": "0712-2565920"},
+        {"name": "Thane", "name_hi": "ठाणे", "dlsa_address": "District Court, Thane", "phone": "022-25341400"},
+        {"name": "Nashik", "name_hi": "नासिक", "dlsa_address": "District Court, Nashik", "phone": "0253-2575832"},
+        {"name": "Aurangabad", "name_hi": "औरंगाबाद", "dlsa_address": "District Court, Aurangabad", "phone": "0240-2331205"},
+        {"name": "Kolhapur", "name_hi": "कोल्हापुर", "dlsa_address": "District Court, Kolhapur", "phone": "0231-2653211"}
+      ]
+    },
+    {
+      "name": "Uttar Pradesh",
+      "name_hi": "उत्तर प्रदेश",
+      "slsa": {
+        "name": "UP State Legal Services Authority (UPSLSA)",
+        "website": "https://upslsa.up.nic.in",
+        "phone": "0522-2209470",
+        "email": "upslsa-lko@nic.in",
+        "address": "High Court, Lucknow - 226001"
+      },
+      "districts": [
+        {"name": "Lucknow", "name_hi": "लखनऊ", "dlsa_address": "District Court, Lucknow", "phone": "0522-2627504"},
+        {"name": "Varanasi", "name_hi": "वाराणसी", "dlsa_address": "District Court, Varanasi", "phone": "0542-2504100"},
+        {"name": "Kanpur", "name_hi": "कानपुर", "dlsa_address": "District Court, Kanpur Nagar", "phone": "0512-2534100"},
+        {"name": "Agra", "name_hi": "आगरा", "dlsa_address": "District Court, Agra", "phone": "0562-2851200"},
+        {"name": "Prayagraj (Allahabad)", "name_hi": "प्रयागराज (इलाहाबाद)", "dlsa_address": "District Court, Prayagraj", "phone": "0532-2623100"},
+        {"name": "Noida (Gautam Buddh Nagar)", "name_hi": "नोएडा (गौतम बुद्ध नगर)", "dlsa_address": "District Court, Surajpur, Greater Noida", "phone": "0120-2329100"},
+        {"name": "Ghaziabad", "name_hi": "गाजियाबाद", "dlsa_address": "District Court, Ghaziabad", "phone": "0120-2792001"},
+        {"name": "Meerut", "name_hi": "मेरठ", "dlsa_address": "District Court, Meerut", "phone": "0121-2661500"},
+        {"name": "Gorakhpur", "name_hi": "गोरखपुर", "dlsa_address": "District Court, Gorakhpur", "phone": "0551-2334100"},
+        {"name": "Bareilly", "name_hi": "बरेली", "dlsa_address": "District Court, Bareilly", "phone": "0581-2567100"}
+      ]
+    },
+    {
+      "name": "Tamil Nadu",
+      "name_hi": "तमिल नाडु",
+      "slsa": {
+        "name": "Tamil Nadu State Legal Services Authority (TNSLSA)",
+        "website": "https://tnslsa.org",
+        "phone": "044-25345174",
+        "email": "tnslsa@tn.gov.in",
+        "address": "High Court Complex, Chennai - 600104"
+      },
+      "districts": [
+        {"name": "Chennai", "name_hi": "चेन्नई", "dlsa_address": "City Civil Court, Chennai", "phone": "044-25367200"},
+        {"name": "Coimbatore", "name_hi": "कोयम्बटूर", "dlsa_address": "District Court, Coimbatore", "phone": "0422-2391200"},
+        {"name": "Madurai", "name_hi": "मदुरै", "dlsa_address": "District Court, Madurai", "phone": "0452-2534100"},
+        {"name": "Salem", "name_hi": "सेलम", "dlsa_address": "District Court, Salem", "phone": "0427-2311200"},
+        {"name": "Tiruchirappalli", "name_hi": "तिरुचिरापल्ली", "dlsa_address": "District Court, Tiruchirappalli", "phone": "0431-2411200"},
+        {"name": "Tirunelveli", "name_hi": "तिरुनेलवेली", "dlsa_address": "District Court, Tirunelveli", "phone": "0462-2331200"}
+      ]
+    },
+    {
+      "name": "Karnataka",
+      "name_hi": "कर्नाटक",
+      "slsa": {
+        "name": "Karnataka State Legal Services Authority (KSLSA)",
+        "website": "https://kslsa.kar.nic.in",
+        "phone": "080-22112700",
+        "email": "kslsa@kar.nic.in",
+        "address": "High Court Building, Bangalore - 560001"
+      },
+      "districts": [
+        {"name": "Bengaluru Urban", "name_hi": "बेंगलुरु शहरी", "dlsa_address": "City Civil Court, Bengaluru", "phone": "080-22112800"},
+        {"name": "Mysuru", "name_hi": "मैसूरु", "dlsa_address": "District Court, Mysuru", "phone": "0821-2443200"},
+        {"name": "Hubli-Dharwad", "name_hi": "हुबली-धारवाड़", "dlsa_address": "District Court, Dharwad", "phone": "0836-2233200"},
+        {"name": "Mangaluru", "name_hi": "मंगलुरु", "dlsa_address": "District Court, Mangaluru", "phone": "0824-2424200"},
+        {"name": "Belagavi", "name_hi": "बेलगावी", "dlsa_address": "District Court, Belagavi", "phone": "0831-2405200"}
+      ]
+    },
+    {
+      "name": "West Bengal",
+      "name_hi": "पश्चिम बंगाल",
+      "slsa": {
+        "name": "West Bengal State Legal Services Authority (WBSLSA)",
+        "website": "https://wbslsa.gov.in",
+        "phone": "033-22438801",
+        "email": "wbslsa@gov.in",
+        "address": "High Court Building, Kolkata - 700001"
+      },
+      "districts": [
+        {"name": "Kolkata", "name_hi": "कोलकाता", "dlsa_address": "City Civil Court, Kolkata", "phone": "033-22438900"},
+        {"name": "Howrah", "name_hi": "हावड़ा", "dlsa_address": "District Court, Howrah", "phone": "033-26382200"},
+        {"name": "North 24 Parganas", "name_hi": "उत्तर 24 परगना", "dlsa_address": "District Court, Barasat", "phone": "033-25623200"},
+        {"name": "South 24 Parganas", "name_hi": "दक्षिण 24 परगना", "dlsa_address": "District Court, Alipore", "phone": "033-24790200"},
+        {"name": "Bardhaman", "name_hi": "बर्धमान", "dlsa_address": "District Court, Bardhaman", "phone": "0342-2566200"}
+      ]
+    },
+    {
+      "name": "Rajasthan",
+      "name_hi": "राजस्थान",
+      "slsa": {
+        "name": "Rajasthan State Legal Services Authority (RSLSA)",
+        "website": "https://rlsa.gov.in",
+        "phone": "0141-2227481",
+        "email": "rslsa@raj.nic.in",
+        "address": "High Court Complex, Jaipur - 302001"
+      },
+      "districts": [
+        {"name": "Jaipur", "name_hi": "जयपुर", "dlsa_address": "District Court, Jaipur", "phone": "0141-2227500"},
+        {"name": "Jodhpur", "name_hi": "जोधपुर", "dlsa_address": "District Court, Jodhpur", "phone": "0291-2636200"},
+        {"name": "Udaipur", "name_hi": "उदयपुर", "dlsa_address": "District Court, Udaipur", "phone": "0294-2414200"},
+        {"name": "Ajmer", "name_hi": "अजमेर", "dlsa_address": "District Court, Ajmer", "phone": "0145-2620200"},
+        {"name": "Kota", "name_hi": "कोटा", "dlsa_address": "District Court, Kota", "phone": "0744-2450200"}
+      ]
+    },
+    {
+      "name": "Telangana",
+      "name_hi": "तेलंगाना",
+      "slsa": {
+        "name": "Telangana State Legal Services Authority (TSLSA)",
+        "website": "https://tslsa.telangana.gov.in",
+        "phone": "040-23235100",
+        "email": "tslsa@telangana.gov.in",
+        "address": "High Court Complex, Hyderabad - 500066"
+      },
+      "districts": [
+        {"name": "Hyderabad", "name_hi": "हैदराबाद", "dlsa_address": "City Civil Court, Hyderabad", "phone": "040-23235200"},
+        {"name": "Rangareddy", "name_hi": "रंगारेड्डी", "dlsa_address": "District Court, LB Nagar", "phone": "040-24060200"},
+        {"name": "Warangal", "name_hi": "वारंगल", "dlsa_address": "District Court, Warangal", "phone": "0870-2576200"},
+        {"name": "Karimnagar", "name_hi": "करीमनगर", "dlsa_address": "District Court, Karimnagar", "phone": "0878-2244200"}
+      ]
+    },
+    {
+      "name": "Andhra Pradesh",
+      "name_hi": "आंध्र प्रदेश",
+      "slsa": {
+        "name": "AP State Legal Services Authority (APSLSA)",
+        "website": "https://apslsa.ap.gov.in",
+        "phone": "0866-2570400",
+        "email": "apslsa@ap.gov.in",
+        "address": "High Court Complex, Amaravati"
+      },
+      "districts": [
+        {"name": "Visakhapatnam", "name_hi": "विशाखापत्तनम", "dlsa_address": "District Court, Visakhapatnam", "phone": "0891-2752200"},
+        {"name": "Vijayawada (Krishna)", "name_hi": "विजयवाड़ा (कृष्णा)", "dlsa_address": "District Court, Vijayawada", "phone": "0866-2473200"},
+        {"name": "Guntur", "name_hi": "गुंटूर", "dlsa_address": "District Court, Guntur", "phone": "0863-2233200"},
+        {"name": "Tirupati (Chittoor)", "name_hi": "तिरुपति (चित्तूर)", "dlsa_address": "District Court, Chittoor", "phone": "0877-2231200"}
+      ]
+    },
+    {
+      "name": "Gujarat",
+      "name_hi": "गुजरात",
+      "slsa": {
+        "name": "Gujarat State Legal Services Authority (GSLSA)",
+        "website": "https://gujslsa.gov.in",
+        "phone": "079-27682100",
+        "email": "gslsa@guj.nic.in",
+        "address": "High Court Complex, Ahmedabad - 380009"
+      },
+      "districts": [
+        {"name": "Ahmedabad", "name_hi": "अहमदाबाद", "dlsa_address": "District Court, Ahmedabad", "phone": "079-25506200"},
+        {"name": "Surat", "name_hi": "सूरत", "dlsa_address": "District Court, Surat", "phone": "0261-2423200"},
+        {"name": "Vadodara", "name_hi": "वडोदरा", "dlsa_address": "District Court, Vadodara", "phone": "0265-2414200"},
+        {"name": "Rajkot", "name_hi": "राजकोट", "dlsa_address": "District Court, Rajkot", "phone": "0281-2445200"}
+      ]
+    },
+    {
+      "name": "Madhya Pradesh",
+      "name_hi": "मध्य प्रदेश",
+      "slsa": {
+        "name": "MP State Legal Services Authority (MPSLSA)",
+        "website": "https://mpslsa.gov.in",
+        "phone": "0755-2577300",
+        "email": "mpslsa@mp.gov.in",
+        "address": "High Court Complex, Jabalpur - 482001"
+      },
+      "districts": [
+        {"name": "Bhopal", "name_hi": "भोपाल", "dlsa_address": "District Court, Bhopal", "phone": "0755-2551200"},
+        {"name": "Indore", "name_hi": "इंदौर", "dlsa_address": "District Court, Indore", "phone": "0731-2529200"},
+        {"name": "Jabalpur", "name_hi": "जबलपुर", "dlsa_address": "District Court, Jabalpur", "phone": "0761-2620200"},
+        {"name": "Gwalior", "name_hi": "ग्वालियर", "dlsa_address": "District Court, Gwalior", "phone": "0751-2321200"}
+      ]
+    },
+    {
+      "name": "Bihar",
+      "name_hi": "बिहार",
+      "slsa": {
+        "name": "Bihar State Legal Services Authority (BSLSA)",
+        "website": "https://bslsa.bih.nic.in",
+        "phone": "0612-2507100",
+        "email": "bslsa@bih.nic.in",
+        "address": "Patna High Court, Patna - 800001"
+      },
+      "districts": [
+        {"name": "Patna", "name_hi": "पटना", "dlsa_address": "District Court, Patna", "phone": "0612-2507200"},
+        {"name": "Gaya", "name_hi": "गया", "dlsa_address": "District Court, Gaya", "phone": "0631-2220200"},
+        {"name": "Muzaffarpur", "name_hi": "मुजफ्फरपुर", "dlsa_address": "District Court, Muzaffarpur", "phone": "0621-2240200"},
+        {"name": "Bhagalpur", "name_hi": "भागलपुर", "dlsa_address": "District Court, Bhagalpur", "phone": "0641-2401200"}
+      ]
+    },
+    {
+      "name": "Punjab",
+      "name_hi": "पंजाब",
+      "slsa": {
+        "name": "Punjab State Legal Services Authority (PUSLSA)",
+        "website": "https://pulsa.gov.in",
+        "phone": "0172-2740100",
+        "email": "puslsa@punjab.gov.in",
+        "address": "Punjab & Haryana High Court, Chandigarh"
+      },
+      "districts": [
+        {"name": "Ludhiana", "name_hi": "लुधियाना", "dlsa_address": "District Court, Ludhiana", "phone": "0161-2444200"},
+        {"name": "Amritsar", "name_hi": "अमृतसर", "dlsa_address": "District Court, Amritsar", "phone": "0183-2563200"},
+        {"name": "Jalandhar", "name_hi": "जालंधर", "dlsa_address": "District Court, Jalandhar", "phone": "0181-2230200"},
+        {"name": "Patiala", "name_hi": "पटियाला", "dlsa_address": "District Court, Patiala", "phone": "0175-2212200"}
+      ]
+    },
+    {
+      "name": "Haryana",
+      "name_hi": "हरियाणा",
+      "slsa": {
+        "name": "Haryana State Legal Services Authority (HALSA)",
+        "website": "https://halsa.gov.in",
+        "phone": "0172-2740200",
+        "email": "halsa@hry.nic.in",
+        "address": "Punjab & Haryana High Court, Chandigarh"
+      },
+      "districts": [
+        {"name": "Gurugram", "name_hi": "गुरुग्राम", "dlsa_address": "District Court, Gurugram", "phone": "0124-2322200"},
+        {"name": "Faridabad", "name_hi": "फरीदाबाद", "dlsa_address": "District Court, Faridabad", "phone": "0129-2418200"},
+        {"name": "Ambala", "name_hi": "अंबाला", "dlsa_address": "District Court, Ambala", "phone": "0171-2530200"},
+        {"name": "Hisar", "name_hi": "हिसार", "dlsa_address": "District Court, Hisar", "phone": "01662-230200"},
+        {"name": "Karnal", "name_hi": "करनाल", "dlsa_address": "District Court, Karnal", "phone": "0184-2266200"}
+      ]
+    },
+    {
+      "name": "Kerala",
+      "name_hi": "केरल",
+      "slsa": {
+        "name": "Kerala State Legal Services Authority (KELSA)",
+        "website": "https://kelsa.gov.in",
+        "phone": "0471-2303100",
+        "email": "kelsa@kerala.gov.in",
+        "address": "High Court Complex, Ernakulam - 682031"
+      },
+      "districts": [
+        {"name": "Thiruvananthapuram", "name_hi": "तिरुवनंतपुरम", "dlsa_address": "District Court, Thiruvananthapuram", "phone": "0471-2303200"},
+        {"name": "Ernakulam (Kochi)", "name_hi": "एर्नाकुलम (कोची)", "dlsa_address": "District Court, Ernakulam", "phone": "0484-2394200"},
+        {"name": "Kozhikode", "name_hi": "कोझिकोड", "dlsa_address": "District Court, Kozhikode", "phone": "0495-2364200"},
+        {"name": "Thrissur", "name_hi": "त्रिशूर", "dlsa_address": "District Court, Thrissur", "phone": "0487-2331200"}
+      ]
+    },
+    {
+      "name": "Odisha",
+      "name_hi": "ओडिशा",
+      "slsa": {
+        "name": "Odisha State Legal Services Authority (OSLSA)",
+        "website": "https://oslsa.nic.in",
+        "phone": "0674-2391100",
+        "email": "oslsa@ori.nic.in",
+        "address": "Odisha High Court, Cuttack - 753002"
+      },
+      "districts": [
+        {"name": "Bhubaneswar (Khordha)", "name_hi": "भुवनेश्वर (खोर्धा)", "dlsa_address": "District Court, Bhubaneswar", "phone": "0674-2391200"},
+        {"name": "Cuttack", "name_hi": "कटक", "dlsa_address": "District Court, Cuttack", "phone": "0671-2611200"},
+        {"name": "Berhampur (Ganjam)", "name_hi": "बरहमपुर (गंजाम)", "dlsa_address": "District Court, Berhampur", "phone": "0680-2281200"}
+      ]
+    },
+    {
+      "name": "Assam",
+      "name_hi": "असम",
+      "slsa": {
+        "name": "Assam State Legal Services Authority (ASLSA)",
+        "website": "https://aslsa.gov.in",
+        "phone": "0361-2736100",
+        "email": "aslsa@assam.gov.in",
+        "address": "Gauhati High Court, Guwahati - 781001"
+      },
+      "districts": [
+        {"name": "Guwahati (Kamrup Metro)", "name_hi": "गुवाहाटी (कामरूप मेट्रो)", "dlsa_address": "District Court, Guwahati", "phone": "0361-2736200"},
+        {"name": "Dibrugarh", "name_hi": "डिब्रूगढ़", "dlsa_address": "District Court, Dibrugarh", "phone": "0373-2326200"},
+        {"name": "Silchar (Cachar)", "name_hi": "सिलचर (कछार)", "dlsa_address": "District Court, Silchar", "phone": "03842-234200"}
+      ]
+    },
+    {
+      "name": "Jharkhand",
+      "name_hi": "झारखंड",
+      "slsa": {
+        "name": "Jharkhand State Legal Services Authority (JSLSA)",
+        "website": "https://jslsa.jharkhand.gov.in",
+        "phone": "0651-2207100",
+        "email": "jslsa@jharkhand.gov.in",
+        "address": "Jharkhand High Court, Ranchi - 834001"
+      },
+      "districts": [
+        {"name": "Ranchi", "name_hi": "रांची", "dlsa_address": "District Court, Ranchi", "phone": "0651-2207200"},
+        {"name": "Jamshedpur (East Singhbhum)", "name_hi": "जमशेदपुर (पूर्वी सिंहभूम)", "dlsa_address": "District Court, Jamshedpur", "phone": "0657-2426200"},
+        {"name": "Dhanbad", "name_hi": "धनबाद", "dlsa_address": "District Court, Dhanbad", "phone": "0326-2301200"}
+      ]
+    },
+    {
+      "name": "Chhattisgarh",
+      "name_hi": "छत्तीसगढ़",
+      "slsa": {
+        "name": "Chhattisgarh State Legal Services Authority (CGSLSA)",
+        "website": "https://cgslsa.gov.in",
+        "phone": "0771-2234100",
+        "email": "cgslsa@cg.gov.in",
+        "address": "CG High Court, Bilaspur - 495001"
+      },
+      "districts": [
+        {"name": "Raipur", "name_hi": "रायपुर", "dlsa_address": "District Court, Raipur", "phone": "0771-2234200"},
+        {"name": "Bilaspur", "name_hi": "बिलासपुर", "dlsa_address": "District Court, Bilaspur", "phone": "07752-234200"},
+        {"name": "Durg", "name_hi": "दुर्ग", "dlsa_address": "District Court, Durg", "phone": "0788-2321200"}
+      ]
+    },
+    {
+      "name": "Uttarakhand",
+      "name_hi": "उत्तराखंड",
+      "slsa": {
+        "name": "Uttarakhand State Legal Services Authority (UKSLSA)",
+        "website": "https://ukslsa.uk.gov.in",
+        "phone": "0135-2714100",
+        "email": "ukslsa@uk.gov.in",
+        "address": "Uttarakhand High Court, Nainital"
+      },
+      "districts": [
+        {"name": "Dehradun", "name_hi": "देहरादून", "dlsa_address": "District Court, Dehradun", "phone": "0135-2714200"},
+        {"name": "Haridwar", "name_hi": "हरिद्वार", "dlsa_address": "District Court, Haridwar", "phone": "01334-227200"},
+        {"name": "Nainital", "name_hi": "नैनीताल", "dlsa_address": "District Court, Nainital", "phone": "05942-236200"}
+      ]
+    }
+  ]
+}

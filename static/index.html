@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>अधिKaar — AI Legal Assistant | Know Your Rights</title>
+  <meta name="description" content="Free AI-powered legal assistant for Indian citizens. Understand your rights, get legal guidance in your language, and find legal aid near you.">
+  <meta name="theme-color" content="#0D9488">
+  <link rel="stylesheet" href="style.css">
+  <!-- html2canvas for Rights Card image generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
+  <!-- Tesseract.js for OCR -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js" defer></script>
+  <!-- Marked.js for Markdown rendering -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
+</head>
+<body>
+  <div class="app-container">
+
+    <!-- ══════ SIDEBAR (Desktop) ══════ -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <div class="logo-icon">⚖️</div>
+          <div class="logo-text">
+            <span class="app-name">अधिKaar</span>
+            <span class="app-tagline">Your Rights, Your Language</span>
+          </div>
+        </div>
+        <div class="language-selector">
+          <label for="language-select">🌐 Language / भाषा</label>
+          <select id="language-select">
+            <option value="en">English</option>
+            <option value="hi">हिन्दी (Hindi)</option>
+            <option value="hinglish">Hinglish</option>
+            <option value="ta">தமிழ் (Tamil)</option>
+            <option value="te">తెలుగు (Telugu)</option>
+            <option value="bn">বাংলা (Bengali)</option>
+            <option value="mr">मराठी (Marathi)</option>
+            <option value="gu">ગુજરાતી (Gujarati)</option>
+            <option value="kn">ಕನ್ನಡ (Kannada)</option>
+            <option value="ml">മലയാളം (Malayalam)</option>
+            <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+          </select>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-item active" data-view="home" id="nav-home">
+          <span class="nav-icon">🏠</span>
+          <span class="nav-label">Home</span>
+        </div>
+        <div class="nav-item" data-view="chat" id="nav-chat">
+          <span class="nav-icon">💬</span>
+          <span class="nav-label">Talk to Legal Helper</span>
+        </div>
+
+        <div class="nav-divider"></div>
+
+        <div class="nav-item" data-view="bns" id="nav-bns">
+          <span class="nav-icon">🔄</span>
+          <span class="nav-label">IPC ↔ BNS Converter</span>
+        </div>
+        <div class="nav-item" data-view="legal-aid" id="nav-legal-aid">
+          <span class="nav-icon">📞</span>
+          <span class="nav-label">Find Legal Aid</span>
+        </div>
+        <div class="nav-item" data-view="document" id="nav-document">
+          <span class="nav-icon">📄</span>
+          <span class="nav-label">Translate Legal Document</span>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <p>⚖️ अधिKaar is an AI assistant providing legal information, not legal advice. For complex matters, consult a qualified lawyer.</p>
+      </div>
+    </aside>
+
+    <!-- ══════ MAIN CONTENT ══════ -->
+    <main class="main-content">
+
+      <!-- ════ HOME VIEW ════ -->
+      <section class="view home-view active" id="view-home">
+        <div class="hero-section">
+          <div class="hero-badge">🇮🇳 Built for Every Indian Citizen</div>
+          <h1 class="hero-title">
+            Know Your <span class="highlight">अधिKaar</span><br>
+            Know Your Rights
+          </h1>
+          <p class="hero-subtitle">
+            Describe your situation in your own language. Get clear legal guidance, understand your rights, and know your next steps — all powered by AI, running locally on your device.
+          </p>
+          <div class="hero-cta">
+            <button class="btn btn-primary" onclick="navigateTo('chat')">
+              💬 Talk to Legal Helper
+            </button>
+            <button class="btn btn-secondary" onclick="navigateTo('bns')">
+              🔄 IPC ↔ BNS Converter
+            </button>
+          </div>
+        </div>
+
+        <div class="features-grid">
+          <div class="feature-card" onclick="navigateTo('chat')">
+            <div class="card-icon teal">💬</div>
+            <h3>Talk in Your Language</h3>
+            <p>Describe your legal problem in Hindi, English, Tamil, Telugu, Bengali, Marathi or any language. Voice input supported.</p>
+          </div>
+          <div class="feature-card" onclick="navigateTo('bns')">
+            <div class="card-icon amber">🔄</div>
+            <h3>IPC ↔ BNS Converter</h3>
+            <p>India's criminal law changed on 1 July 2024. Convert old IPC sections to new BNS sections instantly.</p>
+          </div>
+          <div class="feature-card" onclick="navigateTo('chat')">
+            <div class="card-icon red">👿</div>
+            <h3>Devil's Advocate Mode</h3>
+            <p>See what the other side's lawyer will argue. Stress-test your case before going to court.</p>
+          </div>
+          <div class="feature-card" onclick="navigateTo('legal-aid')">
+            <div class="card-icon green">📞</div>
+            <h3>Find Legal Aid Near You</h3>
+            <p>Find free legal aid offices, helpline numbers, and Tele-Law services in your district.</p>
+          </div>
+          <div class="feature-card" onclick="navigateTo('document')">
+            <div class="card-icon blue">📄</div>
+            <h3>Translate Legal Documents</h3>
+            <p>Upload a legal notice, FIR, or court summons. Get it explained in plain language you understand.</p>
+          </div>
+          <div class="feature-card" onclick="navigateTo('chat')">
+            <div class="card-icon teal">🪪</div>
+            <h3>Rights Card Generator</h3>
+            <p>Get a shareable "Know Your Rights" card for your situation — save it or send on WhatsApp.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════ CHAT VIEW ════ -->
+      <section class="view chat-view" id="view-chat">
+        <div class="chat-header">
+          <div class="chat-header-left">
+            <h2>💬 Legal Helper</h2>
+            <div class="chat-status">
+              <span class="status-dot"></span>
+              <span>Ready to help</span>
+            </div>
+          </div>
+          <div class="chat-actions">
+            <button class="btn btn-sm btn-secondary" onclick="clearChat()" title="New conversation">🗑️ New Chat</button>
+          </div>
+        </div>
+
+        <div class="chat-messages" id="chat-messages">
+          <div class="chat-welcome" id="chat-welcome">
+            <div class="welcome-icon">⚖️</div>
+            <h3>Welcome to अधिKaar</h3>
+            <p>Tell me about your legal problem in your own words. I'll help you understand your rights and options.</p>
+            <div class="suggestions">
+              <button class="suggestion-chip" onclick="sendSuggestion('My employer has not paid my salary for 3 months')">💼 Unpaid salary</button>
+              <button class="suggestion-chip" onclick="sendSuggestion('My landlord is not returning my security deposit')">🏠 Security deposit</button>
+              <button class="suggestion-chip" onclick="sendSuggestion('I received a legal notice and I don\'t understand it')">📄 Got a legal notice</button>
+              <button class="suggestion-chip" onclick="sendSuggestion('Police refused to file my FIR')">👮 FIR not filed</button>
+              <button class="suggestion-chip" onclick="sendSuggestion('I am facing domestic violence from my husband and in-laws')">🏠 Domestic violence</button>
+              <button class="suggestion-chip" onclick="sendSuggestion('Someone cheated me online and took my money')">💻 Online fraud</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="chat-input-container">
+          <div class="chat-input-wrapper">
+            <textarea id="chat-input" rows="1" placeholder="Describe your legal problem here..." onkeydown="handleChatKeydown(event)"></textarea>
+            <button class="voice-btn" id="voice-btn" onclick="toggleVoice()" title="Voice input">🎤</button>
+            <button class="send-btn" id="send-btn" onclick="sendMessage()" title="Send message">➤</button>
+          </div>
+          <div class="chat-input-hint">
+            Press Enter to send · Shift+Enter for new line · 🎤 for voice input
+          </div>
+        </div>
+      </section>
+
+      <!-- ════ BNS CONVERTER VIEW ════ -->
+      <section class="view bns-view" id="view-bns">
+        <div class="view-header">
+          <h2>🔄 IPC ↔ BNS Section Converter</h2>
+          <p>India's criminal law changed on 1 July 2024. Search any IPC or BNS section to find its equivalent.</p>
+        </div>
+
+        <div class="direction-toggle">
+          <button class="toggle-btn active" id="toggle-ipc-bns" onclick="setBnsDirection('ipc_to_bns')">IPC → BNS</button>
+          <button class="toggle-btn" id="toggle-bns-ipc" onclick="setBnsDirection('bns_to_ipc')">BNS → IPC</button>
+        </div>
+
+        <div class="search-box">
+          <div class="search-input-wrapper">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="bns-search" placeholder="Search by section number or offence name (e.g., 420, theft, murder)" oninput="searchBns()">
+          </div>
+        </div>
+
+        <div class="results-container" id="bns-results"></div>
+        <div id="bns-ai-explanation"></div>
+      </section>
+
+      <!-- ════ LEGAL AID VIEW ════ -->
+      <section class="view legal-aid-view" id="view-legal-aid">
+        <div class="view-header">
+          <h2>📞 Find Legal Aid Near You</h2>
+          <p>Free legal assistance is your right. Find DLSA offices, helplines, and Tele-Law services.</p>
+        </div>
+
+        <div class="helplines-section" id="helplines-section">
+          <h3>📱 Emergency Helplines</h3>
+          <div class="helpline-cards" id="helpline-cards"></div>
+        </div>
+
+        <div class="dropdowns-row">
+          <div class="dropdown-group">
+            <label for="state-select">Select State / राज्य चुनें</label>
+            <select id="state-select" onchange="onStateSelect()">
+              <option value="">-- Select State --</option>
+            </select>
+          </div>
+          <div class="dropdown-group">
+            <label for="district-select">Select District / जिला चुनें</label>
+            <select id="district-select" onchange="onDistrictSelect()">
+              <option value="">-- Select District --</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="contact-cards" id="legal-aid-results"></div>
+      </section>
+
+      <!-- ════ DOCUMENT TRANSLATOR VIEW ════ -->
+      <section class="view document-view" id="view-document">
+        <div class="view-header">
+          <h2>📄 Translate Legal Document</h2>
+          <p>Upload a photo of your legal notice, FIR, or court summons — or paste the text below. We'll explain it in simple words.</p>
+        </div>
+
+        <div class="upload-area" id="upload-area" onclick="document.getElementById('file-input').click()">
+          <div class="upload-icon">📷</div>
+          <h3>Tap to upload document photo</h3>
+          <p>Take a photo or select from gallery. Supports JPG, PNG, PDF.</p>
+          <input type="file" id="file-input" accept="image/*,.pdf" onchange="handleFileUpload(event)">
+        </div>
+
+        <div class="text-input-area">
+          <p style="text-align:center; color: var(--text-tertiary); margin-bottom: var(--space-md);">— OR paste the document text below —</p>
+          <textarea id="doc-text-input" placeholder="Paste your legal document text here..."></textarea>
+          <div class="input-actions">
+            <button class="btn btn-primary" onclick="translateDocument()">📄 Translate & Explain</button>
+          </div>
+        </div>
+
+        <div id="ocr-result-section" style="display:none">
+          <div class="ocr-result">
+            <h4>📝 Extracted Text (OCR)</h4>
+            <div class="ocr-text" id="ocr-text"></div>
+            <button class="btn btn-primary btn-sm" onclick="translateOcrText()">📄 Translate & Explain This</button>
+          </div>
+        </div>
+
+        <div id="translation-result-section" style="display:none">
+          <div class="translation-result">
+            <h4>📖 Document Explanation</h4>
+            <div class="markdown-body" id="translation-result"></div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ══════ MOBILE BOTTOM NAV ══════ -->
+  <nav class="mobile-nav" id="mobile-nav">
+    <div class="mobile-nav-items">
+      <div class="mobile-nav-item active" data-view="home" onclick="navigateTo('home')">
+        <span class="mob-nav-icon">🏠</span>
+        <span>Home</span>
+      </div>
+      <div class="mobile-nav-item" data-view="chat" onclick="navigateTo('chat')">
+        <span class="mob-nav-icon">💬</span>
+        <span>Chat</span>
+      </div>
+      <div class="mobile-nav-item" data-view="bns" onclick="navigateTo('bns')">
+        <span class="mob-nav-icon">🔄</span>
+        <span>IPC/BNS</span>
+      </div>
+      <div class="mobile-nav-item" data-view="legal-aid" onclick="navigateTo('legal-aid')">
+        <span class="mob-nav-icon">📞</span>
+        <span>Help</span>
+      </div>
+      <div class="mobile-nav-item" data-view="document" onclick="navigateTo('document')">
+        <span class="mob-nav-icon">📄</span>
+        <span>Docs</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ══════ MOBILE LANGUAGE BUTTON ══════ -->
+  <button class="mobile-lang-btn" id="mobile-lang-btn" onclick="toggleMobileLang()">
+    🌐 <span id="mobile-lang-label">EN</span>
+  </button>
+
+  <!-- ══════ RIGHTS CARD MODAL ══════ -->
+  <div class="modal-overlay" id="rights-card-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>🪪 Your Rights Card</h3>
+        <button class="modal-close" onclick="closeModal('rights-card-modal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="rights-card-preview" id="rights-card-content">
+          <div class="card-header">
+            <span class="card-logo">⚖️</span>
+            <h4 id="card-title">Your Rights</h4>
+          </div>
+          <div class="card-situation" id="card-situation"></div>
+          <ul class="card-rights" id="card-rights"></ul>
+          <div class="card-helplines" id="card-helplines">
+            <strong>📞 Emergency Numbers:</strong>
+            <span>NALSA: 15100 | Tele-Law: 14454 | Police: 112 | Women: 181</span>
+          </div>
+          <div class="card-footer">अधिKaar — AI Legal Assistant · अधिकार जानो, अधिकार पाओ</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary btn-sm" onclick="downloadRightsCard()">📥 Download Image</button>
+        <button class="btn btn-primary btn-sm" onclick="shareRightsCard()">📤 Share</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ LANGUAGE PICKER MODAL (Mobile) ══════ -->
+  <div class="modal-overlay" id="lang-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>🌐 Choose Language / भाषा चुनें</h3>
+        <button class="modal-close" onclick="closeModal('lang-modal')">✕</button>
+      </div>
+      <div class="modal-body" id="lang-modal-options" style="display:flex; flex-direction:column; gap:8px;">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,565 @@
+{
+  "case_types": [
+    {
+      "id": "labor_dispute",
+      "name": "Labor / Employment Dispute",
+      "name_hi": "श्रम / रोजगार विवाद",
+      "keywords": ["salary", "wages", "fired", "terminated", "employer", "unpaid", "contract", "work", "job", "overtime", "bonus", "PF", "ESI", "gratuity", "notice period", "experience letter", "relieving letter", "harassment at work"],
+      "common_scenarios": [
+        "Employer not paying salary for months",
+        "Wrongful termination without notice",
+        "No appointment letter or written contract",
+        "Employer refusing to give experience/relieving letter",
+        "PF or ESI deducted from salary but not deposited",
+        "Forced to work overtime without pay",
+        "Workplace harassment or unsafe conditions",
+        "Employer withholding gratuity after resignation"
+      ],
+      "rights": [
+        "Right to receive wages on time (Payment of Wages Act)",
+        "Right to minimum wages as per state notification (Minimum Wages Act)",
+        "Right to a written appointment letter",
+        "Right to PF contribution by employer (if applicable under EPF Act)",
+        "Right to gratuity after 5 years of continuous service (Payment of Gratuity Act)",
+        "Right to safe working conditions (Occupational Safety Act)",
+        "Right to maternity leave for women employees (Maternity Benefit Act)",
+        "Right against wrongful termination (Industrial Disputes Act)",
+        "Right to form or join a trade union",
+        "Right to equal pay for equal work regardless of gender"
+      ],
+      "steps": [
+        "Collect all evidence: salary slips, bank statements, messages, emails, appointment letter",
+        "Send a written demand notice to your employer (keep a copy and send by registered post/email)",
+        "Wait 15-30 days for the employer to respond",
+        "If no response, file a complaint with the Labour Commissioner of your district",
+        "You can also approach the Labour Court for disputes related to termination",
+        "For PF issues, file complaint on EPFO portal (epfindia.gov.in) or visit EPFO office",
+        "For gratuity disputes, apply to the Controlling Authority under Payment of Gratuity Act",
+        "You can also file a civil suit in appropriate court for recovery of dues",
+        "Contact your nearest DLSA for free legal aid if you cannot afford a lawyer"
+      ],
+      "documents_needed": [
+        "Appointment letter / Offer letter (if available)",
+        "Salary slips or bank statements showing salary credits",
+        "ID card or any document proving employment",
+        "WhatsApp/email/SMS communications with employer",
+        "Attendance records if available",
+        "PF account statement (from EPFO portal)",
+        "Any written contract or agreement",
+        "Photos/videos of workplace (if safety issue)",
+        "Witness statements from co-workers"
+      ],
+      "relevant_sections": {
+        "bns": ["316 (Criminal Breach of Trust)", "318 (Cheating)"],
+        "other_laws": ["Payment of Wages Act 1936", "Minimum Wages Act 1948", "EPF & MP Act 1952", "Payment of Gratuity Act 1972", "Industrial Disputes Act 1947", "Code on Wages 2019"]
+      },
+      "deadlines": [
+        {"action": "Claim unpaid wages", "deadline": "Within 1 year of the wages becoming due"},
+        {"action": "Raise industrial dispute for termination", "deadline": "Within 3 years of termination"},
+        {"action": "Claim gratuity", "deadline": "Within 5 years of it becoming due"},
+        {"action": "PF complaint", "deadline": "Within 5 years"}
+      ]
+    },
+    {
+      "id": "tenant_landlord",
+      "name": "Tenant / Landlord Dispute",
+      "name_hi": "किरायेदार / मकान मालिक विवाद",
+      "keywords": ["rent", "landlord", "tenant", "eviction", "deposit", "security deposit", "lease", "agreement", "maintenance", "lock", "electricity", "water"],
+      "common_scenarios": [
+        "Landlord not returning security deposit",
+        "Illegal eviction or lockout by landlord",
+        "Landlord harassing tenant to vacate",
+        "Landlord cutting water/electricity supply",
+        "Rent increase without proper notice",
+        "Tenant not paying rent",
+        "Disputes about maintenance and repairs",
+        "No rent agreement or expired agreement",
+        "Landlord entering property without permission"
+      ],
+      "rights": [
+        "Tenant cannot be evicted without due legal process",
+        "Landlord must give proper notice before eviction (usually 1-3 months as per state law)",
+        "Security deposit must be returned within a reasonable time after vacating (minus legitimate deductions)",
+        "Landlord cannot cut essential services (water, electricity) to force eviction",
+        "Tenant has the right to peaceful enjoyment of the rented property",
+        "Rent can only be increased as per agreement or Rent Control Act",
+        "Landlord must maintain the structural integrity of the property",
+        "Both parties should have a written rent agreement",
+        "Landlord must give receipt for rent paid in cash"
+      ],
+      "steps": [
+        "Review your rent agreement carefully for terms and conditions",
+        "Document everything: take photos, save messages, keep receipts",
+        "Send a written notice to the other party (registered post recommended)",
+        "If landlord is harassing: file a police complaint (BNS 351 - Criminal Intimidation)",
+        "If essential services cut: file complaint with local municipal authority AND police",
+        "For deposit disputes: send legal notice through a lawyer, then file civil suit",
+        "Approach Rent Controller / Rent Court in your area",
+        "For illegal eviction: file urgent application in civil court for restoration of possession",
+        "Contact DLSA for free legal aid"
+      ],
+      "documents_needed": [
+        "Rent agreement / Lease deed",
+        "Receipts for security deposit paid",
+        "Rent payment receipts or bank transfer records",
+        "Photos/videos of property condition (before and after)",
+        "Communication records with landlord (WhatsApp, SMS, email)",
+        "Police complaint copy (if harassment/lockout)",
+        "Electricity/water bills in your name (if any)",
+        "Witness statements from neighbors"
+      ],
+      "relevant_sections": {
+        "bns": ["329 (Criminal Trespass)", "351 (Criminal Intimidation)", "316 (Criminal Breach of Trust)"],
+        "other_laws": ["State Rent Control Act (varies by state)", "Transfer of Property Act 1882", "Registration Act 1908"]
+      },
+      "deadlines": [
+        {"action": "Reply to eviction notice", "deadline": "As specified in notice (usually 15-30 days)"},
+        {"action": "File suit for deposit recovery", "deadline": "Within 3 years of deposit becoming due"},
+        {"action": "Challenge illegal eviction", "deadline": "File immediately - approach court urgently"}
+      ]
+    },
+    {
+      "id": "domestic_violence",
+      "name": "Domestic Violence",
+      "name_hi": "घरेलू हिंसा",
+      "keywords": ["beating", "violence", "husband", "wife", "dowry", "domestic", "abuse", "in-laws", "cruelty", "threat", "marital", "divorce"],
+      "common_scenarios": [
+        "Physical violence by husband or in-laws",
+        "Dowry demands and harassment",
+        "Verbal and emotional abuse",
+        "Being thrown out of marital home",
+        "Economic abuse - not given money for basic needs",
+        "Threats of violence or harm",
+        "Husband having extramarital affair and treating wife cruelly",
+        "In-laws restricting movement and communication"
+      ],
+      "rights": [
+        "Right to live in the shared household (even if not in your name)",
+        "Right to protection from domestic violence (PWDVA 2005)",
+        "Right to file complaint even without physical injury (emotional/economic abuse counts)",
+        "Right to maintenance from husband",
+        "Right to custody of children",
+        "Right to get protection order from Magistrate",
+        "Right to reside in shared household (Residence Order)",
+        "Right to monetary relief for expenses and losses",
+        "Right to free legal aid",
+        "Right to file FIR and criminal complaint"
+      ],
+      "steps": [
+        "IMMEDIATE SAFETY: If in danger, call 112 (Police) or 181 (Women Helpline) immediately",
+        "Go to the nearest police station to file an FIR under BNS 85 (cruelty) and/or BNS 80 (dowry death if applicable)",
+        "Contact the Protection Officer in your district (appointed under PWDVA)",
+        "File an application before the Magistrate under the Protection of Women from Domestic Violence Act 2005",
+        "Seek a Protection Order, Residence Order, and Monetary Relief",
+        "Visit a One Stop Centre (Sakhi Centre) for immediate shelter and support",
+        "Collect and preserve evidence: medical reports, photos of injuries, threatening messages",
+        "If you want divorce: file petition under Section 13 of Hindu Marriage Act or relevant personal law",
+        "Contact DLSA for free legal aid - domestic violence cases get priority"
+      ],
+      "documents_needed": [
+        "Medical reports / injury certificate from hospital",
+        "Photos of injuries (with date)",
+        "FIR copy",
+        "Marriage certificate",
+        "Evidence of dowry (receipts, photos, messages demanding dowry)",
+        "Threatening messages (WhatsApp, SMS, recordings)",
+        "Income proof of husband (for maintenance claim)",
+        "List of stridhan (gifts/jewelry given at marriage)",
+        "Witness statements",
+        "Previous complaints or protection orders (if any)"
+      ],
+      "relevant_sections": {
+        "bns": ["85 (Cruelty by husband/relatives)", "80 (Dowry Death)", "108 (Abetment of suicide)", "115 (Voluntarily causing hurt)", "351 (Criminal intimidation)"],
+        "other_laws": ["Protection of Women from Domestic Violence Act 2005", "Dowry Prohibition Act 1961", "Hindu Marriage Act 1955", "Section 125 CrPC (Maintenance)", "BNSS Section 144 (Maintenance)"]
+      },
+      "deadlines": [
+        {"action": "File FIR", "deadline": "No time limit for filing FIR in domestic violence cases"},
+        {"action": "Seek Protection Order", "deadline": "File as soon as possible - court should dispose within 60 days"},
+        {"action": "Maintenance application", "deadline": "Can be filed anytime during marriage or after separation"}
+      ]
+    },
+    {
+      "id": "consumer_complaint",
+      "name": "Consumer Complaint",
+      "name_hi": "उपभोक्ता शिकायत",
+      "keywords": ["product", "service", "defective", "refund", "warranty", "cheated", "fraud", "online", "shopping", "bill", "overcharge", "hospital", "insurance"],
+      "common_scenarios": [
+        "Defective product not replaced or refunded",
+        "Service provider not delivering promised services",
+        "Overcharging by hospital or service provider",
+        "Insurance claim rejected unfairly",
+        "Online shopping fraud",
+        "Builder not delivering flat on time",
+        "Bank charging hidden fees",
+        "Food adulteration or contaminated product"
+      ],
+      "rights": [
+        "Right to safety from dangerous products",
+        "Right to information about product quality, quantity, price",
+        "Right to choose among alternatives at competitive prices",
+        "Right to be heard and seek redressal",
+        "Right to seek redressal against unfair trade practices",
+        "Right to consumer education",
+        "Right to file complaint within 2 years",
+        "Right to compensation for loss/injury",
+        "No lawyer needed - can file complaint yourself"
+      ],
+      "steps": [
+        "Collect all proof of purchase: bills, receipts, warranty cards, order confirmations",
+        "Write a formal complaint to the company/service provider first",
+        "If not resolved in 15-30 days, file complaint on National Consumer Helpline (1915) or consumerhelpline.gov.in",
+        "For online complaints: file on edaakhil.nic.in (e-Daakhil portal for consumer cases)",
+        "File complaint in Consumer Forum/Commission based on claim amount",
+        "District Commission: claims up to Rs. 1 crore",
+        "State Commission: claims Rs. 1 crore to Rs. 10 crore",
+        "National Commission: claims above Rs. 10 crore",
+        "Court fee is minimal (varies by claim amount, starts from Rs. 100)"
+      ],
+      "documents_needed": [
+        "Bill / receipt / invoice",
+        "Warranty/guarantee card",
+        "Product photos showing defect",
+        "Communication with seller/company (emails, chat)",
+        "Bank/UPI transaction records",
+        "Previous complaints and responses",
+        "Expert opinion (if applicable)",
+        "Advertisement or brochure showing false claims"
+      ],
+      "relevant_sections": {
+        "bns": ["318 (Cheating)", "318(4) (Cheating and dishonest delivery)"],
+        "other_laws": ["Consumer Protection Act 2019", "E-Commerce Rules 2020", "Bureau of Indian Standards Act"]
+      },
+      "deadlines": [
+        {"action": "File consumer complaint", "deadline": "Within 2 years from the cause of action"},
+        {"action": "Appeal against District Commission order", "deadline": "Within 45 days of order"},
+        {"action": "Appeal against State Commission order", "deadline": "Within 30 days of order"}
+      ]
+    },
+    {
+      "id": "police_related",
+      "name": "Police Related Issues",
+      "name_hi": "पुलिस संबंधित मुद्दे",
+      "keywords": ["FIR", "police", "arrest", "bail", "complaint", "station", "custody", "beaten", "torture", "false case"],
+      "common_scenarios": [
+        "Police refusing to register FIR",
+        "Illegal arrest or detention",
+        "Police demanding money/bribe",
+        "False case filed against you",
+        "Police beating or torture in custody",
+        "Need to file FIR but afraid",
+        "What are my rights during arrest",
+        "How to get bail"
+      ],
+      "rights": [
+        "RIGHT TO FILE FIR: Police MUST register your FIR for cognizable offences - refusal is punishable under BNS 218",
+        "RIGHT TO ZERO FIR: You can file FIR at ANY police station, not just the one where incident occurred",
+        "RIGHT TO FREE COPY: You are entitled to a free copy of FIR",
+        "ARREST RIGHTS: Police must inform you of the reason for arrest",
+        "RIGHT TO LAWYER: You have the right to consult a lawyer immediately upon arrest",
+        "RIGHT TO INFORM: Police must inform your family/friend of your arrest immediately",
+        "RIGHT AGAINST TORTURE: No one can be tortured or treated inhumanely in custody",
+        "WOMEN'S RIGHTS: A woman cannot be arrested after sunset and before sunrise except in exceptional circumstances, and only by a woman police officer",
+        "RIGHT TO MEDICAL EXAMINATION: You have the right to medical examination upon arrest",
+        "RIGHT TO BAIL: For bailable offences, bail is a right, not a privilege",
+        "RIGHT TO SILENCE: You have the right to remain silent - you cannot be forced to confess",
+        "You are NOT required to sign any document you don't understand"
+      ],
+      "steps": [
+        "IF FIR REFUSED: Write complaint to SP/SSP, send by registered post. You can also file complaint through e-FIR portal of your state, or approach Magistrate under BNSS Section 175",
+        "IF ARRESTED: Do not resist arrest. Ask for the reason. Ask to call a lawyer and family member immediately",
+        "FOR BAIL: Contact a lawyer or DLSA immediately. For bailable offences, you can get bail at the police station itself",
+        "IF TORTURED: Get medical examination done immediately. File complaint with NHRC (National Human Rights Commission) and SP/SSP",
+        "FOR FALSE CASE: Engage a lawyer. Apply for anticipatory bail if arrest is apprehended. Gather evidence to prove innocence",
+        "ALWAYS: Note the name and badge number of officers you interact with",
+        "Document everything: injuries, times, events, witnesses"
+      ],
+      "documents_needed": [
+        "Copy of FIR (if filed)",
+        "Identity proof (Aadhar, Voter ID, etc.)",
+        "Medical reports (if injured in custody)",
+        "Any evidence related to the case",
+        "Names and contact of witnesses",
+        "Previous complaints (if any)",
+        "Phone records / CCTV footage (if available)"
+      ],
+      "relevant_sections": {
+        "bns": ["218 (Public servant not recording FIR)", "132 (Assault on public servant)", "248 (False charge)"],
+        "other_laws": ["BNSS (Bharatiya Nagarik Suraksha Sanhita) - replaces CrPC", "Indian Evidence Act / BSA", "NHRC Act 1993", "Police Act"]
+      },
+      "deadlines": [
+        {"action": "Police must produce arrested person before Magistrate", "deadline": "Within 24 hours of arrest"},
+        {"action": "File bail application", "deadline": "Can be filed immediately after arrest"},
+        {"action": "File NHRC complaint for police torture", "deadline": "Within 1 year of incident"}
+      ]
+    },
+    {
+      "id": "property_dispute",
+      "name": "Property Dispute",
+      "name_hi": "संपत्ति विवाद",
+      "keywords": ["property", "land", "house", "inheritance", "will", "partition", "possession", "encroachment", "registration", "title"],
+      "common_scenarios": [
+        "Dispute over ancestral property/inheritance",
+        "Someone has encroached on your land",
+        "Property bought but seller not transferring title",
+        "Dispute between family members over partition",
+        "Fraudulent property sale using forged documents",
+        "Builder not giving possession of flat",
+        "Government land acquisition dispute"
+      ],
+      "rights": [
+        "Right to inherit ancestral property (daughters have equal rights since 2005 amendment to Hindu Succession Act)",
+        "Right to partition of joint family property",
+        "Right to challenge encroachment",
+        "Right to fair compensation in land acquisition",
+        "Right to challenge forged property documents",
+        "Right to seek specific performance of sale agreement"
+      ],
+      "steps": [
+        "Get all property documents verified by a lawyer",
+        "Check land records at Sub-Registrar office or online (state land record portals)",
+        "For encroachment: file complaint with local authority and file suit in civil court",
+        "For inheritance: file partition suit in civil court",
+        "For fraud: file FIR for forgery (BNS 336-340) and file civil suit",
+        "For builder disputes: file complaint with RERA (Real Estate Regulatory Authority)",
+        "Get a legal notice sent through a lawyer as a first step",
+        "Mediation can save time and money - explore this option"
+      ],
+      "documents_needed": [
+        "Sale deed / title deed",
+        "Property tax receipts",
+        "Land records (Khata, Khasra, Jamabandi)",
+        "Mutation records",
+        "Family tree (for inheritance cases)",
+        "Will (if applicable)",
+        "Builder agreement (for flat disputes)",
+        "Previous court orders (if any)",
+        "Survey/measurement reports"
+      ],
+      "relevant_sections": {
+        "bns": ["329 (Criminal Trespass)", "336 (Forgery)", "318 (Cheating)", "324 (Mischief)"],
+        "other_laws": ["Transfer of Property Act 1882", "Registration Act 1908", "Hindu Succession Act 1956", "Indian Succession Act 1925", "RERA Act 2016", "Right to Fair Compensation & Transparency in Land Acquisition Act 2013"]
+      },
+      "deadlines": [
+        {"action": "File suit for possession of immovable property", "deadline": "Within 12 years (Limitation Act)"},
+        {"action": "File suit based on a contract", "deadline": "Within 3 years"},
+        {"action": "RERA complaint", "deadline": "Within 1 year of possession date or defect occurrence"},
+        {"action": "Challenge land acquisition", "deadline": "As per notice period given (usually 30-60 days)"}
+      ]
+    },
+    {
+      "id": "cheque_bounce",
+      "name": "Cheque Bounce / Dishonoured Cheque",
+      "name_hi": "चेक बाउंस / अनादरित चेक",
+      "keywords": ["cheque", "bounce", "dishonour", "NI Act", "138", "payment", "bank"],
+      "common_scenarios": [
+        "Someone gave you a cheque that bounced",
+        "Your cheque bounced and you received a legal notice",
+        "Repeated cheque bounces by debtor"
+      ],
+      "rights": [
+        "Right to file criminal complaint under NI Act Section 138",
+        "Right to claim the cheque amount plus interest and compensation",
+        "Right to send statutory demand notice",
+        "Right to file complaint in the court where bank branch is situated or where cheque was presented"
+      ],
+      "steps": [
+        "Get the 'cheque return memo' from your bank (this is essential proof)",
+        "Send a WRITTEN DEMAND NOTICE to the cheque issuer within 30 days of receiving the return memo",
+        "The notice must demand payment within 15 days",
+        "Send by registered post with acknowledgment due (RPAD) - keep the postal receipt",
+        "If payment not made within 15 days of receiving notice, file criminal complaint under NI Act Section 138",
+        "File the complaint within 30 days of expiry of the 15-day notice period",
+        "Also file a civil suit for recovery of the amount with interest"
+      ],
+      "documents_needed": [
+        "Original bounced cheque",
+        "Cheque return memo from bank",
+        "Copy of demand notice sent",
+        "Postal receipt and tracking showing delivery",
+        "Bank statement showing cheque deposit and return",
+        "Any agreement or correspondence showing the reason for cheque",
+        "Previous cheques if any (pattern of bouncing)"
+      ],
+      "relevant_sections": {
+        "bns": ["318 (Cheating)"],
+        "other_laws": ["Negotiable Instruments Act 1881 - Section 138, 141, 142", "Code of Civil Procedure for recovery suit"]
+      },
+      "deadlines": [
+        {"action": "Send demand notice after cheque bounce", "deadline": "Within 30 days of receiving return memo"},
+        {"action": "Wait for payment after notice", "deadline": "15 days from receipt of notice by other party"},
+        {"action": "File criminal complaint (NI Act 138)", "deadline": "Within 30 days of expiry of 15-day notice period"},
+        {"action": "THIS IS CRITICAL: Missing these deadlines means you LOSE your right to file the case", "deadline": "Strict deadlines - cannot be extended easily"}
+      ]
+    },
+    {
+      "id": "accident_insurance",
+      "name": "Road Accident / Insurance Claim",
+      "name_hi": "सड़क दुर्घटना / बीमा दावा",
+      "keywords": ["accident", "insurance", "claim", "vehicle", "motor", "hospital", "injury", "compensation", "hit and run"],
+      "common_scenarios": [
+        "Injured in a road accident",
+        "Family member killed in road accident",
+        "Hit and run case",
+        "Insurance company rejecting claim",
+        "Hospital refusing treatment after accident",
+        "Want to claim compensation from vehicle owner"
+      ],
+      "rights": [
+        "RIGHT TO FREE TREATMENT: All hospitals (including private) MUST provide free emergency treatment to accident victims",
+        "Good Samaritan Protection: Anyone who helps an accident victim is protected by law (no legal harassment)",
+        "Right to claim compensation from Motor Accident Claims Tribunal (MACT)",
+        "Right to insurance claim against the vehicle's insurance policy",
+        "Right to compensation even in hit-and-run cases (from Solatium Fund)",
+        "No-fault liability: Even without proving negligence, victim can claim up to Rs. 2 lakh for death, Rs. 50,000 for grievous hurt"
+      ],
+      "steps": [
+        "IMMEDIATE: Call 112 for emergency services. Get medical treatment first - any hospital must treat you",
+        "File FIR at the nearest police station (or Zero FIR at any station)",
+        "Get medical reports and injury certificate from hospital",
+        "Note down details: vehicle number, insurance details, witness contacts",
+        "File insurance claim with the vehicle's insurance company",
+        "File claim before Motor Accident Claims Tribunal (MACT) in your district",
+        "For hit-and-run: file claim through the insurance company handling the Solatium Fund",
+        "Keep all medical bills, treatment records, and expense receipts",
+        "If the victim has died, the legal heirs can file the compensation claim"
+      ],
+      "documents_needed": [
+        "FIR copy",
+        "Medical reports and treatment records",
+        "Hospital bills and receipts",
+        "Vehicle insurance policy details (of the other vehicle)",
+        "Driving license of parties involved",
+        "Photos of accident spot and vehicle damage",
+        "Income proof of victim (for calculating compensation)",
+        "Death certificate (in fatal accidents)",
+        "Age proof of victim",
+        "Witness statements"
+      ],
+      "relevant_sections": {
+        "bns": ["106 (Death by negligence)", "281 (Rash driving)", "105 (Culpable homicide not amounting to murder)"],
+        "other_laws": ["Motor Vehicles Act 1988", "Motor Vehicles (Amendment) Act 2019"]
+      },
+      "deadlines": [
+        {"action": "File MACT claim", "deadline": "Within 6 months of accident (can be condoned)"},
+        {"action": "File insurance claim", "deadline": "As per policy terms (usually 30-90 days)"},
+        {"action": "File FIR", "deadline": "As soon as possible - no strict limit but delay weakens case"}
+      ]
+    },
+    {
+      "id": "cyber_crime",
+      "name": "Cyber Crime / Online Fraud",
+      "name_hi": "साइबर अपराध / ऑनलाइन धोखाधड़ी",
+      "keywords": ["online", "fraud", "cyber", "hacking", "phishing", "UPI", "bank", "OTP", "social media", "morphing", "blackmail", "identity theft", "scam"],
+      "common_scenarios": [
+        "Money stolen from bank account through UPI/net banking fraud",
+        "Online shopping fraud - product not delivered or fake product",
+        "Social media account hacked",
+        "Morphed photos being shared or used for blackmail",
+        "Identity theft - someone using your documents",
+        "Loan apps harassment and illegal recovery practices",
+        "Sextortion / online blackmail",
+        "Job fraud - fake recruitment scams",
+        "Investment/crypto scam"
+      ],
+      "rights": [
+        "Right to file cyber crime complaint online at cybercrime.gov.in",
+        "Right to report financial fraud within golden hour (first 2 hours) for possible reversal",
+        "Right to privacy - sharing intimate images without consent is a crime",
+        "Right to get objectionable content removed from platforms",
+        "Right to file FIR at any police station (Zero FIR)",
+        "Right to data protection and privacy"
+      ],
+      "steps": [
+        "FOR FINANCIAL FRAUD: Call 1930 (Cyber Crime Helpline) IMMEDIATELY - within 2 hours for best chance of recovery",
+        "Also call your bank immediately to block your account/card",
+        "File complaint online at cybercrime.gov.in with all details",
+        "File FIR at nearest police station or Cyber Crime police station",
+        "For social media issues: report and block on the platform AND file police complaint",
+        "For harassment/blackmail: DO NOT pay or engage. Screenshot everything and file complaint",
+        "For loan app harassment: file complaint with RBI (rbi.org.in) and police",
+        "Preserve all evidence: screenshots, transaction IDs, phone numbers, URLs"
+      ],
+      "documents_needed": [
+        "Screenshots of fraud messages/calls/websites",
+        "Bank transaction statements showing unauthorized transactions",
+        "UPI transaction IDs",
+        "Phone numbers / email IDs of scammers",
+        "Screenshots of social media posts/profiles",
+        "Any OTP messages received",
+        "Complaint acknowledgment from cybercrime.gov.in"
+      ],
+      "relevant_sections": {
+        "bns": ["318 (Cheating)", "316 (Criminal breach of trust)", "351 (Criminal intimidation)", "356 (Defamation)"],
+        "other_laws": ["Information Technology Act 2000", "IT Act Section 66C (Identity theft)", "IT Act Section 66D (Cheating by personation)", "IT Act Section 67/67A (Publishing obscene material)", "RBI Guidelines on Digital Fraud"]
+      },
+      "deadlines": [
+        {"action": "Report financial fraud to bank/1930", "deadline": "Within 2 hours for best recovery chance (golden hour)"},
+        {"action": "File complaint on cybercrime.gov.in", "deadline": "As soon as possible - no strict limit"},
+        {"action": "Report to bank for liability protection", "deadline": "Within 3 days to limit liability to Rs. 0 (RBI circular)"}
+      ]
+    },
+    {
+      "id": "dowry_harassment",
+      "name": "Dowry Harassment",
+      "name_hi": "दहेज उत्पीड़न",
+      "keywords": ["dowry", "dahej", "demand", "in-laws", "marriage", "gifts", "cash", "threat"],
+      "common_scenarios": [
+        "In-laws demanding dowry after marriage",
+        "Threats or violence for not bringing enough dowry",
+        "Being harassed for additional dowry demands",
+        "Someone falsely accused of dowry harassment"
+      ],
+      "rights": [
+        "GIVING AND TAKING DOWRY IS A CRIME (Dowry Prohibition Act 1961)",
+        "Right to file FIR against anyone demanding dowry",
+        "Right to claim back all stridhan (gifts given to bride)",
+        "Right to protection under BNS 85 (Cruelty by husband/relatives)",
+        "Right to maintenance and residence",
+        "All items given at the time of marriage are the woman's property (stridhan)"
+      ],
+      "steps": [
+        "Document all dowry demands: save messages, record conversations (if safe to do), note dates",
+        "Inform your parents/family and keep them updated",
+        "If in physical danger: call 112 or 181 immediately",
+        "File FIR at police station under Dowry Prohibition Act and BNS 85",
+        "Also file complaint under PWDVA (Protection of Women from Domestic Violence Act)",
+        "Prepare list of all stridhan given at marriage with approximate values",
+        "Contact local Protection Officer or Women's Cell"
+      ],
+      "documents_needed": [
+        "Marriage certificate",
+        "List of stridhan with photos/videos of items given",
+        "Messages/recordings of dowry demands",
+        "Medical reports (if physically hurt)",
+        "Wedding photos/videos showing gifts exchanged",
+        "Bank records of money transferred as dowry",
+        "Witness statements from family members"
+      ],
+      "relevant_sections": {
+        "bns": ["80 (Dowry death)", "85 (Cruelty by husband/relatives)"],
+        "other_laws": ["Dowry Prohibition Act 1961", "Protection of Women from Domestic Violence Act 2005"]
+      },
+      "deadlines": [
+        {"action": "File case for dowry harassment", "deadline": "No limitation period for criminal cases"},
+        {"action": "Claim stridhan", "deadline": "Can be claimed anytime"}
+      ]
+    }
+  ],
+  "legal_terms": [
+    {"term": "FIR", "meaning": "First Information Report - the first report filed at a police station about a cognizable offence. The police are legally bound to register it.", "meaning_hi": "प्रथम सूचना रिपोर्ट - पुलिस स्टेशन में दर्ज की जाने वाली पहली रिपोर्ट। पुलिस इसे दर्ज करने के लिए कानूनी रूप से बाध्य है।"},
+    {"term": "Cognizable Offence", "meaning": "A serious offence where police can arrest without a warrant and start investigation without court permission.", "meaning_hi": "एक गंभीर अपराध जिसमें पुलिस बिना वारंट के गिरफ्तार कर सकती है और बिना अदालत की अनुमति के जांच शुरू कर सकती है।"},
+    {"term": "Non-Cognizable Offence", "meaning": "A less serious offence where police need court permission to investigate and cannot arrest without a warrant.", "meaning_hi": "एक कम गंभीर अपराध जिसमें पुलिस को जांच के लिए अदालत की अनुमति चाहिए और बिना वारंट के गिरफ्तार नहीं कर सकती।"},
+    {"term": "Bail", "meaning": "Temporary release of an arrested person after providing a guarantee (surety) that they will appear in court when required.", "meaning_hi": "गिरफ्तार व्यक्ति की अस्थायी रिहाई, इस गारंटी के साथ कि वह जब भी जरूरत हो अदालत में पेश होगा।"},
+    {"term": "Anticipatory Bail", "meaning": "Bail obtained BEFORE arrest, when a person apprehends that they may be arrested. Applied for in Sessions Court or High Court.", "meaning_hi": "गिरफ्तारी से पहले मिलने वाली जमानत, जब किसी व्यक्ति को लगता है कि उसे गिरफ्तार किया जा सकता है।"},
+    {"term": "Summons", "meaning": "A court order requiring a person to appear before the court on a specific date.", "meaning_hi": "एक अदालती आदेश जो किसी व्यक्ति को एक निश्चित तारीख पर अदालत में पेश होने के लिए कहता है।"},
+    {"term": "Warrant", "meaning": "A written order by a court authorizing police to arrest a person or search a place.", "meaning_hi": "अदालत द्वारा लिखित आदेश जो पुलिस को किसी व्यक्ति को गिरफ्तार करने या किसी स्थान की तलाशी लेने का अधिकार देता है।"},
+    {"term": "Chargesheet", "meaning": "A formal document filed by police in court after investigation, containing evidence against the accused.", "meaning_hi": "जांच के बाद पुलिस द्वारा अदालत में दायर एक औपचारिक दस्तावेज, जिसमें आरोपी के खिलाफ साक्ष्य होते हैं।"},
+    {"term": "Stay Order", "meaning": "A court order that temporarily stops a particular action or proceeding from taking effect.", "meaning_hi": "अदालत का एक आदेश जो अस्थायी रूप से किसी विशेष कार्रवाई या कार्यवाही को रोकता है।"},
+    {"term": "Injunction", "meaning": "A court order that prevents a person from doing a specific act or requires them to do a specific act.", "meaning_hi": "अदालत का आदेश जो किसी व्यक्ति को कोई विशेष कार्य करने से रोकता है या करने के लिए कहता है।"},
+    {"term": "Magistrate", "meaning": "A judicial officer who handles criminal cases at the lower court level. Can grant bail, issue warrants, and try minor offences.", "meaning_hi": "एक न्यायिक अधिकारी जो निचली अदालत स्तर पर आपराधिक मामलों को संभालता है।"},
+    {"term": "Sessions Court", "meaning": "A higher criminal court that tries serious offences like murder, robbery, etc.", "meaning_hi": "एक उच्च आपराधिक अदालत जो हत्या, डकैती जैसे गंभीर अपराधों की सुनवाई करती है।"},
+    {"term": "Stridhan", "meaning": "Property given to a woman before, during, or after marriage. It remains her exclusive property.", "meaning_hi": "विवाह से पहले, विवाह के दौरान या बाद में महिला को दी गई संपत्ति। यह उसकी विशेष संपत्ति रहती है।"},
+    {"term": "Maintenance", "meaning": "Financial support that one spouse may be ordered to pay to the other spouse (and children) during or after separation.", "meaning_hi": "अलग होने के दौरान या बाद में एक पति/पत्नी को दूसरे (और बच्चों) को देने का आदेश दिया गया वित्तीय सहायता।"},
+    {"term": "Legal Notice", "meaning": "A formal written communication sent by one party to another, informing them of a legal demand or intention to take legal action.", "meaning_hi": "एक पक्ष द्वारा दूसरे पक्ष को भेजा गया औपचारिक लिखित संदेश, जो कानूनी कार्रवाई करने के इरादे की सूचना देता है।"}
+  ]
+}
