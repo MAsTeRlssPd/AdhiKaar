@@ -20,7 +20,7 @@ import traceback
 app = Flask(__name__, static_folder='static', static_url_path='')
 CORS(app)
 
-GEMMA_MODEL = 'gemma4'
+GEMMA_MODEL = os.environ.get('GEMMA_MODEL', 'gemma4:12b')
 CHROMA_DIR = os.path.join(os.path.dirname(__file__), 'chroma_db')
 DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
 
