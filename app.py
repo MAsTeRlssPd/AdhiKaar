@@ -290,19 +290,29 @@ def get_language_instruction(lang):
     """Get language-specific instruction."""
     return LANGUAGE_INSTRUCTIONS.get(lang, LANGUAGE_INSTRUCTIONS['en'])
 
-def call_gemma(messages, temperature=0.7):
+def call_gemma(messages, temperature=0.7, fallback_cpu=False):
     """Call Gemma via Ollama."""
     try:
+        options = {'temperature': temperature}
+        if fallback_cpu:
+            options['num_gpu'] = 0
+            
         response = ollama.chat(
             model=GEMMA_MODEL,
             messages=messages,
-            options={'temperature': temperature}
+            options=options
         )
         return response['message']['content']
     except Exception as e:
+        error_msg = str(e)
+        # If it's a CUDA crash or buffer overrun, try again forcing CPU mode
+        if not fallback_cpu and ("CUDA error" in error_msg or "exit status" in error_msg or "0xc0000409" in error_msg):
+            print(f"⚠️ GPU crash detected ({error_msg}). Retrying in CPU mode...")
+            return call_gemma(messages, temperature, fallback_cpu=True)
+            
         print(f"Gemma error: {e}")
         traceback.print_exc()
-        return f"I'm having trouble connecting to the AI model. Please make sure Ollama is running with Gemma 4. Error: {str(e)}"
+        return f"I'm having trouble connecting to the AI model. Please make sure Ollama is running with Gemma 4. Error: {error_msg}"
 
 def detect_power_imbalance(text):
     """Detect power imbalance patterns in user's situation."""
