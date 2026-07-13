@@ -30,7 +30,7 @@ CORS(app)
 # stale cached JS/CSS causes "ghost" bugs after edits
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
-GEMMA_MODEL_PREFERRED = os.environ.get('GEMMA_MODEL', 'gemma4')
+GEMMA_MODEL = os.environ.get('GEMMA_MODEL', 'gemma4:12b')
 CHROMA_DIR = os.path.join(os.path.dirname(__file__), 'chroma_db')
 DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
 
@@ -349,6 +349,10 @@ def call_gemma(messages, temperature=0.7):
     total_chars = sum(len(m["content"]) for m in messages)
     print(f"[call_gemma] model={model} messages={len(messages)} chars={total_chars}")
     try:
+        options = {'temperature': temperature}
+        if fallback_cpu:
+            options['num_gpu'] = 0
+            
         response = ollama.chat(
             model=model,
             messages=messages,
@@ -359,6 +363,12 @@ def call_gemma(messages, temperature=0.7):
         )
         return response['message']['content']
     except Exception as e:
+        error_msg = str(e)
+        # If it's a CUDA crash or buffer overrun, try again forcing CPU mode
+        if not fallback_cpu and ("CUDA error" in error_msg or "exit status" in error_msg or "0xc0000409" in error_msg):
+            print(f"⚠️ GPU crash detected ({error_msg}). Retrying in CPU mode...")
+            return call_gemma(messages, temperature, fallback_cpu=True)
+            
         print(f"Gemma error: {e}")
         traceback.print_exc()
         raise
