@@ -1381,10 +1381,20 @@ async function generateDraft() {
   if (!currentDraftType) return;
   const def = DRAFT_TYPES[currentDraftType];
   const fields = {};
+  let allFilled = true;
   def.fields.forEach(([key, label]) => {
     const el = $(`draft-${key}`);
-    if (el && el.value.trim()) fields[label] = el.value.trim();
+    if (el && el.value.trim()) {
+      fields[label] = el.value.trim();
+    } else {
+      allFilled = false;
+    }
   });
+
+  if (!allFilled) {
+    alert("Please fill all options to generate the PDF/Document.");
+    return;
+  }
 
   const btn = $('draft-generate-btn');
   btn.disabled = true;
