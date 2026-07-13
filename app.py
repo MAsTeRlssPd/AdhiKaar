@@ -140,6 +140,25 @@ def retrieve_context(query, collection, n_results=3, max_chars=1200, threshold=1
         print(f"RAG retrieval error: {e}")
         return ""
 
+# ── Per-session uploaded document (chat RAG) ──
+UPLOADS_DIR = os.path.join(DATA_DIR, 'uploads')
+
+def doc_collection_name(session_id):
+    """A ChromaDB-safe, per-session collection name for the user's uploaded doc."""
+    safe = re.sub(r'[^a-zA-Z0-9]', '', session_id) or 'default'
+    return f"doc_{safe}"[:63]
+
+def chunk_text(text, size=700):
+    """Split text into ~700-char chunks for embedding."""
+    text = text.strip()
+    return [text[i:i + size] for i in range(0, len(text), size)] or [""]
+
+def load_doc_collection(session_id):
+    try:
+        return chroma_client.get_collection(doc_collection_name(session_id), embedding_function=ef)
+    except Exception:
+        return None
+
 KEYWORD_MAPPINGS = {
     # Labor
     "salary": "salary wages labor employment pay unpaid contract job PF ESI work seth malik office",
@@ -622,6 +641,14 @@ def chat():
         extra_rights = check_case_type_keywords(message)
         if extra_rights and extra_rights[:100] not in rag_context:
             rag_context += "\n" + extra_rights
+
+        # Ground answers in the user's uploaded document, if one is attached to this session
+        if session.get('doc'):
+            doc_col = load_doc_collection(session_id)
+            # threshold high: user explicitly attached this doc, always surface its top chunks
+            doc_context = retrieve_context(search_query, doc_col, n_results=4, max_chars=1600, threshold=999)
+            if doc_context:
+                rag_context += "\n\nFrom the user's uploaded document:\n" + doc_context
         
         # Detect power imbalance
         power_imbalances = detect_power_imbalance(message)
@@ -867,6 +894,94 @@ def translate_document():
         
         return jsonify({"response": response_text})
     
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/upload-document', methods=['POST'])
+def upload_document():
+    """Save + index an uploaded document for the session so chat can answer from it."""
+    try:
+        data = request.get_json(silent=True) or {}
+        text = (data.get('text') or '').strip()
+        filename = data.get('filename', 'document')
+        language = data.get('language', 'en')
+        session_id = data.get('session_id', str(uuid.uuid4()))
+
+        if not text:
+            return jsonify({"error": "No document text provided"}), 400
+
+        session = get_session(session_id)
+
+        # Save a local copy (offline record; git-ignored)
+        os.makedirs(UPLOADS_DIR, exist_ok=True)
+        safe_session = re.sub(r'[^a-zA-Z0-9_-]', '', session_id) or 'default'
+        with open(os.path.join(UPLOADS_DIR, f"{safe_session}.txt"), 'w', encoding='utf-8') as f:
+            f.write(text)
+
+        # (Re)build the per-session doc collection with fresh chunks
+        col_name = doc_collection_name(session_id)
+        try:
+            chroma_client.delete_collection(col_name)
+        except Exception:
+            pass
+        col = chroma_client.create_collection(col_name, embedding_function=ef)
+        chunks = chunk_text(text)
+        col.add(documents=chunks, ids=[f"chunk_{i}" for i in range(len(chunks))])
+
+        doc_id = str(uuid.uuid4())
+        session['doc'] = {'id': doc_id, 'filename': filename, 'chunks': len(chunks)}
+
+        # 2-3 line plain-language summary
+        summary = ""
+        try:
+            messages = [
+                {"role": "system", "content":
+                    "You are a legal expert. Summarize the following document in 2-3 short, "
+                    "plain-language lines so a citizen understands what it is about. Do not use emojis. "
+                    + get_language_instruction(language)},
+                {"role": "user", "content": text[:4000]}
+            ]
+            summary = call_gemma(messages, temperature=0.3).strip()
+        except Exception as e:
+            print(f"Doc summary error: {e}")
+
+        return jsonify({
+            "doc_id": doc_id,
+            "filename": filename,
+            "summary": summary,
+            "chunks": len(chunks)
+        })
+
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/clear-document', methods=['POST'])
+def clear_document():
+    """Drop the session's uploaded doc collection, state, and local file."""
+    try:
+        data = request.get_json(silent=True) or {}
+        session_id = data.get('session_id', '')
+
+        try:
+            chroma_client.delete_collection(doc_collection_name(session_id))
+        except Exception:
+            pass
+
+        if session_id in sessions:
+            sessions[session_id].pop('doc', None)
+
+        safe_session = re.sub(r'[^a-zA-Z0-9_-]', '', session_id) or 'default'
+        try:
+            os.remove(os.path.join(UPLOADS_DIR, f"{safe_session}.txt"))
+        except OSError:
+            pass
+
+        return jsonify({"ok": True})
+
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500

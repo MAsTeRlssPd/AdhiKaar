@@ -37,6 +37,7 @@ const state = {
   lastSituation: '',
   lastAdvice: '',
   autoSpeak: localStorage.getItem('adhikaar_autospeak') === '1',
+  attachedDoc: null,   // filename of the document attached to the current chat session
 };
 
 // Save session ID
@@ -282,6 +283,112 @@ async function sendMessage() {
   }
 }
 
+// ══════════════════════════════════════════════════════════════
+// Chat Document Attachment (RAG)
+// ══════════════════════════════════════════════════════════════
+
+// Opens the inline file picker (used by both chat + home paperclip buttons).
+function attachDocument() {
+  const picker = $('chat-doc-input');
+  if (picker) picker.click();
+}
+
+// Read text from a file: OCR images with Tesseract, read .txt/.pdf as text.
+async function extractDocText(file) {
+  const name = (file.name || '').toLowerCase();
+  if (name.endsWith('.txt') || file.type === 'text/plain') {
+    return await file.text();
+  }
+  if (name.endsWith('.pdf') || file.type === 'application/pdf') {
+    // Text-based PDFs read as text; scanned PDFs should use the Translate page.
+    return await file.text();
+  }
+  // Image → OCR (same engine/langs as the document page)
+  if (typeof Tesseract === 'undefined') {
+    throw new Error('OCR library is still loading. Please wait a moment and try again.');
+  }
+  const result = await Tesseract.recognize(file, 'eng+hin');
+  return result.data.text;
+}
+
+async function handleChatDocUpload(event) {
+  const file = event.target.files[0];
+  event.target.value = '';   // allow re-selecting the same file later
+  if (!file) return;
+
+  // Ensure the chat view (chip + bubbles) is visible
+  if (state.currentView !== 'chat') navigateTo('chat');
+  const welcome = $('chat-welcome');
+  if (welcome) welcome.style.display = 'none';
+
+  setDocChip('Reading ' + file.name + '\u2026', false);
+  showTyping();
+
+  try {
+    const text = await extractDocText(file);
+    if (!text || !text.trim()) throw new Error('No readable text found in the document.');
+
+    const data = await apiCall('/api/upload-document', {
+      method: 'POST',
+      body: JSON.stringify({
+        text: text,
+        filename: file.name,
+        language: state.language,
+        session_id: state.sessionId,
+      }),
+    });
+
+    hideTyping();
+    state.attachedDoc = data.filename || file.name;
+    setDocChip(state.attachedDoc, true);
+
+    const summary = (data.summary || '').trim();
+    addMessage('assistant',
+      '📎 **' + escapeHtml(state.attachedDoc) + '** attached.\n\n' +
+      (summary ? summary + '\n\n' : '') +
+      '_You can now ask me questions about this document._');
+  } catch (error) {
+    hideTyping();
+    console.error('Doc upload error:', error);
+    setDocChip('', false);
+    state.attachedDoc = null;
+    addMessage('assistant', '⚠️ Could not attach that document. ' + (error.message || 'Please try again.'));
+  }
+}
+
+// Renders the "attached" chip above the chat input.
+function setDocChip(label, attached) {
+  const chip = $('doc-chip');
+  if (!chip) return;
+  if (!label) {
+    chip.style.display = 'none';
+    chip.innerHTML = '';
+    return;
+  }
+  chip.style.display = 'flex';
+  if (attached) {
+    chip.innerHTML =
+      '<span>📎 ' + escapeHtml(label) + ' attached — ask me about it</span>' +
+      '<button class="doc-chip-x" onclick="removeAttachedDoc()" title="Remove document" aria-label="Remove document">×</button>';
+  } else {
+    chip.innerHTML = '<span>' + escapeHtml(label) + '</span>';
+  }
+}
+
+async function removeAttachedDoc() {
+  const sid = state.sessionId;
+  setDocChip('', false);
+  state.attachedDoc = null;
+  try {
+    await apiCall('/api/clear-document', {
+      method: 'POST',
+      body: JSON.stringify({ session_id: sid }),
+    });
+  } catch (e) {
+    console.error('Clear document failed:', e);
+  }
+}
+
 function addMessage(role, content, options = {}) {
   const container = $('chat-messages');
 
@@ -381,6 +488,8 @@ function hideTyping() {
 }
 
 function clearChat() {
+  if (state.attachedDoc) removeAttachedDoc();
+  setDocChip('', false);
   state.sessionId = generateId();
   localStorage.setItem('adhikaar_session', state.sessionId);
   localStorage.removeItem('adhikaar_active_case');
