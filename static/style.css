@@ -2929,3 +2929,157 @@ svg.inline-icon, .inline-icon { width: 16px; height: 16px; vertical-align: -2px;
   padding: 0 4px;
 }
 .doc-chip-x:hover { color: var(--danger); }
+
+/* ══════════════════════════════════════════════
+   LAW & NEXT STEPS VIEW
+   ══════════════════════════════════════════════ */
+
+.lawsteps-view {
+  padding: var(--space-xl);
+  overflow-y: auto;
+}
+
+.ls-setup {
+  max-width: 800px;
+  margin: 0 auto var(--space-xl);
+  width: 100%;
+}
+
+.ls-result {
+  max-width: 860px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.ls-loading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  justify-content: center;
+  padding: var(--space-xl);
+  color: var(--text-tertiary);
+  font-size: var(--font-size-sm);
+}
+
+/* Collapsible panel — native <details>, no JS toggle needed */
+.ls-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-md);
+  overflow: hidden;
+}
+
+.ls-panel > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: var(--space-md) var(--space-lg);
+  font-weight: 600;
+  color: var(--text);
+  list-style: none;
+  user-select: none;
+}
+
+.ls-panel > summary::-webkit-details-marker { display: none; }
+
+.ls-panel > summary::after {
+  content: '▾';
+  margin-left: auto;
+  color: var(--text-tertiary);
+  transition: transform 0.2s;
+}
+
+.ls-panel[open] > summary::after { transform: rotate(180deg); }
+.ls-panel > summary:hover { background: var(--primary-bg); }
+.ls-panel > summary svg { width: 18px; height: 18px; color: var(--primary); }
+
+.ls-panel-body {
+  padding: 0 var(--space-lg) var(--space-lg);
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-md);
+}
+
+.ls-ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.ls-ul > li { font-size: var(--font-size-sm); color: var(--text-secondary); line-height: 1.6; }
+.ls-empty { font-size: var(--font-size-sm); color: var(--text-tertiary); font-style: italic; }
+
+/* (b) Claim-level verification */
+.ls-verify {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 10px;
+  padding: 10px;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.ls-badge {
+  grid-row: 1 / span 2;
+  align-self: start;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ls-badge.ok { background: var(--success-bg); color: var(--success); }
+.ls-badge.warn { background: var(--warning-bg); color: #92400E; }
+
+.ls-claim { color: var(--text); font-weight: 500; }
+.ls-support { font-size: var(--font-size-xs); color: var(--text-tertiary); }
+
+/* (d) Stress test — both sides side by side */
+.ls-stress {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-md);
+}
+
+.ls-stress-col {
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.ls-stress-col h5 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  margin-bottom: var(--space-sm);
+}
+
+.ls-stress-col h5 svg { width: 15px; height: 15px; }
+.ls-for { border-left: 3px solid var(--success); }
+.ls-for h5 { color: var(--success); }
+.ls-against { border-left: 3px solid var(--danger); }
+.ls-against h5 { color: var(--danger); }
+.ls-weak { border-left: 3px solid var(--warning); }
+.ls-weak h5 { color: #92400E; }
+
+/* (e) Rights card — reuses .rights-card-preview, each right carries its source */
+.ls-rights { margin-bottom: 0; }
+
+.ls-rights .card-rights li {
+  display: flex;
+  flex-direction: column;
+  padding: 6px 0;
+}
+
+.ls-rc-src {
+  font-size: var(--font-size-xs);
+  opacity: 0.75;
+  padding-left: 1.4em;
+}
+
+.ls-panel-body .input-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+}
