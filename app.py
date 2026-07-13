@@ -96,6 +96,68 @@ IPC_BNS_DATA = load_json('ipc_bns_mapping.json', [])
 BNSS_CRPC_DATA = load_json('bnss_crpc_mapping.json', [])
 LEGAL_AID_DATA = load_json('legal_aid_directory.json', {'helplines': [], 'states': []})
 RIGHTS_DATA = load_json('rights_knowledge.json', {})
+EVIDENCE_CHECKLISTS = load_json('evidence_checklists.json', {'templates': []}).get('templates', [])
+
+
+def match_checklist(situation):
+    """Pick the evidence-checklist template that best fits a situation.
+
+    Deterministic keyword scoring — the documents and statutory deadlines in the
+    templates are human-reviewed, so grounding the model in a real template beats
+    letting it invent a document list.
+    """
+    if not situation:
+        return None
+    # Expand through the same multilingual synonym map chat/RAG already uses, so
+    # "salary not paid" reaches the "unpaid_wages" template and Hindi/Hinglish
+    # phrasing works too.
+    raw = situation.lower()
+    expanded = expand_query_multilingual(situation).lower()
+
+    def score_against(text, tpl):
+        def hit(term):
+            # Prefix match so "refusal" catches "refused", "eviction" catches "evicted".
+            return term in text or (len(term) >= 5 and term[:5] in text)
+
+        # The id names the case type — weight it double so "police refused to file
+        # my FIR" lands on fir_refusal, not the merely police-flavoured template.
+        id_terms = [t for t in tpl['id'].split('_') if len(t) >= 3]
+        other = set(tpl.get('category', '').lower().split()) | set(tpl.get('title', '').lower().split())
+        return (2 * sum(1 for t in id_terms if hit(t))
+                + sum(1 for t in other if len(t) > 3 and t not in id_terms and hit(t)))
+
+    # Rank on the expanded text (so Hinglish/synonyms match), but tie-break on the
+    # user's raw words. Expansion is deliberately broad and can drag in a sibling
+    # case type — e.g. expanding "police" injects "FIR", which ties a custodial
+    # complaint with fir_refusal. The raw text settles it.
+    ranked = sorted(
+        ((score_against(expanded, t), score_against(raw, t), t) for t in EVIDENCE_CHECKLISTS),
+        key=lambda r: (r[0], r[1]),
+        reverse=True,
+    )
+    if not ranked or ranked[0][0] < 3:
+        return None
+    # Still tied after the raw tie-break => genuinely ambiguous. Assert nothing
+    # rather than hand back a confidently wrong document list and deadlines.
+    if len(ranked) > 1 and (ranked[0][0], ranked[0][1]) == (ranked[1][0], ranked[1][1]):
+        return None
+    return ranked[0][2]
+
+
+def checklist_to_text(tpl):
+    """Flatten a checklist template into prompt/RAG-friendly text."""
+    lines = [f"Checklist: {tpl['title']} — {tpl.get('description', '')}"]
+    for d in tpl.get('documents', []):
+        lines.append(f"Document: {d['name']} — {d.get('why', '')} How to get: {d.get('how_to_get', '')}")
+    for i, s in enumerate(tpl.get('steps', []), 1):
+        lines.append(f"Step {i}: {s}")
+    for dl in tpl.get('deadlines', []):
+        lines.append(f"Deadline: {dl.get('what', '')} — {dl.get('timeframe', '')}")
+    for tip in tpl.get('tips', []):
+        lines.append(f"Tip: {tip}")
+    if tpl.get('helpline'):
+        lines.append(f"Helpline: {tpl['helpline']}")
+    return "\n".join(lines)
 
 # ══════════════════════════════════════════════════════════════
 # Initialize RAG (ChromaDB)
@@ -190,6 +252,26 @@ KEYWORD_MAPPINGS = {
     "pati": "domestic violence abuse husband wife cruelty dowry beating maar torture pati patni hinsa",
     "patni": "domestic violence abuse husband wife cruelty dowry beating maar torture pati patni hinsa",
     "hinsa": "domestic violence abuse husband wife cruelty dowry beating maar torture pati patni hinsa",
+    "husband": "domestic violence abuse husband wife cruelty dowry beating maar torture pati patni hinsa",
+    "wife": "domestic violence abuse husband wife cruelty dowry beating maar torture pati patni hinsa",
+    "beats": "domestic violence abuse husband wife cruelty dowry beating maar torture pati patni hinsa",
+    "beaten": "domestic violence abuse husband wife cruelty dowry beating maar torture pati patni hinsa",
+    "beating": "domestic violence abuse husband wife cruelty dowry beating maar torture pati patni hinsa",
+
+    # Workplace sexual harassment (POSH Act)
+    "harassment": "workplace sexual harassment POSH Act internal complaints committee ICC boss colleague office",
+    "harass": "workplace sexual harassment POSH Act internal complaints committee ICC boss colleague office",
+    "molest": "workplace sexual harassment POSH Act internal complaints committee ICC boss colleague office",
+    "touched": "workplace sexual harassment POSH Act internal complaints committee ICC boss colleague office",
+    "inappropriately": "workplace sexual harassment POSH Act internal complaints committee ICC boss colleague office",
+    "boss": "workplace sexual harassment POSH Act internal complaints committee ICC boss colleague office",
+
+    # Medical negligence
+    "doctor": "medical negligence hospital doctor surgery operation treatment consumer commission deficiency service",
+    "hospital": "medical negligence hospital doctor surgery operation treatment consumer commission deficiency service",
+    "surgery": "medical negligence hospital doctor surgery operation treatment consumer commission deficiency service",
+    "operated": "medical negligence hospital doctor surgery operation treatment consumer commission deficiency service",
+    "negligence": "medical negligence hospital doctor surgery operation treatment consumer commission deficiency service",
     "abuse": "domestic violence abuse husband wife cruelty dowry beating maar torture pati patni hinsa",
     "dahej": "domestic violence abuse husband wife cruelty dowry beating maar torture pati patni hinsa",
     "dowry": "domestic violence abuse husband wife cruelty dowry beating maar torture pati patni hinsa",
@@ -517,19 +599,26 @@ def get_language_instruction(lang):
     """Get language-specific instruction."""
     return LANGUAGE_INSTRUCTIONS.get(lang, LANGUAGE_INSTRUCTIONS['en'])
 
-def call_gemma(messages, temperature=0.7, fallback_cpu=False):
-    """Call the working LLM model via Ollama (auto-detected at first call)."""
+def call_gemma(messages, temperature=0.7, fallback_cpu=False, num_ctx=2048):
+    """Call the working LLM model via Ollama (auto-detected at first call).
+
+    num_ctx is shared between the prompt AND the generation. The 2048 default keeps
+    us clear of the GGML_SCHED_MAX_SPLIT_INPUTS crash, but a long prompt that asks
+    for a large structured answer will silently run out of room and return
+    truncated (unparseable) output — callers that need a big JSON back should raise
+    this. GPU crashes still fall back to CPU below.
+    """
     model = get_working_model()
     total_chars = sum(len(m["content"]) for m in messages)
-    print(f"[call_gemma] model={model} messages={len(messages)} chars={total_chars}")
+    print(f"[call_gemma] model={model} messages={len(messages)} chars={total_chars} num_ctx={num_ctx}")
     try:
         options = {
             'temperature': temperature,
-            'num_ctx': 2048,   # keep context window small to avoid GGML_SCHED_MAX_SPLIT_INPUTS crash
+            'num_ctx': num_ctx,
         }
         if fallback_cpu:
             options['num_gpu'] = 0
-            
+
         response = ollama.chat(
             model=model,
             messages=messages,
@@ -541,8 +630,8 @@ def call_gemma(messages, temperature=0.7, fallback_cpu=False):
         # If it's a CUDA crash or buffer overrun, try again forcing CPU mode
         if not fallback_cpu and ("CUDA error" in error_msg or "exit status" in error_msg or "0xc0000409" in error_msg):
             print(f"⚠️ GPU crash detected ({error_msg}). Retrying in CPU mode...")
-            return call_gemma(messages, temperature, fallback_cpu=True)
-            
+            return call_gemma(messages, temperature, fallback_cpu=True, num_ctx=num_ctx)
+
         print(f"Gemma error: {e}")
         traceback.print_exc()
         raise
@@ -1029,21 +1118,47 @@ def rights_checklist():
         rag_context = ""
         if rights_collection:
             rag_context = retrieve_context(situation, rights_collection, n_results=5)
-        
+
+        # Ground the model in a human-reviewed evidence checklist when one fits,
+        # so the document list and statutory deadlines are real, not invented.
+        template = match_checklist(situation)
+        if template:
+            rag_context += "\n\nReviewed evidence checklist for this kind of case:\n" + checklist_to_text(template)
+
         system_prompt = CHECKLIST_PROMPT.format(
             language_instruction=get_language_instruction(language),
             rag_context=rag_context
         )
-        
+
         messages = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": f"Generate a comprehensive rights checklist for this situation:\n\n{situation}"}
         ]
-        
+
         response_text = call_gemma(messages, temperature=0.5)
-        
-        return jsonify({"response": response_text})
+
+        return jsonify({"response": response_text, "template": template})
     
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/evidence-checklists', methods=['GET'])
+def evidence_checklists():
+    """Browse the reviewed evidence checklists. ?id=<template_id> returns one in full."""
+    try:
+        tpl_id = request.args.get('id', '').strip()
+        if tpl_id:
+            tpl = next((t for t in EVIDENCE_CHECKLISTS if t['id'] == tpl_id), None)
+            if not tpl:
+                return jsonify({"error": "No such checklist"}), 404
+            return jsonify({"template": tpl})
+
+        return jsonify({"templates": [
+            {k: t[k] for k in ('id', 'title', 'title_hi', 'category', 'description') if k in t}
+            for t in EVIDENCE_CHECKLISTS
+        ]})
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
@@ -1256,7 +1371,9 @@ def law_and_steps():
             {"role": "user", "content": f"Situation:\n{situation}\n\nProduce the verified JSON analysis."}
         ]
 
-        response_text = call_gemma(messages, temperature=0.3)
+        # Six panels of JSON do not fit in the 2048 default alongside this prompt —
+        # the model gets cut off mid-array and every panel silently comes back empty.
+        response_text = call_gemma(messages, temperature=0.3, num_ctx=8192)
 
         # Parse JSON (handle markdown code fences, same approach as rights-card)
         json_text = response_text
