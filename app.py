@@ -82,6 +82,7 @@ def load_json(filename, fallback):
         return fallback
 
 IPC_BNS_DATA = load_json('ipc_bns_mapping.json', [])
+BNSS_CRPC_DATA = load_json('bnss_crpc_mapping.json', [])
 LEGAL_AID_DATA = load_json('legal_aid_directory.json', {'helplines': [], 'states': []})
 RIGHTS_DATA = load_json('rights_knowledge.json', {})
 
@@ -549,6 +550,37 @@ def bns_convert():
             "ai_explanation": ai_explanation
         })
     
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/crpc-convert', methods=['POST'])
+def crpc_convert():
+    """CrPC ↔ BNSS section converter."""
+    try:
+        data = request.get_json(silent=True) or {}
+        query = data.get('query', '').strip()
+        direction = data.get('direction', 'crpc_to_bnss')  # or 'bnss_to_crpc'
+
+        if not query:
+            return jsonify({"results": [], "ai_explanation": ""})
+
+        src = 'crpc_section' if direction == 'crpc_to_bnss' else 'bnss_section'
+        query_lower = query.lower()
+
+        results = [e for e in BNSS_CRPC_DATA if query_lower == e.get(src, '').lower()]
+
+        ai_explanation = ""
+        if results:
+            messages = [
+                {"role": "system", "content": "You are a legal expert on Indian criminal procedure. Explain the CrPC (1973) to BNSS (2023) conversion briefly and clearly. Highlight any important procedural changes in the new law. Do not use emojis."},
+                {"role": "user", "content": f"User searched for: '{query}'. Found matches: {json.dumps(results[:3], ensure_ascii=False)}. Explain the conversion briefly in simple paragraphs."}
+            ]
+            ai_explanation = call_gemma(messages, temperature=0.5)
+
+        return jsonify({"results": results[:10], "ai_explanation": ai_explanation})
+
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
