@@ -32,8 +32,11 @@ const state = {
   recognition: null,
   bnsDirection: 'ipc_to_bns',
   bnsSearchTimeout: null,
+  crpcDirection: 'crpc_to_bnss',
+  crpcSearchTimeout: null,
   lastSituation: '',
   lastAdvice: '',
+  autoSpeak: localStorage.getItem('adhikaar_autospeak') === '1',
 };
 
 // Save session ID
@@ -323,13 +326,21 @@ function addMessage(role, content, options = {}) {
     metaDiv.className = 'message-meta';
     const timeSpan = document.createElement('span');
     timeSpan.textContent = formatTime(new Date());
+    const listenBtn = document.createElement('button');
+    listenBtn.className = 'copy-btn';
+    listenBtn.innerHTML = '<i data-lucide="volume-2"></i> Listen';
+    listenBtn.onclick = () => toggleSpeak(listenBtn, content);
     const copyBtn = document.createElement('button');
     copyBtn.className = 'copy-btn';
     copyBtn.innerHTML = '<i data-lucide="copy"></i> Copy';
     copyBtn.onclick = () => copyMessageText(copyBtn, content);
     metaDiv.appendChild(timeSpan);
+    metaDiv.appendChild(listenBtn);
     metaDiv.appendChild(copyBtn);
     contentDiv.appendChild(metaDiv);
+
+    // Auto-read the answer aloud if the user enabled it
+    if (state.autoSpeak) toggleSpeak(listenBtn, content);
   } else {
     contentDiv.textContent = content;
   }
@@ -599,86 +610,228 @@ async function shareRightsCard() {
 }
 
 // ══════════════════════════════════════════════════════════════
-// Voice Input (Web Speech API)
+// Voice Input (Web Speech API) — single shared dictation engine
 // ══════════════════════════════════════════════════════════════
+//
+// NOTE: The browser Web Speech API sends microphone audio to the
+// browser vendor's cloud (e.g. Google) for transcription. It is NOT
+// on-device and needs an internet connection. For a fully-local,
+// private pipeline, transcription should move to a backend Whisper/
+// Vosk endpoint — tracked separately.
 
-function initVoice() {
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) {
-    console.log('Speech Recognition not supported');
-    return;
-  }
+let activeRecognition = null;     // the one recognizer currently running
+let dictationTimer = null;        // safety auto-stop timer
 
-  state.recognition = new SpeechRecognition();
-  state.recognition.interimResults = true;
-  state.recognition.continuous = false;
+// Browser speech recognition is only dependable for these in practice.
+// Others (Tamil, Telugu, Bengali, Marathi, Gujarati, Kannada, Malayalam,
+// Punjabi) are hit-or-miss — we warn the user once rather than fail silently.
+const RELIABLE_STT_LANGS = ['en', 'hi', 'hinglish'];
+const warnedSttLangs = new Set();
 
-  state.recognition.onresult = (event) => {
-    const transcript = Array.from(event.results)
-      .map(r => r[0].transcript)
-      .join('');
-
-    $('chat-input').value = transcript;
-    autoResizeTextarea($('chat-input'));
-  };
-
-  state.recognition.onend = () => {
-    state.isRecording = false;
-    $('voice-btn').classList.remove('recording');
-    setVoiceBtnIcon('mic');
-
-    // Auto-send if we got text
-    const input = $('chat-input');
-    if (input.value.trim()) {
-      sendMessage();
-    }
-  };
-
-  state.recognition.onerror = (event) => {
-    console.error('Speech recognition error:', event.error);
-    state.isRecording = false;
-    $('voice-btn').classList.remove('recording');
-    setVoiceBtnIcon('mic');
-  };
+function getSpeechRecognition() {
+  return window.SpeechRecognition || window.webkitSpeechRecognition || null;
 }
 
-function toggleVoice() {
-  if (!state.recognition) {
-    initVoice();
-    if (!state.recognition) {
-      alert('Voice input is not supported in your browser. Please use Chrome or Edge.');
-      return;
+// Persistent "Listening…" pill (kiosk has its own; this is for chat/home/quick-ask)
+function setListeningIndicator(on) {
+  let el = document.getElementById('listening-indicator');
+  if (on) {
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'listening-indicator';
+      el.style.cssText = [
+        'position:fixed', 'left:50%', 'bottom:150px', 'transform:translateX(-50%)',
+        'background:#dc2626', 'color:#fff', 'padding:8px 16px', 'border-radius:999px',
+        'font-size:14px', 'z-index:9998', 'display:flex', 'align-items:center', 'gap:8px',
+        'box-shadow:0 4px 16px rgba(0,0,0,.2)'
+      ].join(';');
+      el.innerHTML = '<span style="width:10px;height:10px;border-radius:50%;background:#fff"></span> Listening… tap the mic to stop';
+      document.body.appendChild(el);
     }
-  }
-
-  if (state.isRecording) {
-    state.recognition.stop();
-    state.isRecording = false;
-    $('voice-btn').classList.remove('recording');
-    setVoiceBtnIcon('mic');
-  } else {
-    // Set language for recognition
-    const lang = LANGUAGES.find(l => l.code === state.language);
-    state.recognition.lang = lang ? lang.speechCode : 'en-IN';
-
-    state.recognition.start();
-    state.isRecording = true;
-    $('voice-btn').classList.add('recording');
-    setVoiceBtnIcon('square');
+    el.style.display = 'flex';
+  } else if (el) {
+    el.style.display = 'none';
   }
 }
 
-function setVoiceBtnIcon(icon) {
-  const btn = $('voice-btn');
+// Human-readable, language-agnostic error hints
+function voiceErrorMessage(err) {
+  switch (err) {
+    case 'not-allowed':
+    case 'service-not-allowed':
+      return 'Microphone is blocked. Please allow mic access in your browser and try again.';
+    case 'no-speech':
+      return "I didn't catch that — tap the mic and speak again.";
+    case 'audio-capture':
+      return 'No microphone found. Please connect a microphone and try again.';
+    case 'network':
+      return 'Voice typing needs an internet connection right now. You can type instead.';
+    default:
+      return 'Voice input stopped. Please try again, or type your message.';
+  }
+}
+
+// Lightweight, self-contained toast (no CSS dependency)
+function showToast(msg) {
+  let toast = document.getElementById('voice-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'voice-toast';
+    toast.style.cssText = [
+      'position:fixed', 'left:50%', 'bottom:96px', 'transform:translateX(-50%)',
+      'background:#1f2937', 'color:#fff', 'padding:12px 18px', 'border-radius:12px',
+      'font-size:15px', 'max-width:90vw', 'z-index:9999', 'box-shadow:0 6px 24px rgba(0,0,0,.25)',
+      'text-align:center', 'transition:opacity .3s', 'opacity:0'
+    ].join(';');
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  requestAnimationFrame(() => { toast.style.opacity = '1'; });
+  clearTimeout(toast._hideTimer);
+  toast._hideTimer = setTimeout(() => { toast.style.opacity = '0'; }, 4000);
+}
+
+function setMicIcon(btn, icon) {
   if (btn) {
     btn.innerHTML = `<i data-lucide="${icon}"></i>`;
     refreshIcons();
   }
 }
 
+/**
+ * Start voice dictation into a target input/textarea.
+ *  - Appends to existing text (never overwrites what the user typed).
+ *  - continuous: does NOT cut off on natural pauses; user taps mic to stop.
+ *  - Never auto-sends: the caller decides what to do via opts.onStop.
+ *  - Cancels any speaking TTS first so the mic doesn't hear it.
+ * Returns the recognition object, or null if it couldn't start.
+ */
+function startDictation(targetEl, micBtn, opts = {}) {
+  const SR = getSpeechRecognition();
+  if (!SR) {
+    showToast('Voice input needs Chrome or Edge.');
+    return null;
+  }
+  if (!targetEl) return null;
+
+  // Stop TTS + any recognizer already running (prevents overlap/feedback loops)
+  window.speechSynthesis?.cancel();
+  if (activeRecognition) { try { activeRecognition.stop(); } catch (e) {} activeRecognition = null; }
+
+  const rec = new SR();
+  rec.lang = speechLang();
+  rec.interimResults = true;
+  rec.continuous = true;   // don't cut off slow / hesitant speakers
+
+  const baseText = targetEl.value && targetEl.value.trim() ? targetEl.value.trim() + ' ' : '';
+
+  // One-time heads-up if this language is unreliable for browser speech input
+  if (!RELIABLE_STT_LANGS.includes(state.language) && !warnedSttLangs.has(state.language)) {
+    warnedSttLangs.add(state.language);
+    showToast('Voice typing for this language may be limited in your browser. If it struggles, please type instead.');
+  }
+
+  micBtn?.classList.add('recording', 'listening');
+  setMicIcon(micBtn, 'square');
+  setListeningIndicator(true);
+
+  const stopUI = () => {
+    micBtn?.classList.remove('recording', 'listening');
+    setMicIcon(micBtn, 'mic');
+    setListeningIndicator(false);
+    clearTimeout(dictationTimer);
+    if (activeRecognition === rec) activeRecognition = null;
+  };
+
+  rec.onresult = (event) => {
+    let finalText = '', interim = '';
+    for (let i = 0; i < event.results.length; i++) {
+      const res = event.results[i];
+      if (res.isFinal) finalText += res[0].transcript;
+      else interim += res[0].transcript;
+    }
+    let spoken = finalText + interim;
+    // Hinglish is recognised as Hindi (Devanagari) — convert to Roman so it
+    // matches how Hinglish is typed.
+    if (state.language === 'hinglish') spoken = transliterateHiToLatin(spoken);
+    targetEl.value = baseText + spoken;
+    if (targetEl.tagName === 'TEXTAREA' && typeof autoResizeTextarea === 'function') {
+      autoResizeTextarea(targetEl);
+    }
+  };
+
+  rec.onend = () => {
+    stopUI();
+    if (opts.onStop) opts.onStop(targetEl.value.trim());
+  };
+
+  rec.onerror = (event) => {
+    stopUI();
+    // 'aborted' happens on normal manual stop — don't nag the user about it
+    if (event.error && event.error !== 'aborted') {
+      showToast(voiceErrorMessage(event.error));
+    }
+  };
+
+  try {
+    rec.start();
+  } catch (e) {
+    stopUI();
+    showToast('Could not start voice input. Please try again.');
+    return null;
+  }
+
+  activeRecognition = rec;
+  // Safety net: auto-stop after 60s so the mic button never sticks on
+  dictationTimer = setTimeout(() => { try { rec.stop(); } catch (e) {} }, 60000);
+  return rec;
+}
+
+function stopDictation() {
+  if (activeRecognition) { try { activeRecognition.stop(); } catch (e) {} }
+}
+
+// Feature-detect once on load; pre-warm TTS voices; hide mic buttons if unsupported.
+function initVoice() {
+  loadVoices();
+  if (window.speechSynthesis) {
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+  }
+  if (!getSpeechRecognition()) {
+    document.querySelectorAll('#voice-btn, #home-chat-mic, #global-ask-mic, #kiosk-mic-btn')
+      .forEach(b => { if (b) b.style.display = 'none'; });
+    console.log('Speech Recognition not supported — mic buttons hidden.');
+  }
+  updateAutoSpeakBtn();
+}
+
+// Chat mic: tap to start (review before sending), tap again to stop without sending.
+function toggleVoice() {
+  if (activeRecognition) { stopDictation(); return; }
+  const input = $('chat-input');
+  startDictation(input, $('voice-btn'), {
+    onStop: () => { if (input) input.focus(); }   // user reviews, then presses send
+  });
+}
+
 // ══════════════════════════════════════════════════════════════
 // BNS Converter
 // ══════════════════════════════════════════════════════════════
+
+// Open the merged converter view on a given code tab (from home cards)
+function openConverter(code) {
+  navigateTo('bns');
+  setConverterCode(code || 'ipc_bns');
+}
+
+// Switch between IPC↔BNS and CrPC↔BNSS panels inside the converter view
+function setConverterCode(code) {
+  const isCrpc = code === 'crpc_bnss';
+  $('code-ipc-bns').classList.toggle('active', !isCrpc);
+  $('code-crpc-bnss').classList.toggle('active', isCrpc);
+  $('panel-ipc-bns').style.display = isCrpc ? 'none' : 'block';
+  $('panel-crpc-bnss').style.display = isCrpc ? 'block' : 'none';
+}
 
 function setBnsDirection(direction) {
   state.bnsDirection = direction;
@@ -736,6 +889,75 @@ async function doSearchBns() {
       `).join('');
     } else {
       resultsContainer.innerHTML = '<div class="empty-state"><div class="empty-icon">🤷</div><p>No exact matches found. Try a different section number or offence name.</p></div>';
+    }
+
+    if (data.ai_explanation) {
+      aiContainer.innerHTML = `
+        <div class="ai-explanation">
+          <h4>🤖 AI Explanation</h4>
+          <div class="explanation-text markdown-body">${renderMarkdown(data.ai_explanation)}</div>
+        </div>
+      `;
+    }
+  } catch (error) {
+    resultsContainer.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><p>Could not search. Please check if the server is running.</p></div>';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// CrPC ↔ BNSS Converter
+// ══════════════════════════════════════════════════════════════
+
+function setCrpcDirection(direction) {
+  state.crpcDirection = direction;
+  $('toggle-crpc-bnss').classList.toggle('active', direction === 'crpc_to_bnss');
+  $('toggle-bnss-crpc').classList.toggle('active', direction === 'bnss_to_crpc');
+  searchCrpc();
+}
+
+function searchCrpc() {
+  clearTimeout(state.crpcSearchTimeout);
+  state.crpcSearchTimeout = setTimeout(doSearchCrpc, 400);
+}
+
+async function doSearchCrpc() {
+  const query = $('crpc-search').value.trim();
+  const resultsContainer = $('crpc-results');
+  const aiContainer = $('crpc-ai-explanation');
+
+  if (!query) {
+    resultsContainer.innerHTML = '<div class="empty-state"><div class="empty-icon">🔍</div><p>Type a section number to search</p></div>';
+    aiContainer.innerHTML = '';
+    return;
+  }
+
+  resultsContainer.innerHTML = '<div class="loading"><div class="spinner"></div><span>Searching...</span></div>';
+  aiContainer.innerHTML = '';
+
+  try {
+    const data = await apiCall('/api/crpc-convert', {
+      method: 'POST',
+      body: JSON.stringify({ query: query, direction: state.crpcDirection }),
+    });
+
+    if (data.results && data.results.length > 0) {
+      resultsContainer.innerHTML = data.results.map(r => `
+        <div class="result-card">
+          <div class="section-mapping">
+            <span class="section-badge ipc">CrPC ${escapeHtml(r.crpc_section)}</span>
+            <span class="section-arrow">→</span>
+            <span class="section-badge bns">BNSS ${escapeHtml(r.bnss_section)}</span>
+          </div>
+          <div class="offence-name">${escapeHtml(r.offence)}</div>
+          <div class="description">${escapeHtml(r.description).slice(0, 220)}${r.description.length > 220 ? '...' : ''}</div>
+          <div class="key-changes">
+            <strong>⚡ Key Changes:</strong> ${escapeHtml(r.key_changes)}
+          </div>
+          <div class="punishment">📂 ${escapeHtml(r.category)}</div>
+        </div>
+      `).join('');
+    } else {
+      resultsContainer.innerHTML = '<div class="empty-state"><div class="empty-icon">🤷</div><p>No exact match found. Try another section number (e.g., 144, 154, 438).</p></div>';
     }
 
     if (data.ai_explanation) {
@@ -1444,10 +1666,20 @@ async function generateDraft() {
   if (!currentDraftType) return;
   const def = DRAFT_TYPES[currentDraftType];
   const fields = {};
+  let allFilled = true;
   def.fields.forEach(([key, label]) => {
     const el = $(`draft-${key}`);
-    if (el && el.value.trim()) fields[label] = el.value.trim();
+    if (el && el.value.trim()) {
+      fields[label] = el.value.trim();
+    } else {
+      allFilled = false;
+    }
   });
+
+  if (!allFilled) {
+    alert("Please fill all options to generate the PDF/Document.");
+    return;
+  }
 
   const btn = $('draft-generate-btn');
   btn.disabled = true;
@@ -1534,25 +1766,14 @@ function prefillCourtroom() {
 async function startCourtroom() {
   const situation = $('courtroom-situation').value.trim();
   if (!situation) { alert('Please describe your case first.'); return; }
-  courtroom.round = 0;
   courtroom.situation = situation;
-  courtroom.history = '';
   $('courtroom-rounds').innerHTML = '';
   $('courtroom-setup').style.display = 'none';
   $('courtroom-stage').style.display = 'block';
-  nextCourtRound();
-}
-
-async function nextCourtRound() {
-  if (courtroom.round >= 3) return;
-  courtroom.round += 1;
-  const btn = $('courtroom-next-btn');
-  btn.disabled = true;
-  btn.textContent = `Round ${courtroom.round} in session…`;
 
   const roundDiv = document.createElement('div');
   roundDiv.className = 'court-round';
-  roundDiv.innerHTML = `<div class="court-round-label">Round ${courtroom.round} of 3${courtroom.round === 3 ? ' — closing & verdict' : ''}</div>
+  roundDiv.innerHTML = `<div class="court-round-label">Hearing in Session</div>
     <div class="court-loading"><div class="typing-dots"><span></span><span></span><span></span></div> The court is deliberating…</div>`;
   $('courtroom-rounds').appendChild(roundDiv);
   roundDiv.scrollIntoView({ behavior: 'smooth' });
@@ -1562,34 +1783,30 @@ async function nextCourtRound() {
       method: 'POST',
       body: JSON.stringify({
         situation: courtroom.situation,
-        round: courtroom.round,
-        history: courtroom.history,
         language: state.language,
       }),
     });
-    const r = data.roles;
-    courtroom.history += `\n--- Round ${courtroom.round} ---\n${data.raw}`;
+    
     roundDiv.querySelector('.court-loading').remove();
-    roundDiv.innerHTML += `
-      ${r.your_lawyer ? courtBubble('your-lawyer', 'shield', 'Your Lawyer', r.your_lawyer) : ''}
-      ${r.opposing_lawyer ? courtBubble('opposing', 'swords', 'Opposing Lawyer', r.opposing_lawyer) : ''}
-      ${r.judge ? courtBubble('judge', 'gavel', courtroom.round === 3 ? 'Judge — Assessment' : 'Judge', r.judge) : ''}`;
+    
+    let html = '';
+    if (data.messages && data.messages.length > 0) {
+      data.messages.forEach(msg => {
+        if (msg.role === 'YOUR_LAWYER') {
+          html += courtBubble('your-lawyer', 'shield', 'Your Lawyer', msg.text);
+        } else if (msg.role === 'OPPOSING_LAWYER') {
+          html += courtBubble('opposing', 'swords', 'Opposing Lawyer', msg.text);
+        } else if (msg.role === 'NEXT_STEPS') {
+          html += courtBubble('judge', 'clipboard-list', 'Next Steps', msg.text);
+        }
+      });
+    }
+    
+    roundDiv.innerHTML += html;
     refreshIcons();
   } catch (e) {
     let hint = e.message || 'Unknown error';
-    if (hint.includes('404')) hint = 'The server is running OLD code (404). Stop it with Ctrl+C and run "python app.py" again.';
-    else if (hint.includes('500')) hint = 'The server hit an error (500) — look at the python terminal for the traceback.';
-    else if (hint.includes('Failed to fetch')) hint = 'Could not reach the server at all — is "python app.py" running?';
-    roundDiv.querySelector('.court-loading').innerHTML = `⚠️ ${escapeHtml(hint)} Then press Next Round to retry.`;
-    courtroom.round -= 1;
-  } finally {
-    if (courtroom.round >= 3) {
-      btn.style.display = 'none';
-    } else {
-      btn.disabled = false;
-      btn.textContent = 'Next Round';
-      btn.style.display = '';
-    }
+    roundDiv.querySelector('.court-loading').innerHTML = `⚠️ ${escapeHtml(hint)} Try again.`;
   }
 }
 
@@ -1601,15 +1818,9 @@ function courtBubble(cls, icon, name, text) {
 }
 
 function resetCourtroom() {
-  courtroom.round = 0;
-  courtroom.history = '';
   $('courtroom-rounds').innerHTML = '';
   $('courtroom-setup').style.display = 'block';
   $('courtroom-stage').style.display = 'none';
-  const btn = $('courtroom-next-btn');
-  btn.style.display = '';
-  btn.disabled = false;
-  btn.textContent = 'Next Round';
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1654,19 +1865,123 @@ function stripForSpeech(text) {
     .trim();
 }
 
-function speak(text) {
-  if (!window.speechSynthesis) return;
+// getVoices() populates asynchronously — cache it and refresh on 'voiceschanged'.
+let ttsVoices = [];
+function loadVoices() {
+  ttsVoices = window.speechSynthesis ? (window.speechSynthesis.getVoices() || []) : [];
+}
+
+// Find the best available voice for a BCP-47 code (exact match, then base language).
+function pickVoice(langCode) {
+  if (!ttsVoices.length) loadVoices();
+  if (!ttsVoices.length) return null;
+  const lc = langCode.toLowerCase();
+  const base = lc.split('-')[0];
+  return ttsVoices.find(v => v.lang && v.lang.toLowerCase() === lc)
+      || ttsVoices.find(v => v.lang && v.lang.toLowerCase().startsWith(base))
+      || null;
+}
+
+function speak(text, opts = {}) {
+  if (!window.speechSynthesis) { opts.onDone && opts.onDone(); return false; }
   window.speechSynthesis.cancel();
   const clean = stripForSpeech(text);
-  // Chunk long text so speechSynthesis doesn't cut off
-  const chunks = clean.match(/[^.।!?]+[.।!?]?/g) || [clean];
-  chunks.forEach(chunk => {
-    if (!chunk.trim()) return;
+  if (!clean) { opts.onDone && opts.onDone(); return false; }
+
+  const lang = speechLang();
+  const voice = pickVoice(lang);
+  // If the OS has no voice for this language, warn — and (when the user
+  // pressed Listen) tell them, instead of failing silently.
+  if (!voice) {
+    console.warn(`[tts] No installed voice for "${lang}". Speech may be silent or use a default voice.`);
+    if (opts.notify) {
+      showToast("Audio isn't available for this language on your device — showing the text instead.");
+    }
+  }
+
+  // Chunk long text so speechSynthesis doesn't cut off mid-answer
+  const chunks = (clean.match(/[^.।!?]+[.।!?]?/g) || [clean]).filter(c => c.trim());
+  if (!chunks.length) { opts.onDone && opts.onDone(); return false; }
+  chunks.forEach((chunk, idx) => {
     const u = new SpeechSynthesisUtterance(chunk.trim());
-    u.lang = speechLang();
+    u.lang = lang;
+    if (voice) u.voice = voice;
     u.rate = 0.95;
+    if (idx === chunks.length - 1 && opts.onDone) u.onend = opts.onDone;
     window.speechSynthesis.speak(u);
   });
+  return true;
+}
+
+// ── Listen / Stop control for chat answers ──
+let activeSpeakBtn = null;
+
+function toggleSpeak(btn, text) {
+  // Tapping the button that's currently speaking stops it
+  if (activeSpeakBtn === btn) { stopSpeaking(); return; }
+  stopSpeaking();   // stop any other answer being read
+  const started = speak(text, { notify: true, onDone: resetSpeakBtn });
+  if (started && btn) {
+    activeSpeakBtn = btn;
+    btn.innerHTML = '<i data-lucide="square"></i> Stop';
+    refreshIcons();
+  }
+}
+
+function stopSpeaking() {
+  window.speechSynthesis?.cancel();
+  resetSpeakBtn();
+}
+
+function resetSpeakBtn() {
+  if (activeSpeakBtn) {
+    activeSpeakBtn.innerHTML = '<i data-lucide="volume-2"></i> Listen';
+    activeSpeakBtn = null;
+    refreshIcons();
+  }
+}
+
+// ── Auto-read-every-answer toggle ──
+function toggleAutoSpeak() {
+  state.autoSpeak = !state.autoSpeak;
+  localStorage.setItem('adhikaar_autospeak', state.autoSpeak ? '1' : '0');
+  updateAutoSpeakBtn();
+  if (!state.autoSpeak) stopSpeaking();
+  showToast(state.autoSpeak ? 'Answers will now be read aloud automatically.' : 'Auto-read turned off.');
+}
+
+function updateAutoSpeakBtn() {
+  const btn = $('autospeak-btn');
+  if (!btn) return;
+  btn.classList.toggle('active', !!state.autoSpeak);
+  btn.title = state.autoSpeak ? 'Auto-read answers: ON' : 'Auto-read answers: OFF';
+}
+
+// ── Approximate Devanagari → Latin transliteration (for Hinglish voice) ──
+function transliterateHiToLatin(str) {
+  if (!str) return str;
+  const V = { 'अ':'a','आ':'aa','इ':'i','ई':'ee','उ':'u','ऊ':'oo','ऋ':'ri','ए':'e','ऐ':'ai','ओ':'o','औ':'au','ं':'n','ः':'h','ँ':'n' };
+  const M = { 'ा':'aa','ि':'i','ी':'ee','ु':'u','ू':'oo','ृ':'ri','े':'e','ै':'ai','ो':'o','ौ':'au','्':'' };
+  const C = { 'क':'k','ख':'kh','ग':'g','घ':'gh','ङ':'ng','च':'ch','छ':'chh','ज':'j','झ':'jh','ञ':'ny','ट':'t','ठ':'th','ड':'d','ढ':'dh','ण':'n','त':'t','थ':'th','द':'d','ध':'dh','न':'n','प':'p','फ':'ph','ब':'b','भ':'bh','म':'m','य':'y','र':'r','ल':'l','व':'v','श':'sh','ष':'sh','स':'s','ह':'h','ड़':'r','ढ़':'rh','फ़':'f','ज़':'z','ख़':'kh','ग़':'g','क़':'q' };
+  const chars = Array.from(str);
+  let out = '';
+  for (let i = 0; i < chars.length; i++) {
+    const ch = chars[i];
+    if (C[ch] !== undefined) {
+      out += C[ch];
+      const next = chars[i + 1];
+      if (M[next] !== undefined) { out += M[next]; i++; }      // matra follows
+      else if (next === '्') { i++; }                          // halant: no inherent vowel
+      else { out += 'a'; }                                     // inherent 'a'
+    } else if (V[ch] !== undefined) {
+      out += V[ch];
+    } else if (M[ch] !== undefined) {
+      out += M[ch];
+    } else {
+      out += ch;   // spaces, digits, punctuation, Latin pass through
+    }
+  }
+  return out;
 }
 
 function kioskRepeat() {
@@ -1745,22 +2060,9 @@ function homeChatAsk(text) {
 }
 
 function homeChatVoice() {
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) { alert('Voice input needs Chrome or Edge.'); return; }
-  const rec = new SpeechRecognition();
-  rec.lang = speechLang();
-  rec.interimResults = true;
-  const micBtn = $('home-chat-mic');
-  micBtn.classList.add('listening');
-  rec.onresult = (e) => {
-    $('home-chat-input').value = Array.from(e.results).map(r => r[0].transcript).join('');
-  };
-  rec.onend = () => {
-    micBtn.classList.remove('listening');
-    if ($('home-chat-input').value.trim()) homeChatSend();
-  };
-  rec.onerror = () => micBtn.classList.remove('listening');
-  rec.start();
+  if (activeRecognition) { stopDictation(); return; }
+  const input = $('home-chat-input');
+  startDictation(input, $('home-chat-mic'), { onStop: () => { if (input) input.focus(); } });
 }
 
 // The home input is a doorway into the real chatbot: it navigates to the
@@ -1794,22 +2096,9 @@ function quickAskSend() {
 }
 
 function quickAskVoice() {
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) { alert('Voice input needs Chrome or Edge.'); return; }
-  const rec = new SpeechRecognition();
-  rec.lang = speechLang();
-  rec.interimResults = true;
-  const micBtn = $('global-ask-mic');
-  micBtn.classList.add('listening');
-  rec.onresult = (e) => {
-    $('global-ask-input').value = Array.from(e.results).map(r => r[0].transcript).join('');
-  };
-  rec.onend = () => {
-    micBtn.classList.remove('listening');
-    if ($('global-ask-input').value.trim()) quickAskSend();
-  };
-  rec.onerror = () => micBtn.classList.remove('listening');
-  rec.start();
+  if (activeRecognition) { stopDictation(); return; }
+  const input = $('global-ask-input');
+  startDictation(input, $('global-ask-mic'), { onStop: () => { if (input) input.focus(); } });
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1845,7 +2134,7 @@ initTheme();
 // ══════════════════════════════════════════════════════════════
 
 const I18N = {
-en: { nav_home:'Home', nav_chat:'Talk to Legal Helper', nav_cases:'My Cases', nav_draft:'Draft a Document', nav_court:'Virtual Courtroom', nav_bns:'IPC ↔ BNS Converter', nav_aid:'Find Legal Aid', nav_doc:'Translate Legal Document',
+en: { nav_home:'Home', nav_chat:'Talk to Legal Helper', nav_cases:'My Cases', nav_draft:'Draft a Document', nav_court:'Virtual Courtroom', nav_bns:'Section Converter', nav_crpc:'CrPC ↔ BNSS Converter', nav_aid:'Find Legal Aid', nav_doc:'Translate Legal Document',
 badge:'100% private · runs on your device', hero_sub:'Salary not paid? Deposit stuck? Got a legal notice? Ask in Hindi, English, or 9 other languages — free, offline, nothing leaves your computer.', cta1:'Ask Your Question', cta2:'See How It Works',
 tr1:'No signup', tr2:'Works offline', tr3:'11 languages', tr4:'Free forever',
 st1:'IPC ↔ BNS sections mapped', st2:'Indian languages supported', st3:'Data sent to the cloud',
@@ -1860,7 +2149,7 @@ bns_t:'IPC ↔ BNS Section Converter', bns_d:'India\'s criminal law changed on 1
 cases_t:'My Cases', cases_d:'Each case keeps its own conversation, documents, and deadlines — saved privately on this device.', draft_t:'Draft a Legal Document', draft_d:'Answer a few questions and get a ready-to-use document you can print and submit.', court_t:'Virtual Courtroom', court_d:'Watch both sides argue your case before an AI judge — and find your weak points before the other side does.',
 ncase:'New Case', shear:'Start Hearing', nround:'Next Round', vmode:'Voice Mode / आवाज़ मोड' },
 
-hi: { nav_home:'होम', nav_chat:'कानूनी सहायक से बात करें', nav_cases:'मेरे केस', nav_draft:'दस्तावेज़ बनाएं', nav_court:'वर्चुअल अदालत', nav_bns:'IPC ↔ BNS परिवर्तक', nav_aid:'कानूनी सहायता खोजें', nav_doc:'कानूनी दस्तावेज़ समझें',
+hi: { nav_home:'होम', nav_chat:'कानूनी सहायक से बात करें', nav_cases:'मेरे केस', nav_draft:'दस्तावेज़ बनाएं', nav_court:'वर्चुअल अदालत', nav_bns:'सेक्शन परिवर्तक', nav_crpc:'CrPC ↔ BNSS परिवर्तक', nav_aid:'कानूनी सहायता खोजें', nav_doc:'कानूनी दस्तावेज़ समझें',
 badge:'100% निजी · आपके डिवाइस पर चलता है', hero_sub:'वेतन नहीं मिला? जमा राशि फंसी है? कानूनी नोटिस मिला? हिंदी, अंग्रेज़ी या 9 अन्य भाषाओं में पूछें — मुफ्त, ऑफलाइन, आपका डेटा बाहर नहीं जाता।', cta1:'अपना सवाल पूछें', cta2:'कैसे काम करता है देखें',
 tr1:'साइनअप नहीं चाहिए', tr2:'ऑफलाइन चलता है', tr3:'11 भाषाएं', tr4:'हमेशा मुफ्त',
 st1:'IPC ↔ BNS धाराएं जोड़ी गईं', st2:'भारतीय भाषाएं समर्थित', st3:'क्लाउड को भेजा गया डेटा',
@@ -1875,7 +2164,7 @@ bns_t:'IPC ↔ BNS धारा परिवर्तक', bns_d:'1 जुला
 cases_t:'मेरे केस', cases_d:'हर केस की बातचीत, दस्तावेज़ और समय-सीमाएं — इसी डिवाइस पर निजी।', draft_t:'कानूनी दस्तावेज़ बनाएं', draft_d:'कुछ सवालों के जवाब दें और छापने-जमा करने योग्य दस्तावेज़ पाएं।', court_t:'वर्चुअल अदालत', court_d:'AI जज के सामने दोनों पक्षों की बहस देखें — अपनी कमजोरियां पहले जानें।',
 ncase:'नया केस', shear:'सुनवाई शुरू करें', nround:'अगला दौर', vmode:'आवाज़ मोड' },
 
-hinglish: { nav_home:'Home', nav_chat:'Legal Helper se baat karein', nav_cases:'Mere Cases', nav_draft:'Document banayein', nav_court:'Virtual Adalat', nav_bns:'IPC ↔ BNS Converter', nav_aid:'Legal Aid dhundein', nav_doc:'Legal Document samjhein',
+hinglish: { nav_home:'Home', nav_chat:'Legal Helper se baat karein', nav_cases:'Mere Cases', nav_draft:'Document banayein', nav_court:'Virtual Adalat', nav_bns:'Section Converter', nav_crpc:'CrPC ↔ BNSS Converter', nav_aid:'Legal Aid dhundein', nav_doc:'Legal Document samjhein',
 badge:'100% private · aapke device par chalta hai', hero_sub:'Salary nahi mili? Deposit atka hai? Legal notice aaya? Hindi, English ya 9 aur bhashaon mein poochein — free, offline, data bahar nahi jaata.', cta1:'Apna sawaal poochein', cta2:'Kaise kaam karta hai dekhein',
 tr1:'No signup', tr2:'Offline chalta hai', tr3:'11 bhashayein', tr4:'Hamesha free',
 st1:'IPC ↔ BNS sections mapped', st2:'Bhartiya bhashayein', st3:'Cloud ko bheja gaya data',

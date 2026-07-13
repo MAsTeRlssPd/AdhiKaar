@@ -83,6 +83,7 @@ def load_json(filename, fallback):
         return fallback
 
 IPC_BNS_DATA = load_json('ipc_bns_mapping.json', [])
+BNSS_CRPC_DATA = load_json('bnss_crpc_mapping.json', [])
 LEGAL_AID_DATA = load_json('legal_aid_directory.json', {'helplines': [], 'states': []})
 RIGHTS_DATA = load_json('rights_knowledge.json', {})
 
@@ -317,16 +318,17 @@ def check_case_type_keywords(query):
 
 LANGUAGE_INSTRUCTIONS = {
     "en": "Respond in clear, simple English. Avoid legal jargon — explain any technical terms in everyday words.",
-    "hi": "कृपया सरल हिंदी में जवाब दें। कानूनी शब्दों को आम भाषा में समझाएं। Respond in simple Hindi.",
-    "ta": "எளிய தமிழில் பதிலளிக்கவும். சட்ட சொற்களை எளிய வார்த்தைகளில் விளக்கவும். Respond in simple Tamil.",
-    "te": "సరళమైన తెలుగులో సమాధానం ఇవ్వండి. చట్టపరమైన పదాలను సాధారణ పదాలలో వివరించండి. Respond in simple Telugu.",
-    "bn": "সরল বাংলায় উত্তর দিন। আইনি শব্দগুলি সাধারণ ভাষায় ব্যাখ্যা করুন। Respond in simple Bengali.",
-    "mr": "कृपया सोप्या मराठीत उत्तर द्या। कायदेशीर शब्दांना सोप्या शब्दांत समजावून सांगा. Respond in simple Marathi.",
-    "gu": "કૃપા કરીને સરળ ગુજરાતીમાં જવાબ આપો. કાનૂની શબ્દોને સરળ ભાષામાં સમજાવો. Respond in simple Gujarati.",
-    "kn": "ಸರಳ ಕನ್ನಡದಲ್ಲಿ ಉತ್ತರಿಸಿ. ಕಾನೂನು ಪದಗಳನ್ನು ಸಾಮಾನ್ಯ ಭಾಷೆಯಲ್ಲಿ ವಿವರಿಸಿ. Respond in simple Kannada.",
-    "ml": "ലളിതമായ മലയാളത്തിൽ ഉത്തരം നൽകുക. നിയമ പദങ്ങൾ സാധാരണ ഭാഷയിൽ വിശദീകരിക്കുക. Respond in simple Malayalam.",
-    "pa": "ਕਿਰਪਾ ਕਰਕੇ ਸਰਲ ਪੰਜਾਬੀ ਵਿੱਚ ਜਵਾਬ ਦਿਓ। ਕਾਨੂੰਨੀ ਸ਼ਬਦਾਂ ਨੂੰ ਆਮ ਭਾਸ਼ਾ ਵਿੱਚ ਸਮਝਾਓ। Respond in simple Punjabi.",
-    "hinglish": "Respond in Hinglish (mix of Hindi and English, like how people normally talk). Use Roman script. Koi bhi legal term ko simple language mein samjhao."
+    "hi": "उपयोगकर्ता को समझने में आसानी हो इसलिए सरल हिंदी का प्रयोग करें। Respond in simple Hindi.",
+    "ta": "சட்ட ஆலோசனையை எளிமையான தமிழில் வழங்கவும். Respond in simple Tamil.",
+    "te": "చట్టపరమైన సలహాను సాధారణ తెలుగులో అందించండి. Respond in simple Telugu.",
+    "bn": "সহজ বাংলায় আইনি পরামর্শ দিন যাতে ব্যবহারকারী সহজে বুঝতে পারে। Respond in simple Bengali.",
+    "mr": "कायदेशीर सल्ला सोप्या मराठीत द्या जेणेकरून वापरकर्त्याला सहज समजेल. Respond in simple Marathi.",
+    "gu": "સરળ ગુજરાતીમાં કાનૂની સલાહ આપો જેથી વપરાશકર્તા સરળતાથી સમજી શકે. Respond in simple Gujarati.",
+    "kn": "ಬಳಕೆದಾರರಿಗೆ ಅರ್ಥವಾಗುವಂತೆ ಸರಳ ಕನ್ನಡದಲ್ಲಿ ಕಾನೂನು ಸಲಹೆ ನೀಡಿ. Respond in simple Kannada.",
+    "ml": "ഉപയോക്താവിന് മനസ്സിലാക്കാൻ ലളിതമായ മലയാളത്തിൽ നിയമോപദേശം നൽകുക. Respond in simple Malayalam.",
+    "pa": "ਵਰਤੋਂਕਾਰ ਨੂੰ ਸਮਝਣ ਵਿੱਚ ਆਸਾਨੀ ਹੋਵੇ ਇਸਲਈ ਸਰਲ ਪੰਜਾਬੀ ਵਿੱਚ ਕਾਨੂੰਨੀ ਸਲਾਹ ਦਿਓ। Respond in simple Punjabi.",
+    "hinglish": "Respond in Hinglish (mix of Hindi and English, like how people normally talk). Use Roman script. Koi bhi legal term ko simple language mein samjhao.",
+    "default": "Automatically detect the language of the user's latest query and respond entirely in that language without any emojis."
 }
 
 MAIN_SYSTEM_PROMPT = """You are an extremely knowledgeable human legal expert with an encyclopedic understanding of Indian law. Your purpose is to provide clear, concise, and direct legal advice to citizens.
@@ -351,23 +353,21 @@ CRITICAL RESPONSE RULES:
 
 5. **LEGAL REFERENCES**: Always cite specific law sections using BNS numbers. If old IPC sections apply, explain the conversion.
 
-{language_instruction}
+9. **LANGUAGE MATCHING**: {language_instruction} Do not use the language from previous turns if the user has switched to a new language in their latest query. Always match the latest query's language.
 
 CONTEXT FROM KNOWLEDGE BASE:
 {rag_context}
 """
 
-DEVIL_ADVOCATE_PROMPT = """You are a highly skilled opposing lawyer in an Indian legal context. Your ONLY job is to relentlessly oppose the user's position and provide counter-arguments directly to them.
+LAWYER_IN_OPPOSITION_PROMPT = """You are a highly skilled opposing lawyer in an Indian legal context. Your ONLY job is to relentlessly oppose the user's position and provide counter-arguments directly to them.
 
 CRITICAL EXCEPTION: If you analyze the situation and are 100% absolutely certain that the person is legally correct and there is no valid opposing argument (for example, no FIR possible, no legal basis), DO NOT provide any arguments. Instead, clearly state that their position is flawless and legally unassailable.
 
 If there is room for argument, present the opposing side directly to the user.
-- Keep your response extremely concise. Do not write large paragraphs unless absolutely required.
-- Speak naturally like a real human lawyer having a conversation. 
-- DO NOT use any markdown headers, bullet points, or bold titles (e.g., no "Opposing Arguments" headings).
+- Keep your response extremely concise. Convey in human way only, in paragraphs or concise lines.
+- Speak naturally like a real human lawyer having a conversation. DO NOT use emojis.
+- DO NOT use any markdown headers, bullet points, or bold titles.
 - DO NOT provide counter-arguments to your own points, weaknesses in your case, or strategies for the user to win. ONLY argue against the user.
-
-You MUST automatically detect the language (or language mix, like Hinglish) used by the user and respond in exactly the same language natively.
 
 {language_instruction}
 
@@ -375,23 +375,17 @@ SITUATION CONTEXT:
 {rag_context}
 """
 
-CONSEQUENCE_PROMPT = """Based on the user's legal situation, model what happens if they take NO ACTION at all. Present as a realistic timeline with specific legal consequences:
+CONSEQUENCE_PROMPT = """Based on the user's legal situation, model what happens if they take NO ACTION at all. Present as a realistic timeline with specific legal consequences. Do not use any emojis. Convey the timeline in simple paragraphs.
 
-⏱️ **Timeline of Inaction:**
+Timeline of Inaction:
+Immediate (0-7 days): [What happens right away if nothing is done]
+Short term (1-4 weeks): [Legal implications, missed opportunities]
+Medium term (1-6 months): [Escalation, potential consequences]
+Long term (6+ months): [Worst-case scenarios, rights that expire]
+Worst Case Scenario: [The absolute worst outcome]
+Most Urgent Action: [The single most important thing to do RIGHT NOW]
 
-**Immediate (0-7 days):** [What happens right away if nothing is done]
-
-**Short term (1-4 weeks):** [Legal implications, missed opportunities]
-
-**Medium term (1-6 months):** [Escalation, potential consequences]
-
-**Long term (6+ months):** [Worst-case scenarios, rights that expire]
-
-⚠️ **Worst Case Scenario:** [The absolute worst outcome]
-
-✅ **Most Urgent Action:** [The single most important thing to do RIGHT NOW]
-
-Be specific about Indian law — mention actual deadlines, limitation periods, and legal consequences. Don't be alarmist but be honest about real risks.
+Be specific about Indian law — mention actual deadlines, limitation periods, and legal consequences. Don't be alarmist but be honest about real risks. Write in clear, concise human paragraphs.
 
 {language_instruction}
 
@@ -407,21 +401,17 @@ RULES:
 - Include specific law section numbers (BNS sections) for credibility
 - Keep it to 5-7 key points maximum
 - Include relevant helpline numbers
-- Format as a printable summary
+- Format as simple text without emojis or complex formatting
 - Make clear what ACTION needs to be taken and by whom
 
-FORMAT:
-🏘️ **समुदाय सहायता सारांश / Community Helper Summary**
+FORMAT (No emojis, simple text):
+Community Helper Summary
 
-**व्यक्ति की स्थिति (Person's Situation):** [1-2 sentences]
-
-**उनके अधिकार (Their Rights):** [3-5 bullet points]
-
-**क्या करना है (What To Do):** [Numbered steps]
-
-**कानूनी धारा (Legal Sections):** [Relevant BNS sections]
-
-**मदद के लिए फोन (Helpline Numbers):** [Numbers]
+Person's Situation: [1-2 sentences]
+Their Rights: [3-5 sentences]
+What To Do: [Numbered steps]
+Legal Sections: [Relevant BNS sections]
+Helpline Numbers: [Numbers]
 
 {language_instruction}
 
@@ -432,17 +422,12 @@ SITUATION AND ADVICE TO SIMPLIFY:
 DOCUMENT_TRANSLATE_PROMPT = """The user has a legal document (FIR, court notice, legal notice, summons, etc.) and needs it explained in plain language. The OCR text of the document is provided below.
 
 YOUR TASKS:
-1. **Identify the document type** (FIR, legal notice, court summons, etc.)
-2. **Translate/explain** the document in plain, simple language
-3. **Highlight key information**:
-   - 📅 Important dates and deadlines
-   - 👤 Who is involved (parties, court, police station)
-   - ⚖️ What legal sections are mentioned and what they mean
-   - ❗ What action is required from the reader
-   - ⏰ By when must they respond/appear
-4. **What should the reader do next** — clear, actionable steps
+1. Identify the document type (FIR, legal notice, court summons, etc.)
+2. Translate/explain the document in plain, simple language
+3. Highlight key information (Important dates and deadlines, Who is involved, What legal sections are mentioned, What action is required, By when must they respond/appear)
+4. What should the reader do next — clear, actionable steps
 
-IMPORTANT: Many legal documents are in English or formal Hindi/Urdu legal language. Translate into the user's preferred language using simple, everyday words.
+IMPORTANT: Many legal documents are in English or formal Hindi/Urdu legal language. Translate into the user's preferred language using simple, everyday words. DO NOT use any emojis. Present the explanation in natural paragraphs.
 
 {language_instruction}
 
@@ -450,36 +435,29 @@ DOCUMENT TEXT (from OCR):
 {document_text}
 """
 
-CHECKLIST_PROMPT = """Based on the user's legal situation, generate a comprehensive, actionable checklist they can follow. Organize it by category:
+CHECKLIST_PROMPT = """Based on the user's legal situation, generate a comprehensive, actionable checklist they can follow. Organize it by category. Use simple text without emojis.
 
-📋 **अधिKaar Rights Checklist**
+Rights Checklist
 
-**📄 Documents to Collect:**
-- [ ] [Document 1 - why it's needed]
-- [ ] [Document 2 - why it's needed]
-...
+Documents to Collect:
+[Document 1 - why it's needed]
 
-**📸 Evidence to Preserve:**
-- [ ] [Screenshot/photo/recording - what to capture]
-...
+Evidence to Preserve:
+[Screenshot/photo/recording - what to capture]
 
-**📝 Notices to Send:**
-- [ ] [What notice, to whom, by when]
-...
+Notices to Send:
+[What notice, to whom, by when]
 
-**🏢 Offices to Visit:**
-- [ ] [Which office, what to do there]
-...
+Offices to Visit:
+[Which office, what to do there]
 
-**⏰ Deadlines to Remember:**
-- [ ] [Action - Deadline - Consequence of missing]
-...
+Deadlines to Remember:
+[Action - Deadline - Consequence of missing]
 
-**📞 People to Contact:**
-- [ ] [Who - Why - Number]
-...
+People to Contact:
+[Who - Why - Number]
 
-Be specific to Indian law and the user's exact situation. Include BNS sections where relevant.
+Be specific to Indian law and the user's exact situation. Include BNS sections where relevant. Do not use emojis or checkboxes like [ ]. Just plain text.
 
 {language_instruction}
 
@@ -688,7 +666,7 @@ def chat():
 
 @app.route('/api/devil-advocate', methods=['POST'])
 def devil_advocate():
-    """Devil's Advocate mode — argue against the user's position."""
+    """Lawyer in opposition mode — argue against the user's position."""
     try:
         data = request.get_json(silent=True) or {}
         situation = data.get('situation', '')
@@ -702,7 +680,7 @@ def devil_advocate():
         if rights_collection:
             rag_context += retrieve_context(situation, rights_collection, n_results=3)
         
-        system_prompt = DEVIL_ADVOCATE_PROMPT.format(
+        system_prompt = LAWYER_IN_OPPOSITION_PROMPT.format(
             language_instruction=get_language_instruction(language),
             rag_context=rag_context
         )
@@ -737,37 +715,30 @@ def bns_convert():
         if not query:
             return jsonify({"results": [], "ai_explanation": ""})
         
-        # Search in static data first
+        # Search in static data strictly
         results = []
         query_lower = query.lower()
         
         for entry in IPC_BNS_DATA:
             match = False
             if direction == 'ipc_to_bns':
-                if (query_lower in entry.get('ipc_section', '').lower() or
-                    query_lower in entry.get('offence', '').lower() or
-                    query_lower in entry.get('description', '').lower()):
+                # Strictly convert typed value
+                if query_lower == entry.get('ipc_section', '').lower():
                     match = True
             else:
-                if (query_lower in entry.get('bns_section', '').lower() or
-                    query_lower in entry.get('offence', '').lower() or
-                    query_lower in entry.get('description', '').lower()):
+                # Strictly convert typed value
+                if query_lower == entry.get('bns_section', '').lower():
                     match = True
             
             if match:
                 results.append(entry)
         
-        # Also search via RAG for semantic matches
-        rag_results = ""
-        if ipc_bns_collection:
-            rag_results = retrieve_context(query, ipc_bns_collection, n_results=5)
-        
-        # Get AI explanation if results found
+        # Get AI explanation if results found, no RAG to keep it strict
         ai_explanation = ""
-        if results or rag_results:
+        if results:
             messages = [
-                {"role": "system", "content": "You are a legal expert on Indian criminal law. Explain the IPC to BNS conversion briefly and clearly. Highlight any important changes in the new law."},
-                {"role": "user", "content": f"User searched for: '{query}'. Found matches: {json.dumps(results[:3], ensure_ascii=False) if results else 'None from exact match'}. RAG context: {rag_results}. Explain the conversion briefly."}
+                {"role": "system", "content": "You are a legal expert on Indian criminal law. Explain the IPC to BNS conversion briefly and clearly. Highlight any important changes in the new law. Do not use emojis."},
+                {"role": "user", "content": f"User searched for: '{query}'. Found matches: {json.dumps(results[:3], ensure_ascii=False)}. Explain the conversion briefly in simple paragraphs."}
             ]
             ai_explanation = call_gemma(messages, temperature=0.5)
         
@@ -776,6 +747,37 @@ def bns_convert():
             "ai_explanation": ai_explanation
         })
     
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/crpc-convert', methods=['POST'])
+def crpc_convert():
+    """CrPC ↔ BNSS section converter."""
+    try:
+        data = request.get_json(silent=True) or {}
+        query = data.get('query', '').strip()
+        direction = data.get('direction', 'crpc_to_bnss')  # or 'bnss_to_crpc'
+
+        if not query:
+            return jsonify({"results": [], "ai_explanation": ""})
+
+        src = 'crpc_section' if direction == 'crpc_to_bnss' else 'bnss_section'
+        query_lower = query.lower()
+
+        results = [e for e in BNSS_CRPC_DATA if query_lower == e.get(src, '').lower()]
+
+        ai_explanation = ""
+        if results:
+            messages = [
+                {"role": "system", "content": "You are a legal expert on Indian criminal procedure. Explain the CrPC (1973) to BNSS (2023) conversion briefly and clearly. Highlight any important procedural changes in the new law. Do not use emojis."},
+                {"role": "user", "content": f"User searched for: '{query}'. Found matches: {json.dumps(results[:3], ensure_ascii=False)}. Explain the conversion briefly in simple paragraphs."}
+            ]
+            ai_explanation = call_gemma(messages, temperature=0.5)
+
+        return jsonify({"results": results[:10], "ai_explanation": ai_explanation})
+
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
@@ -1092,28 +1094,34 @@ def draft_document():
 # Virtual Courtroom
 # ══════════════════════════════════════════════════════════════
 
-COURTROOM_PROMPT = """You are simulating an Indian courtroom hearing (moot court) to help a citizen prepare their case. You play THREE roles in each round:
+COURTROOM_PROMPT = """You are simulating an Indian courtroom hearing (moot court) focusing on legal arguments.
 
-1. USER'S LAWYER (advocate arguing FOR the citizen)
-2. OPPOSING LAWYER (advocate arguing AGAINST the citizen)
-3. JUDGE (neutral, asks probing questions, notes strong/weak points)
+ROLES:
+1. YOUR_LAWYER: Human-like advocate arguing FOR the citizen. Highly knowledgeable in law, IPC, BNS, BNSS, articles, and rights. Argues fiercely with the opposing lawyer.
+2. OPPOSING_LAWYER: Human-like advocate arguing AGAINST the citizen. Equally knowledgeable and fiercely opposes YOUR_LAWYER.
+3. NEXT_STEPS: Practical, concise advice on what the citizen should do next before actual legal proceedings.
 
-This is round {round_num} of 3.
-- Round 1: Opening arguments from both sides, judge frames the key issues.
-- Round 2: Rebuttals with specific law citations (BNS/relevant acts) and precedents, judge questions the weakest claims.
-- Round 3: Closing arguments, then the judge gives a REALISTIC ASSESSMENT: likely outcome, strength of the citizen's case (out of 10), and what evidence would most improve it.
+RULES FOR THE HEARING:
+- This is a continuous debate. The lawyers must exchange arguments back-and-forth for about 5-6 total lines of argument.
+- Keep each response concise.
+- At the end, provide clear next steps for the user.
+- Use the exact markers below for each speaker.
 
-Cite real Indian laws with sections. Be realistic — do not simply favor the citizen.
-
-OUTPUT FORMAT — use these exact markers, each on its own line:
+OUTPUT FORMAT (strict):
 [YOUR_LAWYER]
-(argument)
+(concise argument)
 [OPPOSING_LAWYER]
-(argument)
-[JUDGE]
-(remarks)
+(concise rebuttal)
+[YOUR_LAWYER]
+(concise counter-argument)
+[OPPOSING_LAWYER]
+(concise counter-rebuttal)
+[NEXT_STEPS]
+(concise next steps)
 
+IMPORTANT LANGUAGE INSTRUCTION:
 {language_instruction}
+ALL dialogue from YOUR_LAWYER, OPPOSING_LAWYER, and NEXT_STEPS must strictly be in this requested language. Do NOT use English if another language is requested.
 
 CASE CONTEXT:
 {rag_context}
@@ -1125,8 +1133,6 @@ def courtroom():
     try:
         data = request.get_json(silent=True) or {}
         situation = data.get('situation', '')
-        round_num = int(data.get('round', 1))
-        history = data.get('history', '')
         language = data.get('language', 'en')
 
         rag_context = ""
@@ -1134,39 +1140,37 @@ def courtroom():
             rag_context = retrieve_context(situation, rights_collection, n_results=3)
 
         system_prompt = COURTROOM_PROMPT.format(
-            round_num=round_num,
             language_instruction=get_language_instruction(language),
             rag_context=rag_context
         )
 
         user_content = f"The citizen's case:\n{situation}"
-        if history:
-            user_content += f"\n\nPrevious rounds:\n{history}\n\nNow produce round {round_num}."
 
         messages = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_content}
         ]
 
-        response_text = call_gemma(messages, temperature=0.8)
+        # Bump temperature slightly for more variety
+        response_text = call_gemma(messages, temperature=0.9)
 
-        # Parse the three roles from the marked response
+        # Parse the sequence of messages from the marked response
         import re
-        def extract(marker, text):
-            pattern = rf"\[{marker}\]\s*(.*?)(?=\[(?:YOUR_LAWYER|OPPOSING_LAWYER|JUDGE)\]|$)"
-            m = re.search(pattern, text, re.DOTALL)
-            return m.group(1).strip() if m else ""
+        pattern = r"\[(YOUR_LAWYER|OPPOSING_LAWYER|NEXT_STEPS)\]\s*(.*?)(?=\[(?:YOUR_LAWYER|OPPOSING_LAWYER|NEXT_STEPS)\]|$)"
+        matches = re.finditer(pattern, response_text, re.DOTALL)
+        
+        messages_list = []
+        for m in matches:
+            role = m.group(1)
+            text = m.group(2).strip()
+            if text:
+                messages_list.append({"role": role, "text": text})
+        
+        # Fallback if parsing failed
+        if not messages_list:
+            messages_list.append({"role": "NEXT_STEPS", "text": response_text})
 
-        parsed = {
-            "your_lawyer": extract("YOUR_LAWYER", response_text),
-            "opposing_lawyer": extract("OPPOSING_LAWYER", response_text),
-            "judge": extract("JUDGE", response_text),
-        }
-        # Fallback: if parsing failed, put everything in judge
-        if not any(parsed.values()):
-            parsed["judge"] = response_text
-
-        return jsonify({"round": round_num, "roles": parsed, "raw": response_text})
+        return jsonify({"messages": messages_list, "raw": response_text})
 
     except Exception as e:
         traceback.print_exc()

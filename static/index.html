@@ -77,7 +77,7 @@
 
         <div class="nav-item" data-view="bns" id="nav-bns">
           <span class="nav-icon"><i data-lucide="repeat"></i></span>
-          <span class="nav-label">IPC ↔ BNS Converter</span>
+          <span class="nav-label">Section Converter</span>
         </div>
         <div class="nav-item" data-view="legal-aid" id="nav-legal-aid">
           <span class="nav-icon"><i data-lucide="phone"></i></span>
@@ -102,7 +102,7 @@
 
       <!-- ════ HOME VIEW ════ -->
       <section class="view home-view active" id="view-home">
-        <div class="hero-section hero-split">
+        <div class="hero-section">
           <div class="hero-left">
             <div class="hero-badge"><i data-lucide="shield-check"></i> 100% private · runs on your device</div>
             <h1 class="hero-title">
@@ -125,20 +125,6 @@
               <span><i data-lucide="wifi-off"></i> Works offline</span>
               <span><i data-lucide="languages"></i> 11 languages</span>
               <span><i data-lucide="badge-indian-rupee"></i> Free forever</span>
-            </div>
-          </div>
-
-          <div class="hero-chat-preview">
-            <div class="preview-status">
-              <span class="status-dot"></span>
-              <span>Legal Helper — ready</span>
-            </div>
-            <div class="preview-bubble">Namaste! Tell me your legal problem in your own words. मैं आपकी मदद करूँगा।</div>
-            <div class="preview-chips">
-              <button class="suggestion-chip" onclick="goToChatWith('My employer has not paid my salary for 3 months')">My employer hasn't paid my salary</button>
-              <button class="suggestion-chip" onclick="goToChatWith('My landlord is not returning my security deposit')">Landlord won't return my deposit</button>
-              <button class="suggestion-chip" onclick="goToChatWith('Police refused to file my FIR')">Police refused to file my FIR</button>
-              <button class="suggestion-chip" onclick="goToChatWith('I received a legal notice and I don\'t understand it')">I got a legal notice I don't understand</button>
             </div>
           </div>
         </div>
@@ -227,7 +213,7 @@
             <p>Watch both sides argue your case before an AI judge — find your weak points before the other side does.</p>
             <span class="card-go">Open <i data-lucide="arrow-right"></i></span>
           </div>
-          <div class="feature-card" onclick="navigateTo('bns')">
+          <div class="feature-card" onclick="openConverter('ipc_bns')">
             <div class="card-icon teal"><i data-lucide="repeat"></i></div>
             <h3>IPC ↔ BNS Converter</h3>
             <p>India's criminal law changed on 1 July 2024. Convert old IPC sections to new BNS sections instantly.</p>
@@ -249,6 +235,12 @@
             <div class="card-icon amber"><i data-lucide="accessibility"></i></div>
             <h3>Voice Mode</h3>
             <p>No typing needed — speak your question and hear the answer aloud, in your language.</p>
+            <span class="card-go">Open <i data-lucide="arrow-right"></i></span>
+          </div>
+          <div class="feature-card" onclick="openConverter('crpc_bnss')">
+            <div class="card-icon teal"><i data-lucide="repeat-2"></i></div>
+            <h3>CrPC ↔ BNSS Converter</h3>
+            <p>Criminal procedure changed on 1 July 2024. Convert old CrPC sections to new BNSS sections instantly.</p>
             <span class="card-go">Open <i data-lucide="arrow-right"></i></span>
           </div>
         </div>
@@ -323,27 +315,50 @@
         </div>
       </section>
 
-      <!-- ════ BNS CONVERTER VIEW ════ -->
+      <!-- ════ SECTION CONVERTER VIEW (IPC↔BNS + CrPC↔BNSS) ════ -->
       <section class="view bns-view" id="view-bns">
         <div class="view-header">
-          <h2>🔄 IPC ↔ BNS Section Converter</h2>
-          <p>India's criminal law changed on 1 July 2024. Search any IPC or BNS section to find its equivalent.</p>
+          <h2>🔄 Legal Section Converter</h2>
+          <p>India's criminal laws changed on 1 July 2024. Convert IPC↔BNS (offences) and CrPC↔BNSS (procedure).</p>
         </div>
 
-        <div class="direction-toggle">
-          <button class="toggle-btn active" id="toggle-ipc-bns" onclick="setBnsDirection('ipc_to_bns')">IPC → BNS</button>
-          <button class="toggle-btn" id="toggle-bns-ipc" onclick="setBnsDirection('bns_to_ipc')">BNS → IPC</button>
+        <!-- Which code to convert -->
+        <div class="code-toggle direction-toggle">
+          <button class="toggle-btn active" id="code-ipc-bns" onclick="setConverterCode('ipc_bns')">IPC ↔ BNS</button>
+          <button class="toggle-btn" id="code-crpc-bnss" onclick="setConverterCode('crpc_bnss')">CrPC ↔ BNSS</button>
         </div>
 
-        <div class="search-box">
-          <div class="search-input-wrapper">
-            <span class="search-icon">🔍</span>
-            <input type="text" id="bns-search" placeholder="Search by section number or offence name (e.g., 420, theft, murder)" oninput="searchBns()">
+        <!-- IPC ↔ BNS panel -->
+        <div id="panel-ipc-bns" class="converter-panel">
+          <div class="direction-toggle">
+            <button class="toggle-btn active" id="toggle-ipc-bns" onclick="setBnsDirection('ipc_to_bns')">IPC → BNS</button>
+            <button class="toggle-btn" id="toggle-bns-ipc" onclick="setBnsDirection('bns_to_ipc')">BNS → IPC</button>
           </div>
+          <div class="search-box">
+            <div class="search-input-wrapper">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="bns-search" placeholder="Search by section number or offence name (e.g., 420, theft, murder)" oninput="searchBns()">
+            </div>
+          </div>
+          <div class="results-container" id="bns-results"></div>
+          <div id="bns-ai-explanation"></div>
         </div>
 
-        <div class="results-container" id="bns-results"></div>
-        <div id="bns-ai-explanation"></div>
+        <!-- CrPC ↔ BNSS panel -->
+        <div id="panel-crpc-bnss" class="converter-panel" style="display:none;">
+          <div class="direction-toggle">
+            <button class="toggle-btn active" id="toggle-crpc-bnss" onclick="setCrpcDirection('crpc_to_bnss')">CrPC → BNSS</button>
+            <button class="toggle-btn" id="toggle-bnss-crpc" onclick="setCrpcDirection('bnss_to_crpc')">BNSS → CrPC</button>
+          </div>
+          <div class="search-box">
+            <div class="search-input-wrapper">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="crpc-search" placeholder="Search by section number (e.g., 144, 154, 41, 438)" oninput="searchCrpc()">
+            </div>
+          </div>
+          <div class="results-container" id="crpc-results"></div>
+          <div id="crpc-ai-explanation"></div>
+        </div>
       </section>
 
       <!-- ════ LEGAL AID VIEW ════ -->
@@ -545,25 +560,13 @@
               <i data-lucide="swords"></i>
               <h3>Opposing Lawyer</h3>
               <p>Attacks your case the way the other side really will</p>
-            </div>
-            <div class="court-role-card role-judge">
-              <i data-lucide="gavel"></i>
-              <h3>The Judge</h3>
-              <p>Questions both sides, then scores your case out of 10</p>
-            </div>
           </div>
 
-          <div class="court-rounds-strip">
-            <div><span class="step-num">Round 1</span> Opening arguments — the judge frames the key issues</div>
-            <div><span class="step-num">Round 2</span> Rebuttals with law citations — weak claims get questioned</div>
-            <div><span class="step-num">Round 3</span> Closing + verdict — realistic outcome and what evidence to gather</div>
-          </div>
         </div>
 
         <div class="courtroom-stage" id="courtroom-stage" style="display:none">
           <div class="courtroom-rounds" id="courtroom-rounds"></div>
           <div class="courtroom-controls" id="courtroom-controls">
-            <button class="btn btn-primary" id="courtroom-next-btn" onclick="nextCourtRound()">Next Round</button>
             <button class="btn btn-secondary" onclick="resetCourtroom()">New Hearing</button>
           </div>
         </div>
