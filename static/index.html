@@ -288,6 +288,12 @@
         </div>
 
         <div class="chat-input-container">
+          <div class="chat-mode-toggle" style="margin-bottom: 8px;">
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; color: var(--text-secondary); font-size: 0.9rem;">
+              <input type="checkbox" id="devil-mode-toggle">
+              <i data-lucide="swords" style="width: 16px; height: 16px;"></i> Devil's Advocate Mode
+            </label>
+          </div>
           <div class="chat-input-wrapper">
             <textarea id="chat-input" rows="1" placeholder="Describe your legal problem here..." onkeydown="handleChatKeydown(event)"></textarea>
             <button class="voice-btn" id="voice-btn" onclick="toggleVoice()" title="Voice input" aria-label="Voice input"><i data-lucide="mic"></i></button>

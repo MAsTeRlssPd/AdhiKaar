@@ -250,23 +250,27 @@ async function sendMessage() {
   // Show typing indicator
   showTyping();
 
+  const isDevilMode = $('devil-mode-toggle') && $('devil-mode-toggle').checked;
+  const endpoint = isDevilMode ? '/api/devil-advocate' : '/api/chat';
+  const bodyData = isDevilMode 
+    ? { situation: message, language: state.language, session_id: state.sessionId }
+    : { message: message, language: state.language, session_id: state.sessionId };
+
   try {
-    const data = await apiCall('/api/chat', {
+    const data = await apiCall(endpoint, {
       method: 'POST',
-      body: JSON.stringify({
-        message: message,
-        language: state.language,
-        session_id: state.sessionId,
-      }),
+      body: JSON.stringify(bodyData),
     });
 
     hideTyping();
-    state.lastAdvice = data.response;
+    if (!isDevilMode) {
+      state.lastAdvice = data.response;
+    }
 
     // Add assistant message with action buttons
     addMessage('assistant', data.response, {
       powerImbalance: data.power_imbalance,
-      showActions: true,
+      showActions: !isDevilMode,
     });
 
   } catch (error) {
@@ -297,7 +301,6 @@ function addMessage(role, content, options = {}) {
       actionsDiv.className = 'message-actions';
 
       const actions = [
-        { label: 'Devil\'s Advocate', icon: 'swords', cls: 'devil', fn: () => runDevilAdvocate() },
         { label: 'What If I Do Nothing?', icon: 'clock', cls: '', fn: () => runConsequenceSimulator() },
         { label: 'Explain to Elder', icon: 'users', cls: '', fn: () => runPanchayatBridge() },
         { label: 'Rights Card', icon: 'id-card', cls: '', fn: () => generateRightsCard() },
