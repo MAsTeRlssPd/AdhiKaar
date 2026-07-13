@@ -32,6 +32,8 @@ const state = {
   recognition: null,
   bnsDirection: 'ipc_to_bns',
   bnsSearchTimeout: null,
+  crpcDirection: 'crpc_to_bnss',
+  crpcSearchTimeout: null,
   lastSituation: '',
   lastAdvice: '',
 };
@@ -735,6 +737,75 @@ async function doSearchBns() {
       `).join('');
     } else {
       resultsContainer.innerHTML = '<div class="empty-state"><div class="empty-icon">🤷</div><p>No exact matches found. Try a different section number or offence name.</p></div>';
+    }
+
+    if (data.ai_explanation) {
+      aiContainer.innerHTML = `
+        <div class="ai-explanation">
+          <h4>🤖 AI Explanation</h4>
+          <div class="explanation-text markdown-body">${renderMarkdown(data.ai_explanation)}</div>
+        </div>
+      `;
+    }
+  } catch (error) {
+    resultsContainer.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><p>Could not search. Please check if the server is running.</p></div>';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// CrPC ↔ BNSS Converter
+// ══════════════════════════════════════════════════════════════
+
+function setCrpcDirection(direction) {
+  state.crpcDirection = direction;
+  $('toggle-crpc-bnss').classList.toggle('active', direction === 'crpc_to_bnss');
+  $('toggle-bnss-crpc').classList.toggle('active', direction === 'bnss_to_crpc');
+  searchCrpc();
+}
+
+function searchCrpc() {
+  clearTimeout(state.crpcSearchTimeout);
+  state.crpcSearchTimeout = setTimeout(doSearchCrpc, 400);
+}
+
+async function doSearchCrpc() {
+  const query = $('crpc-search').value.trim();
+  const resultsContainer = $('crpc-results');
+  const aiContainer = $('crpc-ai-explanation');
+
+  if (!query) {
+    resultsContainer.innerHTML = '<div class="empty-state"><div class="empty-icon">🔍</div><p>Type a section number to search</p></div>';
+    aiContainer.innerHTML = '';
+    return;
+  }
+
+  resultsContainer.innerHTML = '<div class="loading"><div class="spinner"></div><span>Searching...</span></div>';
+  aiContainer.innerHTML = '';
+
+  try {
+    const data = await apiCall('/api/crpc-convert', {
+      method: 'POST',
+      body: JSON.stringify({ query: query, direction: state.crpcDirection }),
+    });
+
+    if (data.results && data.results.length > 0) {
+      resultsContainer.innerHTML = data.results.map(r => `
+        <div class="result-card">
+          <div class="section-mapping">
+            <span class="section-badge ipc">CrPC ${escapeHtml(r.crpc_section)}</span>
+            <span class="section-arrow">→</span>
+            <span class="section-badge bns">BNSS ${escapeHtml(r.bnss_section)}</span>
+          </div>
+          <div class="offence-name">${escapeHtml(r.offence)}</div>
+          <div class="description">${escapeHtml(r.description).slice(0, 220)}${r.description.length > 220 ? '...' : ''}</div>
+          <div class="key-changes">
+            <strong>⚡ Key Changes:</strong> ${escapeHtml(r.key_changes)}
+          </div>
+          <div class="punishment">📂 ${escapeHtml(r.category)}</div>
+        </div>
+      `).join('');
+    } else {
+      resultsContainer.innerHTML = '<div class="empty-state"><div class="empty-icon">🤷</div><p>No exact match found. Try another section number (e.g., 144, 154, 438).</p></div>';
     }
 
     if (data.ai_explanation) {
@@ -1792,7 +1863,7 @@ initTheme();
 // ══════════════════════════════════════════════════════════════
 
 const I18N = {
-en: { nav_home:'Home', nav_chat:'Talk to Legal Helper', nav_cases:'My Cases', nav_draft:'Draft a Document', nav_court:'Virtual Courtroom', nav_bns:'IPC ↔ BNS Converter', nav_aid:'Find Legal Aid', nav_doc:'Translate Legal Document',
+en: { nav_home:'Home', nav_chat:'Talk to Legal Helper', nav_cases:'My Cases', nav_draft:'Draft a Document', nav_court:'Virtual Courtroom', nav_bns:'IPC ↔ BNS Converter', nav_crpc:'CrPC ↔ BNSS Converter', nav_aid:'Find Legal Aid', nav_doc:'Translate Legal Document',
 badge:'100% private · runs on your device', hero_sub:'Salary not paid? Deposit stuck? Got a legal notice? Ask in Hindi, English, or 9 other languages — free, offline, nothing leaves your computer.', cta1:'Ask Your Question', cta2:'See How It Works',
 tr1:'No signup', tr2:'Works offline', tr3:'11 languages', tr4:'Free forever',
 st1:'IPC ↔ BNS sections mapped', st2:'Indian languages supported', st3:'Data sent to the cloud',
@@ -1807,7 +1878,7 @@ bns_t:'IPC ↔ BNS Section Converter', bns_d:'India\'s criminal law changed on 1
 cases_t:'My Cases', cases_d:'Each case keeps its own conversation, documents, and deadlines — saved privately on this device.', draft_t:'Draft a Legal Document', draft_d:'Answer a few questions and get a ready-to-use document you can print and submit.', court_t:'Virtual Courtroom', court_d:'Watch both sides argue your case before an AI judge — and find your weak points before the other side does.',
 ncase:'New Case', shear:'Start Hearing', nround:'Next Round', vmode:'Voice Mode / आवाज़ मोड' },
 
-hi: { nav_home:'होम', nav_chat:'कानूनी सहायक से बात करें', nav_cases:'मेरे केस', nav_draft:'दस्तावेज़ बनाएं', nav_court:'वर्चुअल अदालत', nav_bns:'IPC ↔ BNS परिवर्तक', nav_aid:'कानूनी सहायता खोजें', nav_doc:'कानूनी दस्तावेज़ समझें',
+hi: { nav_home:'होम', nav_chat:'कानूनी सहायक से बात करें', nav_cases:'मेरे केस', nav_draft:'दस्तावेज़ बनाएं', nav_court:'वर्चुअल अदालत', nav_bns:'IPC ↔ BNS परिवर्तक', nav_crpc:'CrPC ↔ BNSS परिवर्तक', nav_aid:'कानूनी सहायता खोजें', nav_doc:'कानूनी दस्तावेज़ समझें',
 badge:'100% निजी · आपके डिवाइस पर चलता है', hero_sub:'वेतन नहीं मिला? जमा राशि फंसी है? कानूनी नोटिस मिला? हिंदी, अंग्रेज़ी या 9 अन्य भाषाओं में पूछें — मुफ्त, ऑफलाइन, आपका डेटा बाहर नहीं जाता।', cta1:'अपना सवाल पूछें', cta2:'कैसे काम करता है देखें',
 tr1:'साइनअप नहीं चाहिए', tr2:'ऑफलाइन चलता है', tr3:'11 भाषाएं', tr4:'हमेशा मुफ्त',
 st1:'IPC ↔ BNS धाराएं जोड़ी गईं', st2:'भारतीय भाषाएं समर्थित', st3:'क्लाउड को भेजा गया डेटा',
@@ -1822,7 +1893,7 @@ bns_t:'IPC ↔ BNS धारा परिवर्तक', bns_d:'1 जुला
 cases_t:'मेरे केस', cases_d:'हर केस की बातचीत, दस्तावेज़ और समय-सीमाएं — इसी डिवाइस पर निजी।', draft_t:'कानूनी दस्तावेज़ बनाएं', draft_d:'कुछ सवालों के जवाब दें और छापने-जमा करने योग्य दस्तावेज़ पाएं।', court_t:'वर्चुअल अदालत', court_d:'AI जज के सामने दोनों पक्षों की बहस देखें — अपनी कमजोरियां पहले जानें।',
 ncase:'नया केस', shear:'सुनवाई शुरू करें', nround:'अगला दौर', vmode:'आवाज़ मोड' },
 
-hinglish: { nav_home:'Home', nav_chat:'Legal Helper se baat karein', nav_cases:'Mere Cases', nav_draft:'Document banayein', nav_court:'Virtual Adalat', nav_bns:'IPC ↔ BNS Converter', nav_aid:'Legal Aid dhundein', nav_doc:'Legal Document samjhein',
+hinglish: { nav_home:'Home', nav_chat:'Legal Helper se baat karein', nav_cases:'Mere Cases', nav_draft:'Document banayein', nav_court:'Virtual Adalat', nav_bns:'IPC ↔ BNS Converter', nav_crpc:'CrPC ↔ BNSS Converter', nav_aid:'Legal Aid dhundein', nav_doc:'Legal Document samjhein',
 badge:'100% private · aapke device par chalta hai', hero_sub:'Salary nahi mili? Deposit atka hai? Legal notice aaya? Hindi, English ya 9 aur bhashaon mein poochein — free, offline, data bahar nahi jaata.', cta1:'Apna sawaal poochein', cta2:'Kaise kaam karta hai dekhein',
 tr1:'No signup', tr2:'Offline chalta hai', tr3:'11 bhashayein', tr4:'Hamesha free',
 st1:'IPC ↔ BNS sections mapped', st2:'Bhartiya bhashayein', st3:'Cloud ko bheja gaya data',
@@ -1978,7 +2049,7 @@ function applyTranslations() {
   };
 
   // Sidebar nav
-  [['home','nav_home'],['chat','nav_chat'],['cases','nav_cases'],['draft','nav_draft'],['courtroom','nav_court'],['bns','nav_bns'],['legal-aid','nav_aid'],['document','nav_doc']]
+  [['home','nav_home'],['chat','nav_chat'],['cases','nav_cases'],['draft','nav_draft'],['courtroom','nav_court'],['bns','nav_bns'],['crpc','nav_crpc'],['legal-aid','nav_aid'],['document','nav_doc']]
     .forEach(([v, k]) => setText(`.nav-item[data-view="${v}"] .nav-label`, k));
   setWithIcon('.kiosk-launch-btn', 'accessibility', 'vmode');
 

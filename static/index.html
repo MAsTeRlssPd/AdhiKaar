@@ -79,6 +79,10 @@
           <span class="nav-icon"><i data-lucide="repeat"></i></span>
           <span class="nav-label">IPC ↔ BNS Converter</span>
         </div>
+        <div class="nav-item" data-view="crpc" id="nav-crpc">
+          <span class="nav-icon"><i data-lucide="repeat-2"></i></span>
+          <span class="nav-label">CrPC ↔ BNSS Converter</span>
+        </div>
         <div class="nav-item" data-view="legal-aid" id="nav-legal-aid">
           <span class="nav-icon"><i data-lucide="phone"></i></span>
           <span class="nav-label">Find Legal Aid</span>
@@ -233,6 +237,12 @@
             <p>India's criminal law changed on 1 July 2024. Convert old IPC sections to new BNS sections instantly.</p>
             <span class="card-go">Open <i data-lucide="arrow-right"></i></span>
           </div>
+          <div class="feature-card" onclick="navigateTo('crpc')">
+            <div class="card-icon teal"><i data-lucide="repeat-2"></i></div>
+            <h3>CrPC ↔ BNSS Converter</h3>
+            <p>Criminal procedure changed on 1 July 2024. Convert old CrPC sections to new BNSS sections instantly.</p>
+            <span class="card-go">Open <i data-lucide="arrow-right"></i></span>
+          </div>
           <div class="feature-card" onclick="navigateTo('legal-aid')">
             <div class="card-icon green"><i data-lucide="phone"></i></div>
             <h3>Find Legal Aid</h3>
@@ -329,6 +339,29 @@
 
         <div class="results-container" id="bns-results"></div>
         <div id="bns-ai-explanation"></div>
+      </section>
+
+      <!-- ════ CrPC CONVERTER VIEW ════ -->
+      <section class="view crpc-view" id="view-crpc">
+        <div class="view-header">
+          <h2>🔁 CrPC ↔ BNSS Section Converter</h2>
+          <p>India's criminal procedure changed on 1 July 2024. Search any CrPC or BNSS section to find its equivalent.</p>
+        </div>
+
+        <div class="direction-toggle">
+          <button class="toggle-btn active" id="toggle-crpc-bnss" onclick="setCrpcDirection('crpc_to_bnss')">CrPC → BNSS</button>
+          <button class="toggle-btn" id="toggle-bnss-crpc" onclick="setCrpcDirection('bnss_to_crpc')">BNSS → CrPC</button>
+        </div>
+
+        <div class="search-box">
+          <div class="search-input-wrapper">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="crpc-search" placeholder="Search by section number (e.g., 144, 154, 41, 438)" oninput="searchCrpc()">
+          </div>
+        </div>
+
+        <div class="results-container" id="crpc-results"></div>
+        <div id="crpc-ai-explanation"></div>
       </section>
 
       <!-- ════ LEGAL AID VIEW ════ -->

@@ -1,0 +1,542 @@
+[
+  {
+    "crpc_section": "2",
+    "bnss_section": "2",
+    "offence": "Definitions",
+    "crpc_title": "Definitions",
+    "bnss_title": "Definitions",
+    "description": "Defines key terms used throughout the criminal procedure code such as bailable/non-bailable offence, cognizable offence, complaint, investigation and inquiry.",
+    "key_changes": "Definitions retained and modernised. New terms like 'audio-video electronic means' and 'electronic communication' added to support digital procedure.",
+    "category": "Preliminary"
+  },
+  {
+    "crpc_section": "6",
+    "bnss_section": "6",
+    "offence": "Classes of Criminal Courts",
+    "crpc_title": "Classes of Criminal Courts",
+    "bnss_title": "Classes of Criminal Courts",
+    "description": "Sets out the hierarchy of criminal courts: Courts of Session, Judicial Magistrates and Executive Magistrates.",
+    "key_changes": "Structure retained. Metropolitan Magistrate courts abolished; a single class of Judicial Magistrate now applies across the country.",
+    "category": "Constitution of Courts"
+  },
+  {
+    "crpc_section": "35",
+    "bnss_section": "20",
+    "offence": "Power of Superior Officers of Police",
+    "crpc_title": "Powers of superior officers of police",
+    "bnss_title": "Powers of superior officers of police",
+    "description": "Superior police officers may exercise the same powers as an officer in charge of a police station throughout the local area to which they are appointed.",
+    "key_changes": "No substantive change. Renumbered.",
+    "category": "Police"
+  },
+  {
+    "crpc_section": "41",
+    "bnss_section": "35",
+    "offence": "Arrest Without Warrant",
+    "crpc_title": "When police may arrest without warrant",
+    "bnss_title": "When police may arrest without warrant",
+    "description": "Lists the situations in which a police officer may arrest a person without an order from a magistrate and without a warrant, including cognizable offences.",
+    "key_changes": "Safeguards strengthened. For offences punishable up to 7 years, no arrest of an infirm person or a person above 60 years without prior permission of an officer not below DSP rank.",
+    "category": "Arrest"
+  },
+  {
+    "crpc_section": "41A",
+    "bnss_section": "35(3)",
+    "offence": "Notice of Appearance",
+    "crpc_title": "Notice of appearance before police officer",
+    "bnss_title": "Notice of appearance before police officer",
+    "description": "Where arrest is not required, the police must issue a notice directing the person to appear; the person must comply and cannot be arrested if they do so, unless recorded reasons exist.",
+    "key_changes": "Retained with added safeguards for arrest of elderly and infirm persons.",
+    "category": "Arrest"
+  },
+  {
+    "crpc_section": "46",
+    "bnss_section": "43",
+    "offence": "Arrest — How Made",
+    "crpc_title": "Arrest how made",
+    "bnss_title": "Arrest how made",
+    "description": "Explains the manner of making an arrest — actual touch or confinement of the body unless the person submits to custody.",
+    "key_changes": "NEW: Use of handcuffs now expressly permitted for habitual/repeat offenders and specified serious offences (BNSS 43(3)). Women can generally not be arrested after sunset and before sunrise.",
+    "category": "Arrest"
+  },
+  {
+    "crpc_section": "50",
+    "bnss_section": "47",
+    "offence": "Right to Know Grounds of Arrest",
+    "crpc_title": "Person arrested to be informed of grounds of arrest and of right to bail",
+    "bnss_title": "Person arrested to be informed of grounds of arrest and of right to bail",
+    "description": "Every arrested person must be told the full particulars of the offence and, in a bailable case, of their right to be released on bail.",
+    "key_changes": "Retained. Reinforced by the duty to inform family/friends of the arrest.",
+    "category": "Arrest"
+  },
+  {
+    "crpc_section": "41D / 303",
+    "bnss_section": "38",
+    "offence": "Right to Meet Advocate During Interrogation",
+    "crpc_title": "Right of arrested person to meet an advocate",
+    "bnss_title": "Right of arrested person to meet an advocate of his choice during interrogation",
+    "description": "An arrested person is entitled to meet an advocate of their choice during interrogation, though not throughout.",
+    "key_changes": "Right retained and placed with the arrest provisions.",
+    "category": "Arrest"
+  },
+  {
+    "crpc_section": "54",
+    "bnss_section": "53",
+    "offence": "Medical Examination of Arrested Person",
+    "crpc_title": "Examination of arrested person by medical officer",
+    "bnss_title": "Examination of arrested person by medical officer",
+    "description": "An arrested person shall be examined by a medical officer soon after arrest to record any injuries and their condition.",
+    "key_changes": "No substantive change. Renumbered.",
+    "category": "Arrest"
+  },
+  {
+    "crpc_section": "57",
+    "bnss_section": "58",
+    "offence": "24-Hour Production Rule",
+    "crpc_title": "Person arrested not to be detained more than twenty-four hours",
+    "bnss_title": "Person arrested not to be detained more than twenty-four hours",
+    "description": "No police officer shall detain an arrested person for more than 24 hours (excluding travel time) without producing them before a magistrate.",
+    "key_changes": "Constitutional safeguard retained unchanged.",
+    "category": "Arrest"
+  },
+  {
+    "crpc_section": "91",
+    "bnss_section": "94",
+    "offence": "Summons to Produce Document",
+    "crpc_title": "Summons to produce document or other thing",
+    "bnss_title": "Summons to produce document or other thing",
+    "description": "A court or officer in charge of a police station may issue a summons or written order to produce any document or thing necessary for an investigation, inquiry or trial.",
+    "key_changes": "Extended to expressly cover documents and devices held in electronic form.",
+    "category": "Summons & Warrants"
+  },
+  {
+    "crpc_section": "93",
+    "bnss_section": "96",
+    "offence": "Search Warrant",
+    "crpc_title": "When search-warrant may be issued",
+    "bnss_title": "When search-warrant may be issued",
+    "description": "A court may issue a search warrant where a person will not produce a document, where the thing is not known to be in any particular person's possession, or where a general search is needed.",
+    "key_changes": "No substantive change. Renumbered.",
+    "category": "Search & Seizure"
+  },
+  {
+    "crpc_section": "100",
+    "bnss_section": "103",
+    "offence": "Search of Closed Place",
+    "crpc_title": "Persons in charge of closed place to allow search",
+    "bnss_title": "Persons in charge of closed place to allow search",
+    "description": "The occupant of a place being searched must allow free entry and the search must be conducted before independent witnesses.",
+    "key_changes": "Retained; complemented by mandatory audio-video recording of searches under BNSS 105.",
+    "category": "Search & Seizure"
+  },
+  {
+    "crpc_section": "102",
+    "bnss_section": "106",
+    "offence": "Seizure of Property",
+    "crpc_title": "Power of police officer to seize certain property",
+    "bnss_title": "Power of police officer to seize certain property",
+    "description": "A police officer may seize any property alleged or suspected to have been stolen or found in circumstances creating suspicion of an offence.",
+    "key_changes": "No substantive change. Renumbered.",
+    "category": "Search & Seizure"
+  },
+  {
+    "crpc_section": "NEW",
+    "bnss_section": "105",
+    "offence": "Videography of Search & Seizure (NEW)",
+    "crpc_title": "No equivalent in CrPC",
+    "bnss_title": "Recording of search and seizure through audio-video electronic means",
+    "description": "Search and seizure, and the preparation of the list of seized items, must be recorded through audio-video electronic means, preferably a mobile phone, and forwarded to the magistrate.",
+    "key_changes": "BRAND NEW provision. There is no CrPC equivalent — introduces mandatory videography to prevent tampering and false planting of evidence.",
+    "category": "Search & Seizure"
+  },
+  {
+    "crpc_section": "107",
+    "bnss_section": "126",
+    "offence": "Security for Keeping the Peace",
+    "crpc_title": "Security for keeping the peace in other cases",
+    "bnss_title": "Security for keeping the peace in other cases",
+    "description": "An Executive Magistrate may require a person likely to breach the peace to show cause why they should not execute a bond for keeping the peace.",
+    "key_changes": "No substantive change. Renumbered.",
+    "category": "Preventive Action"
+  },
+  {
+    "crpc_section": "125",
+    "bnss_section": "144",
+    "offence": "Maintenance of Wife, Children, Parents",
+    "crpc_title": "Order for maintenance of wives, children and parents",
+    "bnss_title": "Order for maintenance of wives, children and parents",
+    "description": "A person with sufficient means who neglects or refuses to maintain their wife, children or parents unable to maintain themselves may be ordered by a magistrate to pay a monthly allowance.",
+    "key_changes": "Substantively retained. Renumbered from 125 to 144.",
+    "category": "Maintenance"
+  },
+  {
+    "crpc_section": "133",
+    "bnss_section": "152",
+    "offence": "Removal of Public Nuisance",
+    "crpc_title": "Conditional order for removal of nuisance",
+    "bnss_title": "Conditional order for removal of nuisance",
+    "description": "A magistrate may make a conditional order requiring the removal of an unlawful obstruction or nuisance from a public place.",
+    "key_changes": "No substantive change. Renumbered.",
+    "category": "Public Order"
+  },
+  {
+    "crpc_section": "144",
+    "bnss_section": "163",
+    "offence": "Urgent Orders in Cases of Nuisance / Danger",
+    "crpc_title": "Power to issue order in urgent cases of nuisance or apprehended danger",
+    "bnss_title": "Power to issue order in urgent cases of nuisance or apprehended danger",
+    "description": "A District/Executive Magistrate may issue orders to prevent obstruction, annoyance, injury, or a disturbance of public tranquillity — commonly used to prohibit assembly of persons.",
+    "key_changes": "The famous 'Section 144' is now Section 163 of BNSS. Powers substantively unchanged.",
+    "category": "Public Order"
+  },
+  {
+    "crpc_section": "151",
+    "bnss_section": "170",
+    "offence": "Arrest to Prevent Cognizable Offence",
+    "crpc_title": "Arrest to prevent the commission of cognizable offences",
+    "bnss_title": "Arrest to prevent the commission of cognizable offences",
+    "description": "A police officer may arrest, without orders from a magistrate, a person designing to commit a cognizable offence if it cannot otherwise be prevented.",
+    "key_changes": "No substantive change. Renumbered.",
+    "category": "Preventive Action"
+  },
+  {
+    "crpc_section": "154",
+    "bnss_section": "173",
+    "offence": "First Information Report (FIR)",
+    "crpc_title": "Information in cognizable cases",
+    "bnss_title": "Information in cognizable cases",
+    "description": "Information relating to the commission of a cognizable offence must be recorded by the police as a First Information Report (FIR).",
+    "key_changes": "MAJOR CHANGE: FIR can now be registered electronically (e-FIR) and irrespective of jurisdiction (Zero FIR). For offences punishable between 3 and 7 years, a preliminary enquiry within 14 days may precede registration.",
+    "category": "Investigation"
+  },
+  {
+    "crpc_section": "155",
+    "bnss_section": "174",
+    "offence": "Non-Cognizable Offences",
+    "crpc_title": "Information as to non-cognizable cases and investigation of such cases",
+    "bnss_title": "Information as to non-cognizable cases and investigation of such cases",
+    "description": "In non-cognizable cases the police record the information and refer the informant to a magistrate; investigation needs the magistrate's order.",
+    "key_changes": "Retained with a duty to record and forward such information.",
+    "category": "Investigation"
+  },
+  {
+    "crpc_section": "156",
+    "bnss_section": "175",
+    "offence": "Police Power to Investigate",
+    "crpc_title": "Police officer's power to investigate cognizable case",
+    "bnss_title": "Police officer's power to investigate cognizable case",
+    "description": "An officer in charge of a police station may investigate a cognizable case without the order of a magistrate; a magistrate may also order such investigation.",
+    "key_changes": "Retained. A magistrate may now require a preliminary consideration and the police officer's supervisory response before ordering investigation.",
+    "category": "Investigation"
+  },
+  {
+    "crpc_section": "157",
+    "bnss_section": "176",
+    "offence": "Procedure for Investigation",
+    "crpc_title": "Procedure for investigation",
+    "bnss_title": "Procedure for investigation",
+    "description": "Sets out the steps the police take on receiving information of a cognizable offence — proceeding to the spot, investigating facts and taking measures for arrest.",
+    "key_changes": "MAJOR CHANGE: Forensic investigation and videography of the crime scene are now mandatory for offences punishable with 7 years or more.",
+    "category": "Investigation"
+  },
+  {
+    "crpc_section": "161",
+    "bnss_section": "180",
+    "offence": "Examination of Witnesses by Police",
+    "crpc_title": "Examination of witnesses by police",
+    "bnss_title": "Examination of witnesses by police",
+    "description": "The police may examine orally any person supposed to be acquainted with the facts of the case and record their statements.",
+    "key_changes": "NEW: Statements may be recorded by audio-video electronic means. Statements of women against whom certain offences are alleged shall be recorded by a woman officer.",
+    "category": "Investigation"
+  },
+  {
+    "crpc_section": "164",
+    "bnss_section": "183",
+    "offence": "Recording of Confessions and Statements",
+    "crpc_title": "Recording of confessions and statements",
+    "bnss_title": "Recording of confessions and statements",
+    "description": "A magistrate may record confessions and statements made during investigation, with safeguards to ensure they are voluntary.",
+    "key_changes": "Retained with expanded use of audio-video recording for statements of vulnerable victims and witnesses.",
+    "category": "Investigation"
+  },
+  {
+    "crpc_section": "167",
+    "bnss_section": "187",
+    "offence": "Remand / Custody During Investigation",
+    "crpc_title": "Procedure when investigation cannot be completed in twenty-four hours",
+    "bnss_title": "Procedure when investigation cannot be completed in twenty-four hours",
+    "description": "Where investigation cannot be finished in 24 hours, the accused is produced before a magistrate who may authorise detention (police or judicial custody).",
+    "key_changes": "MAJOR CHANGE: The 15-day police custody may now be sought in parts spread across the first 40 or 60 days of the total investigation period, rather than only the first 15 days.",
+    "category": "Investigation"
+  },
+  {
+    "crpc_section": "173",
+    "bnss_section": "193",
+    "offence": "Police Report / Chargesheet",
+    "crpc_title": "Report of police officer on completion of investigation",
+    "bnss_title": "Report of police officer on completion of investigation",
+    "description": "On completing the investigation the police file a final report (chargesheet) before the magistrate empowered to take cognizance.",
+    "key_changes": "MAJOR CHANGE: Investigation to be completed and chargesheet filed within 90 days (extendable by 90). The informant must be updated on progress within 90 days, including by electronic means.",
+    "category": "Investigation"
+  },
+  {
+    "crpc_section": "176",
+    "bnss_section": "196",
+    "offence": "Magisterial Inquiry into Death",
+    "crpc_title": "Inquiry by Magistrate into cause of death",
+    "bnss_title": "Inquiry by Magistrate into cause of death",
+    "description": "A magistrate holds an inquiry into deaths in police custody, or of persons in custody, and other specified deaths.",
+    "key_changes": "Retained. Mandatory magisterial inquiry for deaths and rape in police custody reinforced.",
+    "category": "Investigation"
+  },
+  {
+    "crpc_section": "190",
+    "bnss_section": "210",
+    "offence": "Cognizance of Offences by Magistrate",
+    "crpc_title": "Cognizance of offences by Magistrates",
+    "bnss_title": "Cognizance of offences by Magistrates",
+    "description": "A magistrate may take cognizance of an offence on a complaint, on a police report, or on information/own knowledge.",
+    "key_changes": "No substantive change. Renumbered.",
+    "category": "Trial Procedure"
+  },
+  {
+    "crpc_section": "197",
+    "bnss_section": "218",
+    "offence": "Sanction to Prosecute Public Servants",
+    "crpc_title": "Prosecution of Judges and public servants",
+    "bnss_title": "Prosecution of Judges and public servants",
+    "description": "Prior sanction of the government is required to prosecute judges, magistrates and public servants for acts done in discharge of official duty.",
+    "key_changes": "NEW: A decision on the grant of sanction must be taken within 120 days of the request, failing which sanction is deemed granted.",
+    "category": "Trial Procedure"
+  },
+  {
+    "crpc_section": "200",
+    "bnss_section": "223",
+    "offence": "Examination of Complainant",
+    "crpc_title": "Examination of complainant",
+    "bnss_title": "Examination of complainant",
+    "description": "A magistrate taking cognizance on a complaint examines the complainant and witnesses on oath.",
+    "key_changes": "NEW: A public servant cannot be proceeded against on a complaint without giving them an opportunity to be heard, and their superior's report.",
+    "category": "Trial Procedure"
+  },
+  {
+    "crpc_section": "202",
+    "bnss_section": "225",
+    "offence": "Postponement of Issue of Process",
+    "crpc_title": "Postponement of issue of process",
+    "bnss_title": "Postponement of issue of process",
+    "description": "A magistrate may postpone issuing process against the accused and inquire into the case, or direct an investigation, to decide whether there is sufficient ground to proceed.",
+    "key_changes": "No substantive change. Renumbered.",
+    "category": "Trial Procedure"
+  },
+  {
+    "crpc_section": "207",
+    "bnss_section": "230",
+    "offence": "Supply of Documents to Accused",
+    "crpc_title": "Supply to the accused of copy of police report and other documents",
+    "bnss_title": "Supply to the accused of copy of police report and other documents",
+    "description": "The accused must be given free copies of the police report, FIR, statements and other documents the prosecution relies on.",
+    "key_changes": "NEW: Copies must be supplied within 14 days and may be furnished in electronic form.",
+    "category": "Trial Procedure"
+  },
+  {
+    "crpc_section": "209",
+    "bnss_section": "232",
+    "offence": "Commitment to Court of Session",
+    "crpc_title": "Commitment of case to Court of Session when offence is triable exclusively by it",
+    "bnss_title": "Commitment of case to Court of Session",
+    "description": "Where an offence is triable exclusively by the Court of Session, the magistrate commits the case to that court.",
+    "key_changes": "NEW: Commitment to be made within 90 days of taking cognizance (extendable for reasons recorded).",
+    "category": "Trial Procedure"
+  },
+  {
+    "crpc_section": "227",
+    "bnss_section": "250",
+    "offence": "Discharge of Accused",
+    "crpc_title": "Discharge",
+    "bnss_title": "Discharge",
+    "description": "If, on considering the record, the judge finds no sufficient ground to proceed, the accused is discharged.",
+    "key_changes": "NEW: An application for discharge must be filed within 60 days of committal.",
+    "category": "Trial Procedure"
+  },
+  {
+    "crpc_section": "228",
+    "bnss_section": "251",
+    "offence": "Framing of Charge",
+    "crpc_title": "Framing of charge",
+    "bnss_title": "Framing of charge",
+    "description": "If there is ground to presume the accused committed the offence, the judge frames a charge in writing.",
+    "key_changes": "Retained with fixed timelines to speed up trials.",
+    "category": "Trial Procedure"
+  },
+  {
+    "crpc_section": "235",
+    "bnss_section": "258",
+    "offence": "Judgment of Acquittal or Conviction",
+    "crpc_title": "Judgment of acquittal or conviction",
+    "bnss_title": "Judgment of acquittal or conviction",
+    "description": "After hearing arguments the court delivers a judgment either acquitting or convicting the accused.",
+    "key_changes": "NEW: Judgment must be pronounced within 30 days (extendable to 45) of completion of arguments.",
+    "category": "Trial Procedure"
+  },
+  {
+    "crpc_section": "309",
+    "bnss_section": "346",
+    "offence": "Adjournment / Postponement of Proceedings",
+    "crpc_title": "Power to postpone or adjourn proceedings",
+    "bnss_title": "Power to postpone or adjourn proceedings",
+    "description": "The court may postpone or adjourn an inquiry or trial, recording reasons, but must ordinarily proceed day-to-day once examination of witnesses begins.",
+    "key_changes": "NEW: No more than two adjournments may be granted to a party, and only after hearing the opposite side.",
+    "category": "Trial Procedure"
+  },
+  {
+    "crpc_section": "313",
+    "bnss_section": "351",
+    "offence": "Examination of the Accused",
+    "crpc_title": "Power to examine the accused",
+    "bnss_title": "Power to examine the accused",
+    "description": "The court questions the accused on the circumstances appearing in evidence against them, to enable a personal explanation.",
+    "key_changes": "No substantive change. Renumbered.",
+    "category": "Trial Procedure"
+  },
+  {
+    "crpc_section": "320",
+    "bnss_section": "359",
+    "offence": "Compounding of Offences",
+    "crpc_title": "Compounding of offences",
+    "bnss_title": "Compounding of offences",
+    "description": "Lists offences that may be settled (compounded) between the parties, some with the court's permission, leading to acquittal.",
+    "key_changes": "Updated to refer to the new BNS section numbers for each compoundable offence.",
+    "category": "Trial Procedure"
+  },
+  {
+    "crpc_section": "NEW",
+    "bnss_section": "356",
+    "offence": "Trial in Absentia (NEW)",
+    "crpc_title": "No equivalent in CrPC",
+    "bnss_title": "Inquiry, trial or judgment in absentia of proclaimed offender",
+    "description": "A proclaimed offender who has absconded to evade trial may be tried, and judgment pronounced, in their absence after specified safeguards and notice.",
+    "key_changes": "BRAND NEW provision. The CrPC had no full trial-in-absentia mechanism — this allows completion of trial against fugitives such as absconding economic offenders.",
+    "category": "Trial Procedure"
+  },
+  {
+    "crpc_section": "357",
+    "bnss_section": "395",
+    "offence": "Compensation to Victim",
+    "crpc_title": "Order to pay compensation",
+    "bnss_title": "Order to pay compensation",
+    "description": "The court imposing a fine may order that it be applied towards compensating a victim for loss or injury caused by the offence.",
+    "key_changes": "No substantive change. Renumbered.",
+    "category": "Sentencing & Compensation"
+  },
+  {
+    "crpc_section": "357A",
+    "bnss_section": "396",
+    "offence": "Victim Compensation Scheme",
+    "crpc_title": "Victim compensation scheme",
+    "bnss_title": "Victim compensation scheme",
+    "description": "State governments must prepare a scheme to provide funds for compensating victims who need rehabilitation, in coordination with the Central scheme.",
+    "key_changes": "Retained and reinforced, with witness protection scheme obligations elsewhere in BNSS.",
+    "category": "Sentencing & Compensation"
+  },
+  {
+    "crpc_section": "360",
+    "bnss_section": "401",
+    "offence": "Release on Probation of Good Conduct",
+    "crpc_title": "Order to release on probation of good conduct or after admonition",
+    "bnss_title": "Order to release on probation of good conduct or after admonition",
+    "description": "The court may release certain first-time or minor offenders on probation of good conduct instead of sentencing them at once.",
+    "key_changes": "Retained. BNSS also introduces community service as a distinct form of punishment for petty offences.",
+    "category": "Sentencing & Compensation"
+  },
+  {
+    "crpc_section": "374",
+    "bnss_section": "415",
+    "offence": "Appeals from Convictions",
+    "crpc_title": "Appeals from convictions",
+    "bnss_title": "Appeals from convictions",
+    "description": "Provides the right of appeal to a convicted person, to the High Court or Court of Session depending on the sentencing court.",
+    "key_changes": "No substantive change. Renumbered.",
+    "category": "Appeals"
+  },
+  {
+    "crpc_section": "389",
+    "bnss_section": "430",
+    "offence": "Suspension of Sentence Pending Appeal",
+    "crpc_title": "Suspension of sentence pending the appeal; release of appellant on bail",
+    "bnss_title": "Suspension of sentence pending the appeal; release of appellant on bail",
+    "description": "The appellate court may suspend the execution of the sentence and release the convicted appellant on bail while the appeal is pending.",
+    "key_changes": "No substantive change. Renumbered.",
+    "category": "Appeals"
+  },
+  {
+    "crpc_section": "436",
+    "bnss_section": "478",
+    "offence": "Bail in Bailable Offences",
+    "crpc_title": "In what cases bail to be taken",
+    "bnss_title": "In what cases bail to be taken",
+    "description": "In a bailable offence the accused has a right to be released on bail by the police or the court.",
+    "key_changes": "No substantive change. Renumbered.",
+    "category": "Bail"
+  },
+  {
+    "crpc_section": "436A",
+    "bnss_section": "479",
+    "offence": "Maximum Detention of Undertrial Prisoners",
+    "crpc_title": "Maximum period for which an undertrial prisoner can be detained",
+    "bnss_title": "Maximum period for which an undertrial prisoner can be detained",
+    "description": "An undertrial who has been detained for half the maximum sentence for the offence must be released on bond.",
+    "key_changes": "NEW: A first-time offender (never convicted before) is entitled to release on bond after serving one-third of the maximum period of detention.",
+    "category": "Bail"
+  },
+  {
+    "crpc_section": "437",
+    "bnss_section": "480",
+    "offence": "Bail in Non-Bailable Offences",
+    "crpc_title": "When bail may be taken in case of non-bailable offence",
+    "bnss_title": "When bail may be taken in case of non-bailable offence",
+    "description": "Sets out when a court may grant bail in a non-bailable offence and the conditions and restrictions that may apply.",
+    "key_changes": "No substantive change. Renumbered.",
+    "category": "Bail"
+  },
+  {
+    "crpc_section": "438",
+    "bnss_section": "482",
+    "offence": "Anticipatory Bail",
+    "crpc_title": "Direction for grant of bail to person apprehending arrest",
+    "bnss_title": "Direction for grant of bail to person apprehending arrest",
+    "description": "A person who apprehends arrest for a non-bailable offence may seek anticipatory bail from the High Court or Court of Session.",
+    "key_changes": "No substantive change. Renumbered from 438 to 482.",
+    "category": "Bail"
+  },
+  {
+    "crpc_section": "439",
+    "bnss_section": "483",
+    "offence": "Special Powers of High Court / Sessions Court re Bail",
+    "crpc_title": "Special powers of High Court or Court of Session regarding bail",
+    "bnss_title": "Special powers of High Court or Court of Session regarding bail",
+    "description": "The High Court or Court of Session has wide powers to grant bail, impose conditions, and set aside or modify bail conditions.",
+    "key_changes": "No substantive change. Renumbered.",
+    "category": "Bail"
+  },
+  {
+    "crpc_section": "468",
+    "bnss_section": "514",
+    "offence": "Limitation for Taking Cognizance",
+    "crpc_title": "Bar to taking cognizance after lapse of the period of limitation",
+    "bnss_title": "Bar to taking cognizance after lapse of the period of limitation",
+    "description": "Bars a court from taking cognizance of certain minor offences after the limitation period, which depends on the maximum punishment.",
+    "key_changes": "No substantive change. Renumbered.",
+    "category": "Limitation"
+  },
+  {
+    "crpc_section": "NEW",
+    "bnss_section": "530",
+    "offence": "Electronic Mode of Trial & Proceedings (NEW)",
+    "crpc_title": "No equivalent in CrPC",
+    "bnss_title": "Trials and proceedings to be held in electronic mode",
+    "description": "All trials, inquiries and proceedings — including issue of summons, examination of witnesses and recording of evidence — may be held in electronic mode.",
+    "key_changes": "BRAND NEW provision enabling end-to-end digital criminal proceedings, with no direct CrPC counterpart.",
+    "category": "Digital Procedure"
+  }
+]
