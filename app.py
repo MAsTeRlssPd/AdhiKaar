@@ -169,7 +169,8 @@ CRITICAL BEHAVIOR RULES:
 
 3. **RESPONSE FORMAT** (after confirmation):
    📌 **Your Rights**: List 3-5 key rights that apply
-   📋 **What You Should Do**: Step-by-step action plan (numbered)
+   🔀 **Your Options**: Lay out 2-3 different paths the person can realistically take (for example: direct negotiation, sending a legal notice, filing a formal complaint or FIR, approaching a government authority or ombudsman). For EACH option, briefly state the trade-off — how much time, cost, and effort it takes, and how strong the likely outcome is — so the person can make an informed choice, not just follow one path.
+   📋 **What You Should Do**: Recommend the best option for their situation and give a step-by-step action plan (numbered)
    ⏰ **Important Deadlines**: Any time-sensitive actions
    📞 **Get Help**: Relevant helpline numbers
    ⚠️ **Protective Advisory**: (only if power imbalance detected)

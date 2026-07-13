@@ -290,11 +290,12 @@
         <div class="chat-input-container">
           <div class="chat-input-wrapper">
             <textarea id="chat-input" rows="1" placeholder="Describe your legal problem here..." onkeydown="handleChatKeydown(event)"></textarea>
+            <button class="voice-btn" id="autospeak-btn" onclick="toggleAutoSpeak()" title="Auto-read answers aloud" aria-label="Auto-read answers aloud"><i data-lucide="volume-2"></i></button>
             <button class="voice-btn" id="voice-btn" onclick="toggleVoice()" title="Voice input" aria-label="Voice input"><i data-lucide="mic"></i></button>
             <button class="send-btn" id="send-btn" onclick="sendMessage()" title="Send message" aria-label="Send message"><i data-lucide="send"></i></button>
           </div>
           <div class="chat-input-hint">
-            Press Enter to send · Shift+Enter for new line · tap the mic for voice input
+            Press Enter to send · Shift+Enter for new line · tap the mic to speak · 🔊 to auto-read answers
           </div>
           <div class="chat-disclaimer">
             अधिKaar provides legal information, not legal advice. For complex matters, consult a qualified lawyer or call NALSA: 15100.
