@@ -14,6 +14,7 @@ import sys
 import uuid
 import traceback
 import re
+from urllib.parse import urlparse
 
 # Fix Windows console encoding for emoji/Unicode in print() statements
 if hasattr(sys.stdout, 'reconfigure'):
@@ -1003,6 +1004,161 @@ def rights_card():
                 "helplines": ["NALSA: 15100", "Tele-Law: 14454", "Police: 112", "Women: 181"]
             }})
     
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
+# ══════════════════════════════════════════════════════════════
+# Law & Next Steps — single verified structured analysis
+# ══════════════════════════════════════════════════════════════
+
+NATIONAL_URLS = [
+    {"title": "India Code — Bharatiya Nyaya Sanhita / BNSS and all central acts",
+     "url": "https://www.indiacode.nic.in"},
+    {"title": "NALSA — free legal aid and helpline 15100",
+     "url": "https://nalsa.gov.in"},
+]
+
+def _official_urls():
+    """Every official URL we are willing to show, taken from bundled legal-aid data."""
+    urls = [u["url"] for u in NATIONAL_URLS]
+    for st in LEGAL_AID_DATA.get('states', []):
+        site = (st.get('slsa') or {}).get('website') or st.get('website')
+        if site and site not in urls:
+            urls.append(site)
+    return urls
+
+def _sanitize_sources(sources, rag_context):
+    """Deterministic citation guard, ported from Nyaya's verifier.
+
+    A model can produce a confident deep link to a page that does not exist, and a
+    fabricated legal citation is exactly the failure this feature exists to prevent.
+    So: a URL is shown verbatim only if it appears in data we actually retrieved.
+    Anything else collapses to the domain root of a known official site, and an
+    unknown host is dropped to India Code. No prompt rule can guarantee this; this
+    check can.
+    """
+    known = set(_official_urls())
+    known.update(re.findall(r'https?://[^\s,;"\')<>]+', rag_context or ''))
+    roots = {urlparse(u).netloc.lower(): u for u in _official_urls()}
+
+    cleaned = []
+    for src in (sources or []):
+        if not isinstance(src, dict):
+            continue
+        title = str(src.get('title') or '').strip() or 'Official source'
+        url = str(src.get('url') or '').strip()
+        if url not in known:
+            # Not something we retrieved — keep the domain if it is official, drop the path.
+            url = roots.get(urlparse(url).netloc.lower(), NATIONAL_URLS[0]["url"])
+        cleaned.append({"title": title, "url": url})
+
+    # Always leave the person somewhere official to go.
+    if not cleaned:
+        cleaned = list(NATIONAL_URLS)
+    return cleaned
+
+LAW_STEPS_PROMPT = """You are an Indian legal expert producing ONE verified, structured analysis of a citizen's situation. Assert legal provisions (BNS/BNSS/act sections) ONLY if they appear in the CONTEXT below. You may mention a clearly relevant section that is missing from the CONTEXT, but you MUST then mark its verification status as "unverified". Never invent section numbers.
+
+Return ONLY valid JSON (no text before or after) in EXACTLY this shape:
+{{
+  "situation_and_law": "Markdown. First restate the person's situation in 2-3 plain sentences. Then give the applicable law with specific BNS/BNSS/act section numbers and what each does.",
+  "verification": [
+    {{"claim": "one legal statement you made above", "supported_by": "which CONTEXT source or section supports it, or 'No retrieved source'", "status": "verified"}}
+  ],
+  "sources": [
+    {{"title": "Bharatiya Nyaya Sanhita, 2023 — Section X", "url": "https://www.indiacode.nic.in"}}
+  ],
+  "stress_test": {{
+    "for": ["arguments that support the person's position"],
+    "against": ["arguments the opposing side will make against them"],
+    "weaknesses": ["honest weak points in the person's own position"]
+  }},
+  "rights_card": {{
+    "title": "short shareable title",
+    "rights": [{{"text": "one right in plain language", "source": "BNS Section X / Act name"}}]
+  }},
+  "explain_simply": "A short jargon-free paragraph the person can read aloud to family."
+}}
+
+RULES:
+- Every section number used in situation_and_law MUST also appear as a "verification" entry with a "status" of "verified" (supported by CONTEXT) or "unverified" (not in CONTEXT).
+- For "sources" urls use https://www.indiacode.nic.in for any act/section, https://nalsa.gov.in for legal aid, or an official URL copied exactly from the CONTEXT. Never invent a deep link — if unsure of the page, give the domain root.
+- Keep each list to 2-5 concise items. Every rights_card right MUST carry a "source".
+
+{language_instruction}
+
+CONTEXT FROM KNOWLEDGE BASE:
+{rag_context}
+"""
+
+@app.route('/api/law-and-steps', methods=['POST'])
+def law_and_steps():
+    """Single verified 'Law & Next Steps' analysis with six panels."""
+    try:
+        data = request.get_json(silent=True) or {}
+        situation = data.get('situation', '').strip()
+        language = data.get('language', 'en')
+        session_id = data.get('session_id', '')
+
+        if not situation:
+            return jsonify({"error": "No situation provided"}), 400
+
+        # Retrieve grounding context from all three collections + in-memory boosters
+        search_query = preprocess_query_for_rag(situation, language)
+        rag_context = ""
+        if ipc_bns_collection:
+            rag_context += retrieve_context(search_query, ipc_bns_collection, n_results=3)
+        if rights_collection:
+            rag_context += "\n" + retrieve_context(search_query, rights_collection, n_results=3)
+        if legal_aid_collection:
+            rag_context += "\n" + retrieve_context(search_query, legal_aid_collection, n_results=2)
+
+        extra_bns = check_section_keywords(situation)
+        if extra_bns:
+            rag_context += "\n" + extra_bns
+        extra_rights = check_case_type_keywords(situation)
+        if extra_rights and extra_rights[:100] not in rag_context:
+            rag_context += "\n" + extra_rights
+
+        system_prompt = LAW_STEPS_PROMPT.format(
+            language_instruction=get_language_instruction(language),
+            rag_context=rag_context or "(no matching sources retrieved)"
+        )
+
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": f"Situation:\n{situation}\n\nProduce the verified JSON analysis."}
+        ]
+
+        response_text = call_gemma(messages, temperature=0.3)
+
+        # Parse JSON (handle markdown code fences, same approach as rights-card)
+        json_text = response_text
+        if '```json' in json_text:
+            json_text = json_text.split('```json')[1].split('```')[0]
+        elif '```' in json_text:
+            json_text = json_text.split('```')[1].split('```')[0]
+
+        try:
+            result = json.loads(json_text.strip())
+        except json.JSONDecodeError:
+            # Fail soft: at least show the model's prose in panel (a)
+            result = {
+                "situation_and_law": response_text,
+                "verification": [],
+                "sources": [],
+                "stress_test": {"for": [], "against": [], "weaknesses": []},
+                "rights_card": {"title": "Your Rights", "rights": []},
+                "explain_simply": ""
+            }
+
+        # No citation reaches the user without passing the deterministic guard.
+        result["sources"] = _sanitize_sources(result.get("sources"), rag_context)
+
+        return jsonify({"result": result, "session_id": session_id})
+
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500

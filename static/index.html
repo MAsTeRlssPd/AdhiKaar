@@ -59,6 +59,10 @@
           <span class="nav-icon"><i data-lucide="message-circle"></i></span>
           <span class="nav-label">Talk to Legal Helper</span>
         </div>
+        <div class="nav-item" data-view="lawsteps" id="nav-lawsteps">
+          <span class="nav-icon"><i data-lucide="clipboard-check"></i></span>
+          <span class="nav-label">Law &amp; Next Steps</span>
+        </div>
         <div class="nav-item" data-view="cases" id="nav-cases">
           <span class="nav-icon"><i data-lucide="folder-open"></i></span>
           <span class="nav-label">My Cases</span>
@@ -243,6 +247,12 @@
             <p>Criminal procedure changed on 1 July 2024. Convert old CrPC sections to new BNSS sections instantly.</p>
             <span class="card-go">Open <i data-lucide="arrow-right"></i></span>
           </div>
+          <div class="feature-card" onclick="navigateTo('lawsteps')">
+            <div class="card-icon blue"><i data-lucide="clipboard-check"></i></div>
+            <h3>Law &amp; Next Steps</h3>
+            <p>One verified answer: the law that applies, both sides stress-tested, official sources, and a rights card you can share.</p>
+            <span class="card-go">Open <i data-lucide="arrow-right"></i></span>
+          </div>
         </div>
       </section>
 
@@ -313,6 +323,32 @@
             </div>
           </div>
         </div>
+      </section>
+
+      <!-- ════ LAW & NEXT STEPS VIEW ════ -->
+      <section class="view lawsteps-view" id="view-lawsteps">
+        <div class="view-header">
+          <h2><i data-lucide="clipboard-check" class="inline-icon"></i> Law &amp; Next Steps</h2>
+          <p>Describe your situation once and get a single verified answer — the law that applies, how each claim was checked, official sources, both sides stress-tested, a rights card, and a plain summary to share.</p>
+        </div>
+
+        <div class="ls-setup" id="ls-setup">
+          <div class="court-setup-card">
+            <label for="ls-situation"><i data-lucide="scroll-text"></i> Your situation</label>
+            <textarea id="ls-situation" placeholder="Describe what happened in your own words — or start a chat first and it will be filled automatically..."></textarea>
+            <div class="court-examples">
+              <span>Try an example:</span>
+              <button onclick="lsExample('My employer has not paid my salary for 3 months')">Unpaid salary</button>
+              <button onclick="lsExample('My landlord is not returning my security deposit')">Security deposit</button>
+              <button onclick="lsExample('Police refused to file my FIR')">FIR not filed</button>
+            </div>
+            <div class="court-start-row">
+              <button class="btn btn-primary" onclick="runLawSteps()"><i data-lucide="sparkles"></i> Get Full Analysis</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="ls-result" id="ls-result" style="display:none"></div>
       </section>
 
       <!-- ════ SECTION CONVERTER VIEW (IPC↔BNS + CrPC↔BNSS) ════ -->

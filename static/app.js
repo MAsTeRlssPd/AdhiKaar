@@ -129,6 +129,10 @@ function navigateTo(viewName) {
 
   // Initialize view-specific content
   if (viewName === 'legal-aid') initLegalAid();
+  if (viewName === 'lawsteps') {
+    const ta = $('ls-situation');
+    if (ta && !ta.value.trim() && state.lastSituation) ta.value = state.lastSituation;
+  }
   if (viewName === 'chat') {
     const input = $('chat-input');
     if (input) setTimeout(() => input.focus(), 100);
@@ -308,6 +312,7 @@ function addMessage(role, content, options = {}) {
         { label: 'Explain to Elder', icon: 'users', cls: '', fn: () => runPanchayatBridge() },
         { label: 'Rights Card', icon: 'id-card', cls: '', fn: () => generateRightsCard() },
         { label: 'Checklist', icon: 'list-checks', cls: '', fn: () => generateChecklist() },
+        { label: 'Full Analysis', icon: 'clipboard-check', cls: '', fn: () => { navigateTo('lawsteps'); runLawSteps(); } },
       ];
 
       actions.forEach(action => {
@@ -2102,6 +2107,133 @@ function quickAskVoice() {
 }
 
 // ══════════════════════════════════════════════════════════════
+// Law & Next Steps — single verified structured analysis
+// ══════════════════════════════════════════════════════════════
+
+function lsExample(text) {
+  const ta = $('ls-situation');
+  if (ta) ta.value = text;
+  runLawSteps();
+}
+
+async function runLawSteps() {
+  const ta = $('ls-situation');
+  const situation = (ta && ta.value.trim()) || state.lastSituation || '';
+  if (!situation) { showToast(t('ls_need')); return; }
+  if (ta && !ta.value.trim()) ta.value = situation;
+  state.lastSituation = situation;
+
+  const box = $('ls-result');
+  box.style.display = 'block';
+  box.innerHTML = `<div class="ls-loading"><div class="typing-dots"><span></span><span></span><span></span></div> <span>${t('ls_wait')}</span></div>`;
+  box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  try {
+    const data = await apiCall('/api/law-and-steps', {
+      method: 'POST',
+      body: JSON.stringify({ situation, language: state.language, session_id: state.sessionId }),
+    });
+    renderLawSteps(data.result || {});
+  } catch (e) {
+    box.innerHTML = `<div class="chat-disclaimer">${t('ls_err')}</div>`;
+  }
+}
+
+function lsPanel(icon, title, bodyHtml, open) {
+  return `<details class="ls-panel"${open ? ' open' : ''}>
+    <summary><i data-lucide="${icon}" class="inline-icon"></i> ${escapeHtml(title)}</summary>
+    <div class="ls-panel-body">${bodyHtml}</div>
+  </details>`;
+}
+
+function lsList(items, render) {
+  if (!Array.isArray(items) || !items.length) return `<p class="ls-empty">${t('ls_none')}</p>`;
+  return '<ul class="ls-ul">' + items.map(render).join('') + '</ul>';
+}
+
+function renderLawSteps(r) {
+  const box = $('ls-result');
+  window._lsRightsCard = r.rights_card || null;
+  window._lsExplain = r.explain_simply || '';
+
+  // (a) Your situation & the law
+  const a = lsPanel('scale', t('ls_a'),
+    `<div class="markdown-body">${renderMarkdown(r.situation_and_law || '')}</div>`, true);
+
+  // (b) How each statement was checked — claim-level verification
+  const b = lsPanel('search-check', t('ls_b'),
+    lsList(r.verification, v => {
+      const ok = String(v.status || '').toLowerCase() === 'verified';
+      return `<li class="ls-verify">
+        <span class="ls-badge ${ok ? 'ok' : 'warn'}">${ok ? t('ls_verified') : t('ls_unverified')}</span>
+        <span class="ls-claim">${escapeHtml(v.claim || '')}</span>
+        <span class="ls-support">${escapeHtml(v.supported_by || '')}</span>
+      </li>`;
+    }), true);
+
+  // (c) Official sources with links
+  const c = lsPanel('link', t('ls_c'),
+    lsList(r.sources, src => {
+      const url = String(src.url || '').startsWith('http') ? src.url : '';
+      const title = escapeHtml(src.title || url || 'Source');
+      return `<li>${url
+        ? `<a href="${escapeHtml(url)}" target="_blank" rel="noopener">${title} <i data-lucide="external-link" class="inline-icon"></i></a>`
+        : title}</li>`;
+    }), false);
+
+  // (d) Stress test from both sides
+  const st = r.stress_test || {};
+  const stressHtml = `
+    <div class="ls-stress">
+      <div class="ls-stress-col ls-for"><h5><i data-lucide="thumbs-up" class="inline-icon"></i> ${t('ls_for')}</h5>${lsList(st.for, x => `<li>${escapeHtml(x)}</li>`)}</div>
+      <div class="ls-stress-col ls-against"><h5><i data-lucide="thumbs-down" class="inline-icon"></i> ${t('ls_against')}</h5>${lsList(st.against, x => `<li>${escapeHtml(x)}</li>`)}</div>
+      <div class="ls-stress-col ls-weak"><h5><i data-lucide="alert-triangle" class="inline-icon"></i> ${t('ls_weak')}</h5>${lsList(st.weaknesses, x => `<li>${escapeHtml(x)}</li>`)}</div>
+    </div>`;
+  const d = lsPanel('swords', t('ls_d'), stressHtml, false);
+
+  // (e) Rights card — reuses the shareable rights-card styling
+  const rc = r.rights_card || {};
+  const rightsHtml = `
+    <div class="rights-card-preview ls-rights">
+      <div class="card-header"><span class="card-logo">⚖️</span><h4>${escapeHtml(rc.title || t('ls_rights'))}</h4></div>
+      <ul class="card-rights">${(rc.rights || []).map(x =>
+        `<li>${escapeHtml(x.text || '')}${x.source ? `<span class="ls-rc-src">${escapeHtml(x.source)}</span>` : ''}</li>`).join('')}</ul>
+      <div class="card-footer">अधिKaar — AI Legal Assistant</div>
+    </div>
+    <div class="input-actions" style="margin-top:12px">
+      <button class="btn btn-secondary btn-sm" onclick="openLsRightsCard()"><i data-lucide="share-2"></i> ${t('ls_share')}</button>
+    </div>`;
+  const e = lsPanel('id-card', t('ls_e'), rightsHtml, false);
+
+  // (f) Explain to someone you trust
+  const f = lsPanel('users', t('ls_f'),
+    `<div class="markdown-body">${renderMarkdown(r.explain_simply || '')}</div>
+     <div class="input-actions" style="margin-top:8px">
+       <button class="btn btn-secondary btn-sm" onclick="toggleSpeak(this, window._lsExplain)"><i data-lucide="volume-2"></i> ${t('ls_listen')}</button>
+     </div>`, false);
+
+  box.innerHTML = a + b + c + d + e + f;
+  refreshIcons();
+}
+
+// Reuse the existing shareable Rights Card modal (download/share already wired)
+function openLsRightsCard() {
+  const rc = window._lsRightsCard;
+  if (!rc) return;
+  $('card-title').textContent = rc.title || t('ls_rights');
+  $('card-situation').textContent = (state.lastSituation || '').slice(0, 120);
+  const list = $('card-rights');
+  list.innerHTML = '';
+  (rc.rights || []).forEach(x => {
+    const li = document.createElement('li');
+    li.textContent = x.source ? `${x.text} (${x.source})` : x.text;
+    list.appendChild(li);
+  });
+  $('card-helplines').innerHTML = '<strong>📞 Emergency Numbers:</strong><span>NALSA: 15100 | Tele-Law: 14454 | Police: 112 | Women: 181</span>';
+  $('rights-card-modal').classList.add('active');
+}
+
+// ══════════════════════════════════════════════════════════════
 // THEME (light default, dark opt-in)
 // ══════════════════════════════════════════════════════════════
 
@@ -2147,7 +2279,11 @@ c1:'Unpaid salary', c2:'Security deposit', c3:'Got a legal notice', c4:'FIR not 
 cph:'Describe your legal problem here...', chint:'Press Enter to send · Shift+Enter for new line · tap the mic for voice input', cdisc:'अधिKaar provides legal information, not legal advice. For complex matters, consult a qualified lawyer or call NALSA: 15100.',
 bns_t:'IPC ↔ BNS Section Converter', bns_d:'India\'s criminal law changed on 1 July 2024. Search any IPC or BNS section to find its equivalent.', aid_t:'Find Legal Aid Near You', aid_d:'Free legal assistance is your right. Find DLSA offices, helplines, and Tele-Law services.', doc_t:'Translate Legal Document', doc_d:'Upload a photo of your legal notice, FIR, or court summons — we\'ll explain it in simple words.',
 cases_t:'My Cases', cases_d:'Each case keeps its own conversation, documents, and deadlines — saved privately on this device.', draft_t:'Draft a Legal Document', draft_d:'Answer a few questions and get a ready-to-use document you can print and submit.', court_t:'Virtual Courtroom', court_d:'Watch both sides argue your case before an AI judge — and find your weak points before the other side does.',
-ncase:'New Case', shear:'Start Hearing', nround:'Next Round', vmode:'Voice Mode / आवाज़ मोड' },
+ncase:'New Case', shear:'Start Hearing', nround:'Next Round', vmode:'Voice Mode / आवाज़ मोड',
+nav_lawsteps:'Law & Next Steps', lsv_t:'Law & Next Steps', lsv_d:'Describe your situation once and get a single verified answer — the law that applies, how each claim was checked, official sources, both sides stress-tested, a rights card, and a plain summary to share.',
+ls_sit:'Your situation', ls_btn:'Get Full Analysis', ls_need:'Please describe your situation first.', ls_wait:'Analysing… local AI can take a minute', ls_err:'Could not generate the analysis. Make sure the server and Ollama are running, then try again.', ls_none:'Nothing to show here.',
+ls_a:'Your situation & the law', ls_b:'How each statement was checked', ls_c:'Official sources with links', ls_d:'Stress test from both sides', ls_e:'Rights card', ls_f:'Explain to someone you trust',
+ls_verified:'Verified', ls_unverified:'Unverified', ls_for:'For your position', ls_against:'Against you', ls_weak:'Weak points', ls_rights:'Your Rights', ls_share:'Share as image', ls_listen:'Listen' },
 
 hi: { nav_home:'होम', nav_chat:'कानूनी सहायक से बात करें', nav_cases:'मेरे केस', nav_draft:'दस्तावेज़ बनाएं', nav_court:'वर्चुअल अदालत', nav_bns:'सेक्शन परिवर्तक', nav_crpc:'CrPC ↔ BNSS परिवर्तक', nav_aid:'कानूनी सहायता खोजें', nav_doc:'कानूनी दस्तावेज़ समझें',
 badge:'100% निजी · आपके डिवाइस पर चलता है', hero_sub:'वेतन नहीं मिला? जमा राशि फंसी है? कानूनी नोटिस मिला? हिंदी, अंग्रेज़ी या 9 अन्य भाषाओं में पूछें — मुफ्त, ऑफलाइन, आपका डेटा बाहर नहीं जाता।', cta1:'अपना सवाल पूछें', cta2:'कैसे काम करता है देखें',
@@ -2162,7 +2298,11 @@ c1:'वेतन नहीं मिला', c2:'जमा राशि', c3:'�
 cph:'अपनी कानूनी समस्या यहाँ लिखें...', chint:'भेजने के लिए Enter · नई पंक्ति के लिए Shift+Enter · आवाज़ के लिए माइक दबाएं', cdisc:'अधिKaar कानूनी जानकारी देता है, कानूनी सलाह नहीं। जटिल मामलों में वकील से मिलें या NALSA को कॉल करें: 15100।',
 bns_t:'IPC ↔ BNS धारा परिवर्तक', bns_d:'1 जुलाई 2024 को आपराधिक कानून बदला। कोई भी IPC या BNS धारा खोजें।', aid_t:'नज़दीकी कानूनी सहायता खोजें', aid_d:'मुफ्त कानूनी सहायता आपका अधिकार है। DLSA कार्यालय, हेल्पलाइन और टेली-लॉ सेवाएं खोजें।', doc_t:'कानूनी दस्तावेज़ समझें', doc_d:'नोटिस, FIR या समन की फोटो अपलोड करें — हम सरल शब्दों में समझाएंगे।',
 cases_t:'मेरे केस', cases_d:'हर केस की बातचीत, दस्तावेज़ और समय-सीमाएं — इसी डिवाइस पर निजी।', draft_t:'कानूनी दस्तावेज़ बनाएं', draft_d:'कुछ सवालों के जवाब दें और छापने-जमा करने योग्य दस्तावेज़ पाएं।', court_t:'वर्चुअल अदालत', court_d:'AI जज के सामने दोनों पक्षों की बहस देखें — अपनी कमजोरियां पहले जानें।',
-ncase:'नया केस', shear:'सुनवाई शुरू करें', nround:'अगला दौर', vmode:'आवाज़ मोड' },
+ncase:'नया केस', shear:'सुनवाई शुरू करें', nround:'अगला दौर', vmode:'आवाज़ मोड',
+nav_lawsteps:'कानून और अगले कदम', lsv_t:'कानून और अगले कदम', lsv_d:'अपनी स्थिति एक बार बताएं — लागू कानून, हर दावे की जाँच, आधिकारिक स्रोत, दोनों पक्षों की परख, अधिकार कार्ड और सरल सारांश एक साथ पाएं।',
+ls_sit:'आपकी स्थिति', ls_btn:'पूरा विश्लेषण पाएं', ls_need:'कृपया पहले अपनी स्थिति बताएं।', ls_wait:'विश्लेषण हो रहा है… इसमें एक मिनट लग सकता है', ls_err:'विश्लेषण नहीं बन सका। सर्वर और Ollama चालू हैं यह जांचें, फिर दोबारा कोशिश करें।', ls_none:'यहाँ दिखाने को कुछ नहीं है।',
+ls_a:'आपकी स्थिति और कानून', ls_b:'हर बात कैसे जांची गई', ls_c:'आधिकारिक स्रोत और लिंक', ls_d:'दोनों पक्षों से परख', ls_e:'अधिकार कार्ड', ls_f:'अपनों को कैसे समझाएं',
+ls_verified:'सत्यापित', ls_unverified:'असत्यापित', ls_for:'आपके पक्ष में', ls_against:'आपके विरुद्ध', ls_weak:'कमज़ोर बिंदु', ls_rights:'आपके अधिकार', ls_share:'छवि के रूप में साझा करें', ls_listen:'सुनें' },
 
 hinglish: { nav_home:'Home', nav_chat:'Legal Helper se baat karein', nav_cases:'Mere Cases', nav_draft:'Document banayein', nav_court:'Virtual Adalat', nav_bns:'Section Converter', nav_crpc:'CrPC ↔ BNSS Converter', nav_aid:'Legal Aid dhundein', nav_doc:'Legal Document samjhein',
 badge:'100% private · aapke device par chalta hai', hero_sub:'Salary nahi mili? Deposit atka hai? Legal notice aaya? Hindi, English ya 9 aur bhashaon mein poochein — free, offline, data bahar nahi jaata.', cta1:'Apna sawaal poochein', cta2:'Kaise kaam karta hai dekhein',
@@ -2177,7 +2317,11 @@ c1:'Salary nahi mili', c2:'Security deposit', c3:'Legal notice aaya', c4:'FIR na
 cph:'Apni legal problem yahan likhein...', chint:'Enter se bhejein · Shift+Enter nayi line · mic se bolein', cdisc:'अधिKaar legal information deta hai, advice nahi. Complex cases mein vakil se milein ya NALSA: 15100.',
 bns_t:'IPC ↔ BNS Section Converter', bns_d:'1 July 2024 ko criminal law badla. Koi bhi section search karein.', aid_t:'Nazdeeki Legal Aid', aid_d:'Free legal aid aapka haq hai. DLSA, helplines aur Tele-Law dhundein.', doc_t:'Legal Document samjhein', doc_d:'Notice, FIR ya summons ki photo upload karein.',
 cases_t:'Mere Cases', cases_d:'Har case ki baatcheet aur deadlines — device par private.', draft_t:'Legal Document banayein', draft_d:'Kuch sawaal, ready document.', court_t:'Virtual Adalat', court_d:'AI judge ke saamne behas dekhein — kamzori pehle jaanein.',
-ncase:'Naya Case', shear:'Sunwai shuru karein', nround:'Agla Round', vmode:'Voice Mode' },
+ncase:'Naya Case', shear:'Sunwai shuru karein', nround:'Agla Round', vmode:'Voice Mode',
+nav_lawsteps:'Kanoon aur Agle Kadam', lsv_t:'Kanoon aur Agle Kadam', lsv_d:'Apni situation ek baar batayein — laagu kanoon, har claim ki jaanch, official sources, dono taraf ki parakh, rights card aur simple summary ek saath.',
+ls_sit:'Aapki situation', ls_btn:'Poora analysis paayein', ls_need:'Pehle apni situation batayein.', ls_wait:'Analysis ho raha hai… ek minute lag sakta hai', ls_err:'Analysis nahi ban saka. Server aur Ollama chalu hain check karein, phir dobara try karein.', ls_none:'Yahan dikhane ko kuch nahi hai.',
+ls_a:'Aapki situation aur kanoon', ls_b:'Har baat kaise check hui', ls_c:'Official sources aur links', ls_d:'Dono taraf se parakh', ls_e:'Rights Card', ls_f:'Apno ko kaise samjhayein',
+ls_verified:'Verified', ls_unverified:'Unverified', ls_for:'Aapke paksh mein', ls_against:'Aapke khilaaf', ls_weak:'Kamzor points', ls_rights:'Aapke Adhikaar', ls_share:'Image ke roop mein share karein', ls_listen:'Sunein' },
 
 ta: { nav_home:'முகப்பு', nav_chat:'சட்ட உதவியாளரிடம் பேசுங்கள்', nav_cases:'என் வழக்குகள்', nav_draft:'ஆவணம் உருவாக்கு', nav_court:'மெய்நிகர் நீதிமன்றம்', nav_bns:'IPC ↔ BNS மாற்றி', nav_aid:'சட்ட உதவி தேடு', nav_doc:'சட்ட ஆவணம் விளக்கு',
 badge:'100% தனிப்பட்டது · உங்கள் சாதனத்தில் இயங்குகிறது', hero_sub:'சம்பளம் வரவில்லையா? வைப்புத்தொகை சிக்கியதா? சட்ட நோட்டீஸ் வந்ததா? 11 மொழிகளில் கேளுங்கள் — இலவசம், ஆஃப்லைன்.', cta1:'உங்கள் கேள்வியைக் கேளுங்கள்', cta2:'எப்படி வேலை செய்கிறது',
@@ -2320,7 +2464,7 @@ function applyTranslations() {
   };
 
   // Sidebar nav
-  [['home','nav_home'],['chat','nav_chat'],['cases','nav_cases'],['draft','nav_draft'],['courtroom','nav_court'],['bns','nav_bns'],['legal-aid','nav_aid'],['document','nav_doc']]
+  [['home','nav_home'],['chat','nav_chat'],['lawsteps','nav_lawsteps'],['cases','nav_cases'],['draft','nav_draft'],['courtroom','nav_court'],['bns','nav_bns'],['legal-aid','nav_aid'],['document','nav_doc']]
     .forEach(([v, k]) => setText(`.nav-item[data-view="${v}"] .nav-label`, k));
   setWithIcon('.kiosk-launch-btn', 'accessibility', 'vmode');
 
@@ -2384,6 +2528,10 @@ function applyTranslations() {
   setWithIcon('.cases-toolbar .btn', 'plus', 'ncase');
   setWithIcon('#view-draft .view-header h2', 'file-pen-line', 'draft_t');
   setText('#view-draft .view-header p', 'draft_d');
+  setWithIcon('#view-lawsteps .view-header h2', 'clipboard-check', 'lsv_t');
+  setText('#view-lawsteps .view-header p', 'lsv_d');
+  setWithIcon('#ls-setup label', 'scroll-text', 'ls_sit');
+  setWithIcon('#ls-setup .btn-primary', 'sparkles', 'ls_btn');
   setWithIcon('#view-courtroom .view-header h2', 'gavel', 'court_t');
   setText('#view-courtroom .view-header p', 'court_d');
   setWithIcon('#courtroom-setup .btn-primary', 'gavel', 'shear');
