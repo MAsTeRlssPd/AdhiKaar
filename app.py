@@ -127,6 +127,17 @@ def retrieve_context(query, collection, n_results=3, max_chars=1200):
 # ══════════════════════════════════════════════════════════════
 
 LANGUAGE_INSTRUCTIONS = {
+    "en": "Respond in clear, simple English. Avoid legal jargon — explain any technical terms in everyday words.",
+    "hi": "उपयोगकर्ता को समझने में आसानी हो इसलिए सरल हिंदी का प्रयोग करें। Respond in simple Hindi.",
+    "ta": "சட்ட ஆலோசனையை எளிமையான தமிழில் வழங்கவும். Respond in simple Tamil.",
+    "te": "చట్టపరమైన సలహాను సాధారణ తెలుగులో అందించండి. Respond in simple Telugu.",
+    "bn": "সহজ বাংলায় আইনি পরামর্শ দিন যাতে ব্যবহারকারী সহজে বুঝতে পারে। Respond in simple Bengali.",
+    "mr": "कायदेशीर सल्ला सोप्या मराठीत द्या जेणेकरून वापरकर्त्याला सहज समजेल. Respond in simple Marathi.",
+    "gu": "સરળ ગુજરાતીમાં કાનૂની સલાહ આપો જેથી વપરાશકર્તા સરળતાથી સમજી શકે. Respond in simple Gujarati.",
+    "kn": "ಬಳಕೆದಾರರಿಗೆ ಅರ್ಥವಾಗುವಂತೆ ಸರಳ ಕನ್ನಡದಲ್ಲಿ ಕಾನೂನು ಸಲಹೆ ನೀಡಿ. Respond in simple Kannada.",
+    "ml": "ഉപയോക്താവിന് മനസ്സിലാക്കാൻ ലളിതമായ മലയാളത്തിൽ നിയമോപദേശം നൽകുക. Respond in simple Malayalam.",
+    "pa": "ਵਰਤੋਂਕਾਰ ਨੂੰ ਸਮਝਣ ਵਿੱਚ ਆਸਾਨੀ ਹੋਵੇ ਇਸਲਈ ਸਰਲ ਪੰਜਾਬੀ ਵਿੱਚ ਕਾਨੂੰਨੀ ਸਲਾਹ ਦਿਓ। Respond in simple Punjabi.",
+    "hinglish": "Respond in Hinglish (mix of Hindi and English, like how people normally talk). Use Roman script. Koi bhi legal term ko simple language mein samjhao.",
     "default": "Automatically detect the language of the user's latest query and respond entirely in that language without any emojis."
 }
 
@@ -288,8 +299,8 @@ def get_session(session_id):
     return sessions[session_id]
 
 def get_language_instruction(lang):
-    """Get dynamic language instruction."""
-    return LANGUAGE_INSTRUCTIONS['default']
+    """Get language-specific instruction."""
+    return LANGUAGE_INSTRUCTIONS.get(lang, LANGUAGE_INSTRUCTIONS['en'])
 
 def call_gemma(messages, temperature=0.7, fallback_cpu=False):
     """Call the working LLM model via Ollama (auto-detected at first call)."""
@@ -854,28 +865,34 @@ def draft_document():
 # Virtual Courtroom
 # ══════════════════════════════════════════════════════════════
 
-COURTROOM_PROMPT = """You are simulating an Indian courtroom hearing (moot court) to help a citizen prepare their case. You play THREE roles in each round:
+COURTROOM_PROMPT = """You are simulating an Indian courtroom hearing (moot court) focusing on legal arguments.
 
-1. USER'S LAWYER (advocate arguing FOR the citizen)
-2. OPPOSING LAWYER (advocate arguing AGAINST the citizen)
-3. JUDGE (neutral, asks probing questions, notes strong/weak points)
+ROLES:
+1. YOUR_LAWYER: Human-like advocate arguing FOR the citizen. Highly knowledgeable in law, IPC, BNS, BNSS, articles, and rights. Argues fiercely with the opposing lawyer.
+2. OPPOSING_LAWYER: Human-like advocate arguing AGAINST the citizen. Equally knowledgeable and fiercely opposes YOUR_LAWYER.
+3. NEXT_STEPS: Practical, concise advice on what the citizen should do next before actual legal proceedings.
 
-This is round {round_num} of 3.
-- Round 1: Opening arguments from both sides, judge frames the key issues.
-- Round 2: Rebuttals with specific law citations (BNS/relevant acts) and precedents, judge questions the weakest claims.
-- Round 3: Closing arguments, then the judge gives a REALISTIC ASSESSMENT: likely outcome, strength of the citizen's case (out of 10), and what evidence would most improve it.
+RULES FOR THE HEARING:
+- This is a continuous debate. The lawyers must exchange arguments back-and-forth for about 5-6 total lines of argument.
+- Keep each response concise.
+- At the end, provide clear next steps for the user.
+- Use the exact markers below for each speaker.
 
-Cite real Indian laws with sections. Be realistic — do not simply favor the citizen.
-
-OUTPUT FORMAT — use these exact markers, each on its own line:
+OUTPUT FORMAT (strict):
 [YOUR_LAWYER]
-(argument)
+(concise argument)
 [OPPOSING_LAWYER]
-(argument)
-[JUDGE]
-(remarks)
+(concise rebuttal)
+[YOUR_LAWYER]
+(concise counter-argument)
+[OPPOSING_LAWYER]
+(concise counter-rebuttal)
+[NEXT_STEPS]
+(concise next steps)
 
+IMPORTANT LANGUAGE INSTRUCTION:
 {language_instruction}
+ALL dialogue from YOUR_LAWYER, OPPOSING_LAWYER, and NEXT_STEPS must strictly be in this requested language. Do NOT use English if another language is requested.
 
 CASE CONTEXT:
 {rag_context}
@@ -887,8 +904,6 @@ def courtroom():
     try:
         data = request.get_json(silent=True) or {}
         situation = data.get('situation', '')
-        round_num = int(data.get('round', 1))
-        history = data.get('history', '')
         language = data.get('language', 'en')
 
         rag_context = ""
@@ -896,39 +911,37 @@ def courtroom():
             rag_context = retrieve_context(situation, rights_collection, n_results=3)
 
         system_prompt = COURTROOM_PROMPT.format(
-            round_num=round_num,
             language_instruction=get_language_instruction(language),
             rag_context=rag_context
         )
 
         user_content = f"The citizen's case:\n{situation}"
-        if history:
-            user_content += f"\n\nPrevious rounds:\n{history}\n\nNow produce round {round_num}."
 
         messages = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_content}
         ]
 
-        response_text = call_gemma(messages, temperature=0.8)
+        # Bump temperature slightly for more variety
+        response_text = call_gemma(messages, temperature=0.9)
 
-        # Parse the three roles from the marked response
+        # Parse the sequence of messages from the marked response
         import re
-        def extract(marker, text):
-            pattern = rf"\[{marker}\]\s*(.*?)(?=\[(?:YOUR_LAWYER|OPPOSING_LAWYER|JUDGE)\]|$)"
-            m = re.search(pattern, text, re.DOTALL)
-            return m.group(1).strip() if m else ""
+        pattern = r"\[(YOUR_LAWYER|OPPOSING_LAWYER|NEXT_STEPS)\]\s*(.*?)(?=\[(?:YOUR_LAWYER|OPPOSING_LAWYER|NEXT_STEPS)\]|$)"
+        matches = re.finditer(pattern, response_text, re.DOTALL)
+        
+        messages_list = []
+        for m in matches:
+            role = m.group(1)
+            text = m.group(2).strip()
+            if text:
+                messages_list.append({"role": role, "text": text})
+        
+        # Fallback if parsing failed
+        if not messages_list:
+            messages_list.append({"role": "NEXT_STEPS", "text": response_text})
 
-        parsed = {
-            "your_lawyer": extract("YOUR_LAWYER", response_text),
-            "opposing_lawyer": extract("OPPOSING_LAWYER", response_text),
-            "judge": extract("JUDGE", response_text),
-        }
-        # Fallback: if parsing failed, put everything in judge
-        if not any(parsed.values()):
-            parsed["judge"] = response_text
-
-        return jsonify({"round": round_num, "roles": parsed, "raw": response_text})
+        return jsonify({"messages": messages_list, "raw": response_text})
 
     except Exception as e:
         traceback.print_exc()

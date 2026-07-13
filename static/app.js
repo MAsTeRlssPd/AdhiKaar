@@ -1481,25 +1481,14 @@ function prefillCourtroom() {
 async function startCourtroom() {
   const situation = $('courtroom-situation').value.trim();
   if (!situation) { alert('Please describe your case first.'); return; }
-  courtroom.round = 0;
   courtroom.situation = situation;
-  courtroom.history = '';
   $('courtroom-rounds').innerHTML = '';
   $('courtroom-setup').style.display = 'none';
   $('courtroom-stage').style.display = 'block';
-  nextCourtRound();
-}
-
-async function nextCourtRound() {
-  if (courtroom.round >= 3) return;
-  courtroom.round += 1;
-  const btn = $('courtroom-next-btn');
-  btn.disabled = true;
-  btn.textContent = `Round ${courtroom.round} in session…`;
 
   const roundDiv = document.createElement('div');
   roundDiv.className = 'court-round';
-  roundDiv.innerHTML = `<div class="court-round-label">Round ${courtroom.round} of 3${courtroom.round === 3 ? ' — closing & verdict' : ''}</div>
+  roundDiv.innerHTML = `<div class="court-round-label">Hearing in Session</div>
     <div class="court-loading"><div class="typing-dots"><span></span><span></span><span></span></div> The court is deliberating…</div>`;
   $('courtroom-rounds').appendChild(roundDiv);
   roundDiv.scrollIntoView({ behavior: 'smooth' });
@@ -1509,34 +1498,30 @@ async function nextCourtRound() {
       method: 'POST',
       body: JSON.stringify({
         situation: courtroom.situation,
-        round: courtroom.round,
-        history: courtroom.history,
         language: state.language,
       }),
     });
-    const r = data.roles;
-    courtroom.history += `\n--- Round ${courtroom.round} ---\n${data.raw}`;
+    
     roundDiv.querySelector('.court-loading').remove();
-    roundDiv.innerHTML += `
-      ${r.your_lawyer ? courtBubble('your-lawyer', 'shield', 'Your Lawyer', r.your_lawyer) : ''}
-      ${r.opposing_lawyer ? courtBubble('opposing', 'swords', 'Opposing Lawyer', r.opposing_lawyer) : ''}
-      ${r.judge ? courtBubble('judge', 'gavel', courtroom.round === 3 ? 'Judge — Assessment' : 'Judge', r.judge) : ''}`;
+    
+    let html = '';
+    if (data.messages && data.messages.length > 0) {
+      data.messages.forEach(msg => {
+        if (msg.role === 'YOUR_LAWYER') {
+          html += courtBubble('your-lawyer', 'shield', 'Your Lawyer', msg.text);
+        } else if (msg.role === 'OPPOSING_LAWYER') {
+          html += courtBubble('opposing', 'swords', 'Opposing Lawyer', msg.text);
+        } else if (msg.role === 'NEXT_STEPS') {
+          html += courtBubble('judge', 'clipboard-list', 'Next Steps', msg.text);
+        }
+      });
+    }
+    
+    roundDiv.innerHTML += html;
     refreshIcons();
   } catch (e) {
     let hint = e.message || 'Unknown error';
-    if (hint.includes('404')) hint = 'The server is running OLD code (404). Stop it with Ctrl+C and run "python app.py" again.';
-    else if (hint.includes('500')) hint = 'The server hit an error (500) — look at the python terminal for the traceback.';
-    else if (hint.includes('Failed to fetch')) hint = 'Could not reach the server at all — is "python app.py" running?';
-    roundDiv.querySelector('.court-loading').innerHTML = `⚠️ ${escapeHtml(hint)} Then press Next Round to retry.`;
-    courtroom.round -= 1;
-  } finally {
-    if (courtroom.round >= 3) {
-      btn.style.display = 'none';
-    } else {
-      btn.disabled = false;
-      btn.textContent = 'Next Round';
-      btn.style.display = '';
-    }
+    roundDiv.querySelector('.court-loading').innerHTML = `⚠️ ${escapeHtml(hint)} Try again.`;
   }
 }
 
@@ -1548,15 +1533,9 @@ function courtBubble(cls, icon, name, text) {
 }
 
 function resetCourtroom() {
-  courtroom.round = 0;
-  courtroom.history = '';
   $('courtroom-rounds').innerHTML = '';
   $('courtroom-setup').style.display = 'block';
   $('courtroom-stage').style.display = 'none';
-  const btn = $('courtroom-next-btn');
-  btn.style.display = '';
-  btn.disabled = false;
-  btn.textContent = 'Next Round';
 }
 
 // ══════════════════════════════════════════════════════════════

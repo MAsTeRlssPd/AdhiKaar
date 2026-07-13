@@ -102,7 +102,7 @@
 
       <!-- ════ HOME VIEW ════ -->
       <section class="view home-view active" id="view-home">
-        <div class="hero-section hero-split">
+        <div class="hero-section">
           <div class="hero-left">
             <div class="hero-badge"><i data-lucide="shield-check"></i> 100% private · runs on your device</div>
             <h1 class="hero-title">
@@ -125,20 +125,6 @@
               <span><i data-lucide="wifi-off"></i> Works offline</span>
               <span><i data-lucide="languages"></i> 11 languages</span>
               <span><i data-lucide="badge-indian-rupee"></i> Free forever</span>
-            </div>
-          </div>
-
-          <div class="hero-chat-preview">
-            <div class="preview-status">
-              <span class="status-dot"></span>
-              <span>Legal Helper — ready</span>
-            </div>
-            <div class="preview-bubble">Namaste! Tell me your legal problem in your own words. मैं आपकी मदद करूँगा।</div>
-            <div class="preview-chips">
-              <button class="suggestion-chip" onclick="goToChatWith('My employer has not paid my salary for 3 months')">My employer hasn't paid my salary</button>
-              <button class="suggestion-chip" onclick="goToChatWith('My landlord is not returning my security deposit')">Landlord won't return my deposit</button>
-              <button class="suggestion-chip" onclick="goToChatWith('Police refused to file my FIR')">Police refused to file my FIR</button>
-              <button class="suggestion-chip" onclick="goToChatWith('I received a legal notice and I don\'t understand it')">I got a legal notice I don't understand</button>
             </div>
           </div>
         </div>
@@ -530,25 +516,13 @@
               <i data-lucide="swords"></i>
               <h3>Opposing Lawyer</h3>
               <p>Attacks your case the way the other side really will</p>
-            </div>
-            <div class="court-role-card role-judge">
-              <i data-lucide="gavel"></i>
-              <h3>The Judge</h3>
-              <p>Questions both sides, then scores your case out of 10</p>
-            </div>
           </div>
 
-          <div class="court-rounds-strip">
-            <div><span class="step-num">Round 1</span> Opening arguments — the judge frames the key issues</div>
-            <div><span class="step-num">Round 2</span> Rebuttals with law citations — weak claims get questioned</div>
-            <div><span class="step-num">Round 3</span> Closing + verdict — realistic outcome and what evidence to gather</div>
-          </div>
         </div>
 
         <div class="courtroom-stage" id="courtroom-stage" style="display:none">
           <div class="courtroom-rounds" id="courtroom-rounds"></div>
           <div class="courtroom-controls" id="courtroom-controls">
-            <button class="btn btn-primary" id="courtroom-next-btn" onclick="nextCourtRound()">Next Round</button>
             <button class="btn btn-secondary" onclick="resetCourtroom()">New Hearing</button>
           </div>
         </div>
