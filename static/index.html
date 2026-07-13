@@ -2,17 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>अधिKaar — AI Legal Assistant | Know Your Rights</title>
   <meta name="description" content="Free AI-powered legal assistant for Indian citizens. Understand your rights, get legal guidance in your language, and find legal aid near you.">
-  <meta name="theme-color" content="#0D9488">
-  <link rel="stylesheet" href="style.css">
+  <meta name="theme-color" content="#4338CA">
+  <link rel="stylesheet" href="style.css?v=3">
   <!-- html2canvas for Rights Card image generation -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
   <!-- Tesseract.js for OCR -->
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js" defer></script>
   <!-- Marked.js for Markdown rendering -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
+  <!-- Lucide SVG icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
 </head>
 <body>
   <div class="app-container">
@@ -21,14 +23,17 @@
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
         <div class="sidebar-logo">
-          <div class="logo-icon">⚖️</div>
+          <div class="logo-icon"><i data-lucide="scale"></i></div>
           <div class="logo-text">
             <span class="app-name">अधिKaar</span>
             <span class="app-tagline">Your Rights, Your Language</span>
           </div>
         </div>
+        <button class="btn btn-secondary btn-sm theme-toggle" id="theme-toggle" onclick="toggleTheme()">
+          <i data-lucide="moon"></i> <span id="theme-label">Dark mode</span>
+        </button>
         <div class="language-selector">
-          <label for="language-select">🌐 Language / भाषा</label>
+          <label for="language-select"><i data-lucide="globe" class="inline-icon"></i> Language / भाषा</label>
           <select id="language-select">
             <option value="en">English</option>
             <option value="hi">हिन्दी (Hindi)</option>
@@ -47,32 +52,48 @@
 
       <nav class="sidebar-nav">
         <div class="nav-item active" data-view="home" id="nav-home">
-          <span class="nav-icon">🏠</span>
+          <span class="nav-icon"><i data-lucide="home"></i></span>
           <span class="nav-label">Home</span>
         </div>
         <div class="nav-item" data-view="chat" id="nav-chat">
-          <span class="nav-icon">💬</span>
+          <span class="nav-icon"><i data-lucide="message-circle"></i></span>
           <span class="nav-label">Talk to Legal Helper</span>
+        </div>
+        <div class="nav-item" data-view="cases" id="nav-cases">
+          <span class="nav-icon"><i data-lucide="folder-open"></i></span>
+          <span class="nav-label">My Cases</span>
         </div>
 
         <div class="nav-divider"></div>
 
+        <div class="nav-item" data-view="draft" id="nav-draft">
+          <span class="nav-icon"><i data-lucide="file-pen-line"></i></span>
+          <span class="nav-label">Draft a Document</span>
+        </div>
+        <div class="nav-item" data-view="courtroom" id="nav-courtroom">
+          <span class="nav-icon"><i data-lucide="gavel"></i></span>
+          <span class="nav-label">Virtual Courtroom</span>
+        </div>
+
         <div class="nav-item" data-view="bns" id="nav-bns">
-          <span class="nav-icon">🔄</span>
+          <span class="nav-icon"><i data-lucide="repeat"></i></span>
           <span class="nav-label">IPC ↔ BNS Converter</span>
         </div>
         <div class="nav-item" data-view="legal-aid" id="nav-legal-aid">
-          <span class="nav-icon">📞</span>
+          <span class="nav-icon"><i data-lucide="phone"></i></span>
           <span class="nav-label">Find Legal Aid</span>
         </div>
         <div class="nav-item" data-view="document" id="nav-document">
-          <span class="nav-icon">📄</span>
+          <span class="nav-icon"><i data-lucide="file-text"></i></span>
           <span class="nav-label">Translate Legal Document</span>
         </div>
       </nav>
 
       <div class="sidebar-footer">
-        <p>⚖️ अधिKaar is an AI assistant providing legal information, not legal advice. For complex matters, consult a qualified lawyer.</p>
+        <button class="btn btn-secondary btn-sm kiosk-launch-btn" onclick="enterKioskMode()">
+          <i data-lucide="accessibility"></i> Voice Mode / आवाज़ मोड
+        </button>
+        <p>अधिKaar is an AI assistant providing legal information, not legal advice. For complex matters, consult a qualified lawyer.</p>
       </div>
     </aside>
 
@@ -81,55 +102,154 @@
 
       <!-- ════ HOME VIEW ════ -->
       <section class="view home-view active" id="view-home">
-        <div class="hero-section">
-          <div class="hero-badge">🇮🇳 Built for Every Indian Citizen</div>
-          <h1 class="hero-title">
-            Know Your <span class="highlight">अधिKaar</span><br>
-            Know Your Rights
-          </h1>
-          <p class="hero-subtitle">
-            Describe your situation in your own language. Get clear legal guidance, understand your rights, and know your next steps — all powered by AI, running locally on your device.
-          </p>
-          <div class="hero-cta">
-            <button class="btn btn-primary" onclick="navigateTo('chat')">
-              💬 Talk to Legal Helper
-            </button>
-            <button class="btn btn-secondary" onclick="navigateTo('bns')">
-              🔄 IPC ↔ BNS Converter
-            </button>
+        <div class="hero-section hero-split">
+          <div class="hero-left">
+            <div class="hero-badge"><i data-lucide="shield-check"></i> 100% private · runs on your device</div>
+            <h1 class="hero-title">
+              Know Your <span class="highlight">अधिKaar</span><br>
+              Know Your Rights
+            </h1>
+            <p class="hero-subtitle">
+              Salary not paid? Deposit stuck? Got a legal notice? Ask in Hindi, English, or 9 other languages — free, offline, nothing leaves your computer.
+            </p>
+            <div class="hero-cta">
+              <button class="btn btn-primary" onclick="navigateTo('chat')">
+                <i data-lucide="message-circle"></i> Ask Your Question
+              </button>
+              <button class="btn btn-secondary" onclick="document.getElementById('how-it-works').scrollIntoView({behavior:'smooth'})">
+                See How It Works
+              </button>
+            </div>
+            <div class="trust-strip">
+              <span><i data-lucide="user-x"></i> No signup</span>
+              <span><i data-lucide="wifi-off"></i> Works offline</span>
+              <span><i data-lucide="languages"></i> 11 languages</span>
+              <span><i data-lucide="badge-indian-rupee"></i> Free forever</span>
+            </div>
+          </div>
+
+          <div class="hero-chat-preview">
+            <div class="preview-status">
+              <span class="status-dot"></span>
+              <span>Legal Helper — ready</span>
+            </div>
+            <div class="preview-bubble">Namaste! Tell me your legal problem in your own words. मैं आपकी मदद करूँगा।</div>
+            <div class="preview-chips">
+              <button class="suggestion-chip" onclick="goToChatWith('My employer has not paid my salary for 3 months')">My employer hasn't paid my salary</button>
+              <button class="suggestion-chip" onclick="goToChatWith('My landlord is not returning my security deposit')">Landlord won't return my deposit</button>
+              <button class="suggestion-chip" onclick="goToChatWith('Police refused to file my FIR')">Police refused to file my FIR</button>
+              <button class="suggestion-chip" onclick="goToChatWith('I received a legal notice and I don\'t understand it')">I got a legal notice I don't understand</button>
+            </div>
           </div>
         </div>
 
+        <div class="stats-row" id="stats-row">
+          <div class="stat-card">
+            <p class="stat-number" data-count="358">0</p>
+            <p class="stat-label">IPC ↔ BNS sections mapped</p>
+          </div>
+          <div class="stat-card">
+            <p class="stat-number" data-count="11">0</p>
+            <p class="stat-label">Indian languages supported</p>
+          </div>
+          <div class="stat-card">
+            <p class="stat-number" data-count="0">0</p>
+            <p class="stat-label">Data sent to the cloud</p>
+          </div>
+        </div>
+
+        <div class="home-chat">
+          <div class="home-chat-box">
+            <div class="home-chat-greeting" id="home-chat-greeting">
+              <h2>Hello, how can I help you today?</h2>
+              <div class="home-chat-chips">
+                <button onclick="homeChatAsk(this.textContent)">What are tenant rights in India?</button>
+                <button onclick="homeChatAsk(this.textContent)">How to file a consumer complaint?</button>
+                <button onclick="homeChatAsk(this.textContent)">Explain Domestic Violence Act</button>
+              </div>
+            </div>
+            <div class="home-chat-messages" id="home-chat-messages"></div>
+            <div class="home-chat-input">
+              <span class="home-chat-spark"><i data-lucide="sparkles"></i></span>
+              <input type="text" id="home-chat-input" placeholder="Type your legal question..." onkeydown="if(event.key==='Enter')homeChatSend()">
+              <button class="hc-icon" onclick="navigateTo('document')" title="Upload a document" aria-label="Upload a document"><i data-lucide="paperclip"></i></button>
+              <button class="hc-icon" id="home-chat-mic" onclick="homeChatVoice()" title="Speak" aria-label="Voice input"><i data-lucide="mic"></i></button>
+              <button class="home-chat-send" onclick="homeChatSend()" aria-label="Send"><i data-lucide="send"></i></button>
+            </div>
+            <div class="home-chat-note">Free to use. Your conversations stay on your device.</div>
+          </div>
+        </div>
+
+        <div class="how-it-works" id="how-it-works">
+          <h2 class="section-title">How It Works</h2>
+          <div class="steps-row">
+            <div class="step-card">
+              <span class="step-num">01</span>
+              <h3>Describe your problem</h3>
+              <p>Type or speak in any of 11 languages. No legal words needed.</p>
+            </div>
+            <div class="step-card">
+              <span class="step-num">02</span>
+              <h3>Confirm the summary</h3>
+              <p>The AI restates your situation in simple words — you verify it understood correctly.</p>
+            </div>
+            <div class="step-card">
+              <span class="step-num">03</span>
+              <h3>Get rights + next steps</h3>
+              <p>Clear guidance with BNS sections cited, deadlines, and helpline numbers.</p>
+            </div>
+          </div>
+        </div>
+
+        <h2 class="section-title features-title">Everything अधिKaar Can Do</h2>
         <div class="features-grid">
           <div class="feature-card" onclick="navigateTo('chat')">
-            <div class="card-icon teal">💬</div>
-            <h3>Talk in Your Language</h3>
-            <p>Describe your legal problem in Hindi, English, Tamil, Telugu, Bengali, Marathi or any language. Voice input supported.</p>
+            <div class="card-icon teal"><i data-lucide="message-circle"></i></div>
+            <h3>Talk to Legal Helper</h3>
+            <p>Describe your problem in any of 11 languages — get your rights, action steps, and deadlines.</p>
+            <span class="card-go">Open <i data-lucide="arrow-right"></i></span>
+          </div>
+          <div class="feature-card" onclick="navigateTo('cases')">
+            <div class="card-icon blue"><i data-lucide="folder-open"></i></div>
+            <h3>My Cases</h3>
+            <p>Keep each legal matter organized — conversations, documents, and deadlines in one place, private on your device.</p>
+            <span class="card-go">Open <i data-lucide="arrow-right"></i></span>
+          </div>
+          <div class="feature-card" onclick="navigateTo('draft')">
+            <div class="card-icon amber"><i data-lucide="file-pen-line"></i></div>
+            <h3>Draft a Document</h3>
+            <p>Generate ready-to-print legal notices, consumer complaints, RTI applications, and police complaints.</p>
+            <span class="card-go">Open <i data-lucide="arrow-right"></i></span>
+          </div>
+          <div class="feature-card" onclick="navigateTo('courtroom')">
+            <div class="card-icon red"><i data-lucide="gavel"></i></div>
+            <h3>Virtual Courtroom</h3>
+            <p>Watch both sides argue your case before an AI judge — find your weak points before the other side does.</p>
+            <span class="card-go">Open <i data-lucide="arrow-right"></i></span>
           </div>
           <div class="feature-card" onclick="navigateTo('bns')">
-            <div class="card-icon amber">🔄</div>
+            <div class="card-icon teal"><i data-lucide="repeat"></i></div>
             <h3>IPC ↔ BNS Converter</h3>
             <p>India's criminal law changed on 1 July 2024. Convert old IPC sections to new BNS sections instantly.</p>
-          </div>
-          <div class="feature-card" onclick="navigateTo('chat')">
-            <div class="card-icon red">👿</div>
-            <h3>Devil's Advocate Mode</h3>
-            <p>See what the other side's lawyer will argue. Stress-test your case before going to court.</p>
+            <span class="card-go">Open <i data-lucide="arrow-right"></i></span>
           </div>
           <div class="feature-card" onclick="navigateTo('legal-aid')">
-            <div class="card-icon green">📞</div>
-            <h3>Find Legal Aid Near You</h3>
-            <p>Find free legal aid offices, helpline numbers, and Tele-Law services in your district.</p>
+            <div class="card-icon green"><i data-lucide="phone"></i></div>
+            <h3>Find Legal Aid</h3>
+            <p>Free legal aid offices, helpline numbers, and Tele-Law services in your district.</p>
+            <span class="card-go">Open <i data-lucide="arrow-right"></i></span>
           </div>
           <div class="feature-card" onclick="navigateTo('document')">
-            <div class="card-icon blue">📄</div>
+            <div class="card-icon blue"><i data-lucide="file-text"></i></div>
             <h3>Translate Legal Documents</h3>
-            <p>Upload a legal notice, FIR, or court summons. Get it explained in plain language you understand.</p>
+            <p>Upload a legal notice, FIR, or court summons — get it explained in plain language.</p>
+            <span class="card-go">Open <i data-lucide="arrow-right"></i></span>
           </div>
-          <div class="feature-card" onclick="navigateTo('chat')">
-            <div class="card-icon teal">🪪</div>
-            <h3>Rights Card Generator</h3>
-            <p>Get a shareable "Know Your Rights" card for your situation — save it or send on WhatsApp.</p>
+          <div class="feature-card" onclick="enterKioskMode()">
+            <div class="card-icon amber"><i data-lucide="accessibility"></i></div>
+            <h3>Voice Mode</h3>
+            <p>No typing needed — speak your question and hear the answer aloud, in your language.</p>
+            <span class="card-go">Open <i data-lucide="arrow-right"></i></span>
           </div>
         </div>
       </section>
@@ -137,30 +257,32 @@
       <!-- ════ CHAT VIEW ════ -->
       <section class="view chat-view" id="view-chat">
         <div class="chat-header">
-          <div class="chat-header-left">
-            <h2>💬 Legal Helper</h2>
-            <div class="chat-status">
-              <span class="status-dot"></span>
-              <span>Ready to help</span>
+          <div class="chat-header-inner">
+            <div class="chat-header-left">
+              <h2><i data-lucide="message-circle" class="inline-icon"></i> Legal Helper</h2>
+              <div class="chat-status">
+                <span class="status-dot"></span>
+                <span>Ready to help</span>
+              </div>
             </div>
-          </div>
-          <div class="chat-actions">
-            <button class="btn btn-sm btn-secondary" onclick="clearChat()" title="New conversation">🗑️ New Chat</button>
+            <div class="chat-actions">
+              <button class="btn btn-sm btn-secondary" onclick="clearChat()" title="New conversation"><i data-lucide="plus" class="inline-icon"></i> New Chat</button>
+            </div>
           </div>
         </div>
 
         <div class="chat-messages" id="chat-messages">
           <div class="chat-welcome" id="chat-welcome">
-            <div class="welcome-icon">⚖️</div>
+            <div class="welcome-icon"><i data-lucide="scale"></i></div>
             <h3>Welcome to अधिKaar</h3>
             <p>Tell me about your legal problem in your own words. I'll help you understand your rights and options.</p>
             <div class="suggestions">
-              <button class="suggestion-chip" onclick="sendSuggestion('My employer has not paid my salary for 3 months')">💼 Unpaid salary</button>
-              <button class="suggestion-chip" onclick="sendSuggestion('My landlord is not returning my security deposit')">🏠 Security deposit</button>
-              <button class="suggestion-chip" onclick="sendSuggestion('I received a legal notice and I don\'t understand it')">📄 Got a legal notice</button>
-              <button class="suggestion-chip" onclick="sendSuggestion('Police refused to file my FIR')">👮 FIR not filed</button>
-              <button class="suggestion-chip" onclick="sendSuggestion('I am facing domestic violence from my husband and in-laws')">🏠 Domestic violence</button>
-              <button class="suggestion-chip" onclick="sendSuggestion('Someone cheated me online and took my money')">💻 Online fraud</button>
+              <button class="suggestion-chip" onclick="sendSuggestion('My employer has not paid my salary for 3 months')">Unpaid salary</button>
+              <button class="suggestion-chip" onclick="sendSuggestion('My landlord is not returning my security deposit')">Security deposit</button>
+              <button class="suggestion-chip" onclick="sendSuggestion('I received a legal notice and I don\'t understand it')">Got a legal notice</button>
+              <button class="suggestion-chip" onclick="sendSuggestion('Police refused to file my FIR')">FIR not filed</button>
+              <button class="suggestion-chip" onclick="sendSuggestion('I am facing domestic violence from my husband and in-laws')">Domestic violence</button>
+              <button class="suggestion-chip" onclick="sendSuggestion('Someone cheated me online and took my money')">Online fraud</button>
             </div>
           </div>
         </div>
@@ -168,11 +290,14 @@
         <div class="chat-input-container">
           <div class="chat-input-wrapper">
             <textarea id="chat-input" rows="1" placeholder="Describe your legal problem here..." onkeydown="handleChatKeydown(event)"></textarea>
-            <button class="voice-btn" id="voice-btn" onclick="toggleVoice()" title="Voice input">🎤</button>
-            <button class="send-btn" id="send-btn" onclick="sendMessage()" title="Send message">➤</button>
+            <button class="voice-btn" id="voice-btn" onclick="toggleVoice()" title="Voice input" aria-label="Voice input"><i data-lucide="mic"></i></button>
+            <button class="send-btn" id="send-btn" onclick="sendMessage()" title="Send message" aria-label="Send message"><i data-lucide="send"></i></button>
           </div>
           <div class="chat-input-hint">
-            Press Enter to send · Shift+Enter for new line · 🎤 for voice input
+            Press Enter to send · Shift+Enter for new line · tap the mic for voice input
+          </div>
+          <div class="chat-disclaimer">
+            अधिKaar provides legal information, not legal advice. For complex matters, consult a qualified lawyer or call NALSA: 15100.
           </div>
         </div>
       </section>
@@ -268,30 +393,212 @@
         </div>
       </section>
 
+      <!-- ════ MY CASES VIEW ════ -->
+      <section class="view cases-view" id="view-cases">
+        <div class="view-header">
+          <h2><i data-lucide="folder-open" class="inline-icon"></i> My Cases</h2>
+          <p>Each case keeps its own conversation, documents, and deadlines — saved privately on this device.</p>
+        </div>
+        <div class="cases-toolbar">
+          <button class="btn btn-primary" onclick="createCase()"><i data-lucide="plus"></i> New Case</button>
+        </div>
+        <div class="cases-grid" id="cases-grid"></div>
+      </section>
+
+      <!-- ════ DRAFT DOCUMENT VIEW ════ -->
+      <section class="view draft-view" id="view-draft">
+        <div class="view-header">
+          <h2><i data-lucide="file-pen-line" class="inline-icon"></i> Draft a Legal Document</h2>
+          <p>Answer a few questions and get a ready-to-use document you can print and submit.</p>
+        </div>
+
+        <div class="draft-content">
+          <div class="draft-type-grid">
+            <button class="draft-type-card" data-doctype="legal_notice" onclick="selectDraftType('legal_notice')">
+              <i data-lucide="mail-warning"></i>
+              <h3>Legal Notice</h3>
+              <p>Formal demand before going to court</p>
+              <ul class="draft-examples">
+                <li>Unpaid salary or dues</li>
+                <li>Security deposit recovery</li>
+                <li>Breach of agreement</li>
+              </ul>
+              <span class="draft-fact"><i data-lucide="clock"></i> Reply window: 15–30 days</span>
+            </button>
+            <button class="draft-type-card" data-doctype="consumer_complaint" onclick="selectDraftType('consumer_complaint')">
+              <i data-lucide="shopping-cart"></i>
+              <h3>Consumer Complaint</h3>
+              <p>For the Consumer Commission</p>
+              <ul class="draft-examples">
+                <li>Defective product</li>
+                <li>Refund refused</li>
+                <li>Poor service / overcharging</li>
+              </ul>
+              <span class="draft-fact"><i data-lucide="clock"></i> File within 2 years</span>
+            </button>
+            <button class="draft-type-card" data-doctype="rti_application" onclick="selectDraftType('rti_application')">
+              <i data-lucide="file-search"></i>
+              <h3>RTI Application</h3>
+              <p>Get information from government</p>
+              <ul class="draft-examples">
+                <li>Delayed pension or scheme money</li>
+                <li>Status of your application</li>
+                <li>Public works spending</li>
+              </ul>
+              <span class="draft-fact"><i data-lucide="badge-indian-rupee"></i> Fee ₹10 · Reply in 30 days</span>
+            </button>
+            <button class="draft-type-card" data-doctype="police_complaint" onclick="selectDraftType('police_complaint')">
+              <i data-lucide="shield-alert"></i>
+              <h3>Police Complaint</h3>
+              <p>Written complaint for FIR</p>
+              <ul class="draft-examples">
+                <li>Theft or cheating</li>
+                <li>Online fraud</li>
+                <li>Threats or harassment</li>
+              </ul>
+              <span class="draft-fact"><i data-lucide="info"></i> Filing an FIR is always free</span>
+            </button>
+          </div>
+
+          <div class="draft-steps">
+            <div class="draft-step"><span class="step-num">01</span> Choose a document type above</div>
+            <div class="draft-step"><span class="step-num">02</span> Fill in your details in the short form</div>
+            <div class="draft-step"><span class="step-num">03</span> Download, print, and submit</div>
+          </div>
+
+          <div class="draft-tip">
+            <i data-lucide="lightbulb"></i>
+            <p><strong>Tip:</strong> Chat with the Legal Helper about your situation first — the document generator uses that conversation to fill in legal context automatically. Every document cites current law (BNS/BNSS) and comes with simple instructions on where to submit it.</p>
+          </div>
+        </div>
+
+        <div class="draft-form-container" id="draft-form-container" style="display:none">
+          <h3 id="draft-form-title"></h3>
+          <div class="draft-form" id="draft-form"></div>
+          <div class="input-actions">
+            <button class="btn btn-primary" id="draft-generate-btn" onclick="generateDraft()">
+              <i data-lucide="sparkles"></i> Generate Document
+            </button>
+          </div>
+        </div>
+
+        <div class="draft-result-container" id="draft-result-container" style="display:none">
+          <div class="draft-result-toolbar">
+            <button class="btn btn-secondary btn-sm" onclick="downloadDraft()"><i data-lucide="download"></i> Download (.doc)</button>
+            <button class="btn btn-secondary btn-sm" onclick="printDraft()"><i data-lucide="printer"></i> Print</button>
+            <button class="btn btn-secondary btn-sm" onclick="saveDraftToCase()"><i data-lucide="folder-plus"></i> Save to Case</button>
+          </div>
+          <div class="markdown-body draft-result" id="draft-result"></div>
+        </div>
+      </section>
+
+      <!-- ════ VIRTUAL COURTROOM VIEW ════ -->
+      <section class="view courtroom-view" id="view-courtroom">
+        <div class="view-header">
+          <h2><i data-lucide="gavel" class="inline-icon"></i> Virtual Courtroom</h2>
+          <p>Watch both sides argue your case before an AI judge — and find your weak points before the other side does.</p>
+        </div>
+
+        <div class="courtroom-setup" id="courtroom-setup">
+          <div class="court-setup-card">
+            <label for="courtroom-situation"><i data-lucide="scroll-text"></i> Your case</label>
+            <textarea id="courtroom-situation" placeholder="Describe your case here — or start a chat first and it will be filled automatically..."></textarea>
+            <div class="court-examples">
+              <span>Try an example:</span>
+              <button onclick="courtExample(0)">Security deposit</button>
+              <button onclick="courtExample(1)">Unpaid salary</button>
+              <button onclick="courtExample(2)">Cheque bounce</button>
+            </div>
+            <div class="court-start-row">
+              <button class="btn btn-primary" onclick="startCourtroom()"><i data-lucide="gavel"></i> Start Hearing</button>
+            </div>
+          </div>
+
+          <div class="court-roles">
+            <div class="court-role-card role-you">
+              <i data-lucide="shield"></i>
+              <h3>Your Lawyer</h3>
+              <p>Argues your side with law citations and precedents</p>
+            </div>
+            <div class="court-role-card role-opp">
+              <i data-lucide="swords"></i>
+              <h3>Opposing Lawyer</h3>
+              <p>Attacks your case the way the other side really will</p>
+            </div>
+            <div class="court-role-card role-judge">
+              <i data-lucide="gavel"></i>
+              <h3>The Judge</h3>
+              <p>Questions both sides, then scores your case out of 10</p>
+            </div>
+          </div>
+
+          <div class="court-rounds-strip">
+            <div><span class="step-num">Round 1</span> Opening arguments — the judge frames the key issues</div>
+            <div><span class="step-num">Round 2</span> Rebuttals with law citations — weak claims get questioned</div>
+            <div><span class="step-num">Round 3</span> Closing + verdict — realistic outcome and what evidence to gather</div>
+          </div>
+        </div>
+
+        <div class="courtroom-stage" id="courtroom-stage" style="display:none">
+          <div class="courtroom-rounds" id="courtroom-rounds"></div>
+          <div class="courtroom-controls" id="courtroom-controls">
+            <button class="btn btn-primary" id="courtroom-next-btn" onclick="nextCourtRound()">Next Round</button>
+            <button class="btn btn-secondary" onclick="resetCourtroom()">New Hearing</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════ GLOBAL QUICK-ASK BAR (all feature pages) ════ -->
+      <div class="global-ask" id="global-ask" style="display:none">
+        <div class="global-ask-inner home-chat-input">
+          <span class="home-chat-spark"><i data-lucide="sparkles"></i></span>
+          <input type="text" id="global-ask-input" placeholder="Describe your legal problem here..." onkeydown="if(event.key==='Enter')quickAskSend()">
+          <button class="hc-icon" id="global-ask-mic" onclick="quickAskVoice()" title="Speak" aria-label="Voice input"><i data-lucide="mic"></i></button>
+          <button class="home-chat-send" onclick="quickAskSend()" aria-label="Send"><i data-lucide="send"></i></button>
+        </div>
+      </div>
+
     </main>
+  </div>
+
+  <!-- ══════ KIOSK / VOICE-FIRST MODE ══════ -->
+  <div class="kiosk-overlay" id="kiosk-overlay">
+    <button class="kiosk-exit" onclick="exitKioskMode()" aria-label="Exit voice mode"><i data-lucide="x"></i> Exit</button>
+    <div class="kiosk-content">
+      <div class="kiosk-icon" id="kiosk-icon"><i data-lucide="scale"></i></div>
+      <div class="kiosk-text" id="kiosk-text">Namaste!</div>
+      <div class="kiosk-answer markdown-body" id="kiosk-answer"></div>
+      <button class="kiosk-mic-btn" id="kiosk-mic-btn" onclick="kioskListen()" aria-label="Speak">
+        <i data-lucide="mic"></i>
+      </button>
+      <div class="kiosk-hint" id="kiosk-hint">बोलने के लिए माइक दबाएं · Press the mic to speak</div>
+      <button class="btn btn-secondary kiosk-repeat-btn" id="kiosk-repeat-btn" onclick="kioskRepeat()" style="display:none">
+        <i data-lucide="volume-2"></i> फिर से सुनें / Listen again
+      </button>
+    </div>
   </div>
 
   <!-- ══════ MOBILE BOTTOM NAV ══════ -->
   <nav class="mobile-nav" id="mobile-nav">
     <div class="mobile-nav-items">
       <div class="mobile-nav-item active" data-view="home" onclick="navigateTo('home')">
-        <span class="mob-nav-icon">🏠</span>
+        <span class="mob-nav-icon"><i data-lucide="home"></i></span>
         <span>Home</span>
       </div>
       <div class="mobile-nav-item" data-view="chat" onclick="navigateTo('chat')">
-        <span class="mob-nav-icon">💬</span>
+        <span class="mob-nav-icon"><i data-lucide="message-circle"></i></span>
         <span>Chat</span>
       </div>
       <div class="mobile-nav-item" data-view="bns" onclick="navigateTo('bns')">
-        <span class="mob-nav-icon">🔄</span>
+        <span class="mob-nav-icon"><i data-lucide="repeat"></i></span>
         <span>IPC/BNS</span>
       </div>
       <div class="mobile-nav-item" data-view="legal-aid" onclick="navigateTo('legal-aid')">
-        <span class="mob-nav-icon">📞</span>
+        <span class="mob-nav-icon"><i data-lucide="phone"></i></span>
         <span>Help</span>
       </div>
       <div class="mobile-nav-item" data-view="document" onclick="navigateTo('document')">
-        <span class="mob-nav-icon">📄</span>
+        <span class="mob-nav-icon"><i data-lucide="file-text"></i></span>
         <span>Docs</span>
       </div>
     </div>
@@ -299,7 +606,7 @@
 
   <!-- ══════ MOBILE LANGUAGE BUTTON ══════ -->
   <button class="mobile-lang-btn" id="mobile-lang-btn" onclick="toggleMobileLang()">
-    🌐 <span id="mobile-lang-label">EN</span>
+    <i data-lucide="globe" class="inline-icon"></i> <span id="mobile-lang-label">EN</span>
   </button>
 
   <!-- ══════ RIGHTS CARD MODAL ══════ -->
@@ -344,6 +651,6 @@
     </div>
   </div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=3"></script>
 </body>
 </html>
