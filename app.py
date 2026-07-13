@@ -30,7 +30,7 @@ CORS(app)
 # stale cached JS/CSS causes "ghost" bugs after edits
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
-GEMMA_MODEL = os.environ.get('GEMMA_MODEL', 'gemma4:12b')
+GEMMA_MODEL_PREFERRED = os.environ.get('GEMMA_MODEL_PREFERRED', 'gemma4:12b')
 CHROMA_DIR = os.path.join(os.path.dirname(__file__), 'chroma_db')
 DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
 
