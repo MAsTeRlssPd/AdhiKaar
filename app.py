@@ -5,11 +5,20 @@ Flask Backend with Gemma 4 via Ollama + ChromaDB RAG
 
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
+import os
+
+# The ollama Python client reads OLLAMA_HOST to decide where to CONNECT, and
+# builds its default client at import time. A server may bind 0.0.0.0, but
+# 0.0.0.0 is not a valid *connect* target on Windows — normalise it (and
+# blanks) to loopback BEFORE importing ollama so the client can reach it.
+_oh = os.environ.get('OLLAMA_HOST', '').strip()
+if _oh in ('', '0.0.0.0') or _oh.startswith('0.0.0.0:'):
+    os.environ['OLLAMA_HOST'] = '127.0.0.1:' + (_oh.split(':', 1)[1] if ':' in _oh else '11434')
+
 import ollama
 import chromadb
 from chromadb.utils import embedding_functions
 import json
-import os
 import sys
 import uuid
 import traceback
