@@ -10,8 +10,15 @@ import chromadb
 from chromadb.utils import embedding_functions
 import json
 import os
+import sys
 import uuid
 import traceback
+
+# Fix Windows console encoding for emoji/Unicode in print() statements
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+if hasattr(sys.stderr, 'reconfigure'):
+    sys.stderr.reconfigure(encoding='utf-8', errors='replace')
 
 # ══════════════════════════════════════════════════════════════
 # Configuration
@@ -19,10 +26,44 @@ import traceback
 
 app = Flask(__name__, static_folder='static', static_url_path='')
 CORS(app)
+# Never let the browser cache static files during development —
+# stale cached JS/CSS causes "ghost" bugs after edits
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
-GEMMA_MODEL = 'gemma4'
+GEMMA_MODEL_PREFERRED = os.environ.get('GEMMA_MODEL', 'gemma4')
 CHROMA_DIR = os.path.join(os.path.dirname(__file__), 'chroma_db')
 DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
+
+# Resolved at first request to avoid blocking the dev-server watchdog reloader
+_resolved_model = None
+
+def get_working_model():
+    """Lazy model resolver: try preferred model first, fall back to gemma3:4b on GGML crashes."""
+    global _resolved_model
+    if _resolved_model:
+        return _resolved_model
+    candidates = [GEMMA_MODEL_PREFERRED, 'gemma3:4b', 'gemma3:latest']
+    for model in candidates:
+        try:
+            ollama.chat(
+                model=model,
+                messages=[{'role': 'user', 'content': 'hi'}],
+                options={'temperature': 0, 'num_ctx': 512}
+            )
+            print(f"✅ Model verified and selected: {model}")
+            _resolved_model = model
+            return model
+        except Exception as e:
+            err = str(e)
+            if any(k in err for k in ('GGML_ASSERT', 'stack-based buffer', 'process has terminated')):
+                print(f"⚠️  {model} crashes on this hardware — trying next model")
+            elif 'not found' in err.lower() or 'pull' in err.lower():
+                print(f"⚠️  {model} not available locally — trying next model")
+            else:
+                print(f"⚠️  {model} error: {err[:150]} — trying next model")
+    print("❌ No working model found. Please run: ollama pull gemma3:4b")
+    _resolved_model = GEMMA_MODEL_PREFERRED
+    return _resolved_model
 
 # In-memory session storage
 sessions = {}
@@ -31,14 +72,18 @@ sessions = {}
 # Load Static Data
 # ══════════════════════════════════════════════════════════════
 
-def load_json(filename):
+def load_json(filename, fallback):
     path = os.path.join(DATA_DIR, filename)
-    with open(path, 'r', encoding='utf-8') as f:
-        return json.load(f)
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        print(f"⚠️ Could not load {filename}: {e} — using empty fallback")
+        return fallback
 
-IPC_BNS_DATA = load_json('ipc_bns_mapping.json')
-LEGAL_AID_DATA = load_json('legal_aid_directory.json')
-RIGHTS_DATA = load_json('rights_knowledge.json')
+IPC_BNS_DATA = load_json('ipc_bns_mapping.json', [])
+LEGAL_AID_DATA = load_json('legal_aid_directory.json', {'helplines': [], 'states': []})
+RIGHTS_DATA = load_json('rights_knowledge.json', {})
 
 # ══════════════════════════════════════════════════════════════
 # Initialize RAG (ChromaDB)
@@ -47,29 +92,32 @@ RIGHTS_DATA = load_json('rights_knowledge.json')
 ef = embedding_functions.DefaultEmbeddingFunction()
 chroma_client = chromadb.PersistentClient(path=CHROMA_DIR)
 
-try:
-    ipc_bns_collection = chroma_client.get_collection("ipc_bns", embedding_function=ef)
-    rights_collection = chroma_client.get_collection("rights_knowledge", embedding_function=ef)
-    legal_aid_collection = chroma_client.get_collection("legal_aid", embedding_function=ef)
-    print("✅ ChromaDB collections loaded")
-except Exception as e:
-    print(f"⚠️ ChromaDB collections not found. Run rag_setup.py first. Error: {e}")
-    ipc_bns_collection = None
-    rights_collection = None
-    legal_aid_collection = None
+def load_collection(name):
+    """Load one ChromaDB collection; failure of one doesn't disable the others."""
+    try:
+        col = chroma_client.get_collection(name, embedding_function=ef)
+        print(f"✅ ChromaDB collection '{name}' loaded")
+        return col
+    except Exception as e:
+        print(f"⚠️ ChromaDB collection '{name}' not available. Run rag_setup.py. Error: {e}")
+        return None
+
+ipc_bns_collection = load_collection("ipc_bns")
+rights_collection = load_collection("rights_knowledge")
+legal_aid_collection = load_collection("legal_aid")
 
 # ══════════════════════════════════════════════════════════════
 # RAG Helper
 # ══════════════════════════════════════════════════════════════
 
-def retrieve_context(query, collection, n_results=5):
-    """Retrieve relevant documents from ChromaDB."""
+def retrieve_context(query, collection, n_results=3, max_chars=1200):
+    """Retrieve relevant documents from ChromaDB, capped to avoid context overflow."""
     if collection is None:
         return ""
     try:
         results = collection.query(query_texts=[query], n_results=n_results)
         docs = results.get('documents', [[]])[0]
-        return "\n".join(docs)
+        return "\n".join(docs)[:max_chars]
     except Exception as e:
         print(f"RAG retrieval error: {e}")
         return ""
@@ -275,12 +323,16 @@ SITUATION CONTEXT:
 # Helper Functions
 # ══════════════════════════════════════════════════════════════
 
+MAX_SESSIONS = 500   # evict oldest session beyond this
+MAX_HISTORY = 6      # messages kept per session (reduced to prevent context overflow)
+
 def get_session(session_id):
-    """Get or create a conversation session."""
+    """Get or create a conversation session (bounded to avoid memory leaks)."""
     if session_id not in sessions:
+        if len(sessions) >= MAX_SESSIONS:
+            sessions.pop(next(iter(sessions)))
         sessions[session_id] = {
             'history': [],
-            'confirmed': False,
             'situation_summary': '',
             'case_type': None
         }
@@ -291,18 +343,24 @@ def get_language_instruction(lang):
     return LANGUAGE_INSTRUCTIONS.get(lang, LANGUAGE_INSTRUCTIONS['en'])
 
 def call_gemma(messages, temperature=0.7):
-    """Call Gemma via Ollama."""
+    """Call the working LLM model via Ollama (auto-detected at first call)."""
+    model = get_working_model()
+    total_chars = sum(len(m["content"]) for m in messages)
+    print(f"[call_gemma] model={model} messages={len(messages)} chars={total_chars}")
     try:
         response = ollama.chat(
-            model=GEMMA_MODEL,
+            model=model,
             messages=messages,
-            options={'temperature': temperature}
+            options={
+                'temperature': temperature,
+                'num_ctx': 2048,   # keep context window small to avoid GGML_SCHED_MAX_SPLIT_INPUTS crash
+            }
         )
         return response['message']['content']
     except Exception as e:
         print(f"Gemma error: {e}")
         traceback.print_exc()
-        return f"I'm having trouble connecting to the AI model. Please make sure Ollama is running with Gemma 4. Error: {str(e)}"
+        raise
 
 def detect_power_imbalance(text):
     """Detect power imbalance patterns in user's situation."""
@@ -374,7 +432,7 @@ def get_languages():
 def chat():
     """Main conversation endpoint with confirmation loop and power-imbalance detection."""
     try:
-        data = request.json
+        data = request.get_json(silent=True) or {}
         message = data.get('message', '')
         language = data.get('language', 'en')
         session_id = data.get('session_id', str(uuid.uuid4()))
@@ -384,9 +442,9 @@ def chat():
         # Retrieve relevant context from RAG
         rag_context = ""
         if rights_collection:
-            rag_context += retrieve_context(message, rights_collection, n_results=3)
+            rag_context += retrieve_context(message, rights_collection, n_results=2)
         if ipc_bns_collection:
-            rag_context += "\n" + retrieve_context(message, ipc_bns_collection, n_results=3)
+            rag_context += "\n" + retrieve_context(message, ipc_bns_collection, n_results=2)
         
         # Detect power imbalance
         power_imbalances = detect_power_imbalance(message)
@@ -421,6 +479,7 @@ def chat():
         # Update session history
         session['history'].append({"role": "user", "content": message})
         session['history'].append({"role": "assistant", "content": response_text})
+        session['history'] = session['history'][-MAX_HISTORY:]  # bound stored history
         session['situation_summary'] = message if not session['situation_summary'] else session['situation_summary']
         
         return jsonify({
@@ -441,7 +500,7 @@ def chat():
 def devil_advocate():
     """Devil's Advocate mode — argue against the user's position."""
     try:
-        data = request.json
+        data = request.get_json(silent=True) or {}
         situation = data.get('situation', '')
         language = data.get('language', 'en')
         session_id = data.get('session_id', '')
@@ -481,7 +540,7 @@ def devil_advocate():
 def bns_convert():
     """IPC ↔ BNS section converter."""
     try:
-        data = request.json
+        data = request.get_json(silent=True) or {}
         query = data.get('query', '').strip()
         direction = data.get('direction', 'ipc_to_bns')  # or 'bns_to_ipc'
         
@@ -495,14 +554,14 @@ def bns_convert():
         for entry in IPC_BNS_DATA:
             match = False
             if direction == 'ipc_to_bns':
-                if (query_lower in entry['ipc_section'].lower() or 
-                    query_lower in entry['offence'].lower() or
-                    query_lower in entry['description'].lower()):
+                if (query_lower in entry.get('ipc_section', '').lower() or
+                    query_lower in entry.get('offence', '').lower() or
+                    query_lower in entry.get('description', '').lower()):
                     match = True
             else:
-                if (query_lower in entry['bns_section'].lower() or 
-                    query_lower in entry['offence'].lower() or
-                    query_lower in entry['description'].lower()):
+                if (query_lower in entry.get('bns_section', '').lower() or
+                    query_lower in entry.get('offence', '').lower() or
+                    query_lower in entry.get('description', '').lower()):
                     match = True
             
             if match:
@@ -541,38 +600,38 @@ def legal_aid():
         
         # Always return helplines
         result = {
-            "helplines": LEGAL_AID_DATA['helplines'],
+            "helplines": LEGAL_AID_DATA.get('helplines', []),
             "states": [],
             "districts": []
         }
-        
+
         if not state_query:
             # Return list of all states
             result['states'] = [
-                {"name": s['name'], "name_hi": s['name_hi']} 
-                for s in LEGAL_AID_DATA['states']
+                {"name": s.get('name', ''), "name_hi": s.get('name_hi', '')}
+                for s in LEGAL_AID_DATA.get('states', [])
             ]
             return jsonify(result)
-        
+
         # Find matching state
-        for state in LEGAL_AID_DATA['states']:
-            if state_query in state['name'].lower() or state_query in state.get('name_hi', '').lower():
+        for state in LEGAL_AID_DATA.get('states', []):
+            if state_query in state.get('name', '').lower() or state_query in state.get('name_hi', '').lower():
                 state_info = {
-                    "name": state['name'],
-                    "name_hi": state['name_hi'],
-                    "slsa": state['slsa'],
-                    "districts": state['districts']
+                    "name": state.get('name', ''),
+                    "name_hi": state.get('name_hi', ''),
+                    "slsa": state.get('slsa', {}),
+                    "districts": state.get('districts', [])
                 }
                 result['states'] = [state_info]
-                
+
                 # Filter districts if query provided
                 if district_query:
                     result['districts'] = [
-                        d for d in state['districts']
-                        if district_query in d['name'].lower() or district_query in d.get('name_hi', '').lower()
+                        d for d in state.get('districts', [])
+                        if district_query in d.get('name', '').lower() or district_query in d.get('name_hi', '').lower()
                     ]
                 else:
-                    result['districts'] = state['districts']
+                    result['districts'] = state.get('districts', [])
                 break
         
         return jsonify(result)
@@ -586,7 +645,7 @@ def legal_aid():
 def translate_document():
     """Translate and explain a legal document from OCR text."""
     try:
-        data = request.json
+        data = request.get_json(silent=True) or {}
         document_text = data.get('text', '')
         language = data.get('language', 'en')
         
@@ -616,7 +675,7 @@ def translate_document():
 def panchayat_bridge():
     """Generate elder-friendly explanation for community intermediaries."""
     try:
-        data = request.json
+        data = request.get_json(silent=True) or {}
         situation = data.get('situation', '')
         advice = data.get('advice', '')
         language = data.get('language', 'en')
@@ -646,7 +705,7 @@ def panchayat_bridge():
 def rights_checklist():
     """Generate case-specific rights checklist."""
     try:
-        data = request.json
+        data = request.get_json(silent=True) or {}
         situation = data.get('situation', '')
         language = data.get('language', 'en')
         
@@ -677,7 +736,7 @@ def rights_checklist():
 def consequence_simulator():
     """Simulate consequences of inaction."""
     try:
-        data = request.json
+        data = request.get_json(silent=True) or {}
         situation = data.get('situation', '')
         language = data.get('language', 'en')
         
@@ -708,7 +767,7 @@ def consequence_simulator():
 def rights_card():
     """Generate data for a rights card."""
     try:
-        data = request.json
+        data = request.get_json(silent=True) or {}
         situation = data.get('situation', '')
         advice = data.get('advice', '')
         language = data.get('language', 'en')
@@ -758,6 +817,173 @@ def rights_card():
 
 
 # ══════════════════════════════════════════════════════════════
+# Document Drafting Engine
+# ══════════════════════════════════════════════════════════════
+
+DRAFTING_PROMPTS = {
+    "legal_notice": """Draft a formal LEGAL NOTICE under Indian law. Use the standard format:
+- Sender details (via their advocate if applicable), recipient details
+- Subject line
+- Numbered paragraphs: facts, legal grounds (cite specific acts/BNS sections), demand, deadline (typically 15/30 days), consequence of non-compliance
+- Formal closing""",
+    "consumer_complaint": """Draft a CONSUMER COMPLAINT for the District Consumer Disputes Redressal Commission under the Consumer Protection Act, 2019. Use the standard format:
+- Complainant and Opposite Party details
+- Numbered paragraphs: facts, deficiency in service/defect in goods, jurisdiction (pecuniary + territorial), limitation
+- Prayer: refund/replacement/compensation with specific amounts
+- Verification clause""",
+    "rti_application": """Draft an RTI APPLICATION under the Right to Information Act, 2005. Use the standard format:
+- To: The Public Information Officer (with department)
+- Applicant details
+- Clear, specific, numbered information requests (not opinions, only records/information)
+- Declaration of citizenship, application fee mention (Rs. 10)
+- Note about first appeal rights""",
+    "police_complaint": """Draft a POLICE COMPLAINT (for filing an FIR) addressed to the Station House Officer. Use the standard format:
+- To: SHO with police station name
+- Complainant details
+- Chronological numbered facts with dates, times, places, names
+- Specific offences with BNS sections
+- Request for FIR registration and investigation
+- Note: if FIR is refused, mention right to approach SP under BNSS 173(4) or Magistrate under BNSS 175(3)"""
+}
+
+DRAFT_SYSTEM_PROMPT = """You are an expert Indian legal drafter. {doc_instruction}
+
+RULES:
+- Use the exact details provided by the user. Where a required detail is missing, insert a clear placeholder like [YOUR FULL ADDRESS].
+- Write the document itself in formal {doc_language} (standard for Indian legal documents).
+- Cite current laws: BNS (not IPC), BNSS (not CrPC), Consumer Protection Act 2019, etc.
+- Format the output as:
+
+## 📄 DOCUMENT
+
+[The complete, ready-to-use document]
+
+## 📝 HOW TO USE THIS
+
+[Simple explanation in the user's language: where to submit it, what to attach, deadlines, what happens next]
+
+{language_instruction}
+"""
+
+@app.route('/api/draft-document', methods=['POST'])
+def draft_document():
+    """Generate a formatted legal document from structured fields."""
+    try:
+        data = request.get_json(silent=True) or {}
+        doc_type = data.get('doc_type', 'legal_notice')
+        fields = data.get('fields', {})
+        situation = data.get('situation', '')
+        language = data.get('language', 'en')
+
+        doc_instruction = DRAFTING_PROMPTS.get(doc_type, DRAFTING_PROMPTS['legal_notice'])
+        doc_language = 'Hindi' if language == 'hi' else 'English'
+
+        system_prompt = DRAFT_SYSTEM_PROMPT.format(
+            doc_instruction=doc_instruction,
+            doc_language=doc_language,
+            language_instruction=get_language_instruction(language)
+        )
+
+        fields_text = "\n".join(f"- {k}: {v}" for k, v in fields.items() if v)
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": f"Draft the document with these details:\n{fields_text}\n\nSituation description:\n{situation}"}
+        ]
+
+        response_text = call_gemma(messages, temperature=0.4)
+        return jsonify({"response": response_text})
+
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
+# ══════════════════════════════════════════════════════════════
+# Virtual Courtroom
+# ══════════════════════════════════════════════════════════════
+
+COURTROOM_PROMPT = """You are simulating an Indian courtroom hearing (moot court) to help a citizen prepare their case. You play THREE roles in each round:
+
+1. USER'S LAWYER (advocate arguing FOR the citizen)
+2. OPPOSING LAWYER (advocate arguing AGAINST the citizen)
+3. JUDGE (neutral, asks probing questions, notes strong/weak points)
+
+This is round {round_num} of 3.
+- Round 1: Opening arguments from both sides, judge frames the key issues.
+- Round 2: Rebuttals with specific law citations (BNS/relevant acts) and precedents, judge questions the weakest claims.
+- Round 3: Closing arguments, then the judge gives a REALISTIC ASSESSMENT: likely outcome, strength of the citizen's case (out of 10), and what evidence would most improve it.
+
+Cite real Indian laws with sections. Be realistic — do not simply favor the citizen.
+
+OUTPUT FORMAT — use these exact markers, each on its own line:
+[YOUR_LAWYER]
+(argument)
+[OPPOSING_LAWYER]
+(argument)
+[JUDGE]
+(remarks)
+
+{language_instruction}
+
+CASE CONTEXT:
+{rag_context}
+"""
+
+@app.route('/api/courtroom', methods=['POST'])
+def courtroom():
+    """Virtual courtroom simulation — three AI roles per round."""
+    try:
+        data = request.get_json(silent=True) or {}
+        situation = data.get('situation', '')
+        round_num = int(data.get('round', 1))
+        history = data.get('history', '')
+        language = data.get('language', 'en')
+
+        rag_context = ""
+        if rights_collection:
+            rag_context = retrieve_context(situation, rights_collection, n_results=3)
+
+        system_prompt = COURTROOM_PROMPT.format(
+            round_num=round_num,
+            language_instruction=get_language_instruction(language),
+            rag_context=rag_context
+        )
+
+        user_content = f"The citizen's case:\n{situation}"
+        if history:
+            user_content += f"\n\nPrevious rounds:\n{history}\n\nNow produce round {round_num}."
+
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_content}
+        ]
+
+        response_text = call_gemma(messages, temperature=0.8)
+
+        # Parse the three roles from the marked response
+        import re
+        def extract(marker, text):
+            pattern = rf"\[{marker}\]\s*(.*?)(?=\[(?:YOUR_LAWYER|OPPOSING_LAWYER|JUDGE)\]|$)"
+            m = re.search(pattern, text, re.DOTALL)
+            return m.group(1).strip() if m else ""
+
+        parsed = {
+            "your_lawyer": extract("YOUR_LAWYER", response_text),
+            "opposing_lawyer": extract("OPPOSING_LAWYER", response_text),
+            "judge": extract("JUDGE", response_text),
+        }
+        # Fallback: if parsing failed, put everything in judge
+        if not any(parsed.values()):
+            parsed["judge"] = response_text
+
+        return jsonify({"round": round_num, "roles": parsed, "raw": response_text})
+
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
+# ══════════════════════════════════════════════════════════════
 # Main
 # ══════════════════════════════════════════════════════════════
 
@@ -768,11 +994,11 @@ if __name__ == '__main__':
     ║      Empowering Every Citizen with Rights     ║
     ╚══════════════════════════════════════════════╝
     """)
-    print(f"  Model: {GEMMA_MODEL}")
+    print(f"  Model: {GEMMA_MODEL_PREFERRED} (or fallback)")
     print(f"  RAG DB: {CHROMA_DIR}")
     print(f"  Server: http://localhost:5000")
     print(f"  Make sure Ollama is running: ollama serve")
-    print(f"  Make sure model is pulled: ollama pull {GEMMA_MODEL}")
+    print(f"  Make sure model is pulled: ollama pull {GEMMA_MODEL_PREFERRED}")
     print()
     
     app.run(debug=True, host='0.0.0.0', port=5000)
