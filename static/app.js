@@ -1882,26 +1882,57 @@ function pickVoice(langCode) {
       || null;
 }
 
-function speak(text, opts = {}) {
-  if (!window.speechSynthesis) { opts.onDone && opts.onDone(); return false; }
-  window.speechSynthesis.cancel();
-  const clean = stripForSpeech(text);
-  if (!clean) { opts.onDone && opts.onDone(); return false; }
+// Server-side MMS-TTS audio element + a token that invalidates stale/stopped
+// playback (a slow /api/tts response must not start after the user hit Stop).
+let currentAudio = null;
+let speakToken = 0;
 
+function stopAudio() {
+  if (currentAudio) {
+    try { currentAudio.pause(); currentAudio.src = ''; } catch (e) {}
+    currentAudio = null;
+  }
+}
+
+// Try the offline server TTS first (works for every language); the caller's
+// .catch() falls back to window.speechSynthesis if this rejects.
+async function speakViaServer(clean, opts, token) {
+  const res = await fetch('/api/tts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text: clean, language: state.language || 'en' })
+  });
+  if (token !== speakToken) return;          // stopped/superseded while fetching
+  if (!res.ok) throw new Error('tts ' + res.status);
+  const blob = await res.blob();
+  if (token !== speakToken) return;
+  if (!blob.size) throw new Error('empty audio');
+  const url = URL.createObjectURL(blob);
+  const audio = new Audio(url);
+  currentAudio = audio;
+  audio.onended = () => {
+    URL.revokeObjectURL(url);
+    if (currentAudio === audio) currentAudio = null;
+    opts.onDone && opts.onDone();
+  };
+  await audio.play();                        // rejects -> caller falls back
+}
+
+// Original browser Web Speech API path (kept as the fallback).
+function speakViaBrowser(clean, opts) {
+  if (!window.speechSynthesis) { opts.onDone && opts.onDone(); return; }
+  window.speechSynthesis.cancel();
   const lang = speechLang();
   const voice = pickVoice(lang);
-  // If the OS has no voice for this language, warn — and (when the user
-  // pressed Listen) tell them, instead of failing silently.
   if (!voice) {
     console.warn(`[tts] No installed voice for "${lang}". Speech may be silent or use a default voice.`);
     if (opts.notify) {
       showToast("Audio isn't available for this language on your device — showing the text instead.");
     }
   }
-
   // Chunk long text so speechSynthesis doesn't cut off mid-answer
   const chunks = (clean.match(/[^.।!?]+[.।!?]?/g) || [clean]).filter(c => c.trim());
-  if (!chunks.length) { opts.onDone && opts.onDone(); return false; }
+  if (!chunks.length) { opts.onDone && opts.onDone(); return; }
   chunks.forEach((chunk, idx) => {
     const u = new SpeechSynthesisUtterance(chunk.trim());
     u.lang = lang;
@@ -1909,6 +1940,20 @@ function speak(text, opts = {}) {
     u.rate = 0.95;
     if (idx === chunks.length - 1 && opts.onDone) u.onend = opts.onDone;
     window.speechSynthesis.speak(u);
+  });
+}
+
+function speak(text, opts = {}) {
+  const clean = stripForSpeech(text);
+  if (!clean) { opts.onDone && opts.onDone(); return false; }
+  // Stop whatever is currently playing and claim a fresh token.
+  stopAudio();
+  window.speechSynthesis?.cancel();
+  const token = ++speakToken;
+  // Optimistically report started; if the server fails we fall back to the browser.
+  speakViaServer(clean, opts, token).catch(() => {
+    if (token !== speakToken) return;        // stopped/superseded — don't fall back
+    speakViaBrowser(clean, opts);
   });
   return true;
 }
@@ -1929,6 +1974,8 @@ function toggleSpeak(btn, text) {
 }
 
 function stopSpeaking() {
+  speakToken++;                 // invalidate any in-flight server TTS request
+  stopAudio();                  // stop server-audio playback
   window.speechSynthesis?.cancel();
   resetSpeakBtn();
 }

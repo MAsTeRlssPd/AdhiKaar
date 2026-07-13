@@ -1187,6 +1187,84 @@ def courtroom():
 
 
 # ══════════════════════════════════════════════════════════════
+# Offline Multilingual TTS (Facebook MMS-TTS via transformers)
+# ══════════════════════════════════════════════════════════════
+# Browser Web Speech API only speaks languages the OS has voices for, so
+# non-English voices are silent on most Windows machines. MMS-TTS runs the
+# synthesis server-side (CPU-only OK) and covers every app language.
+#
+# Models download once from Hugging Face, then run fully offline. To
+# pre-download them (e.g. before going offline), run:
+#   python -c "from transformers import VitsModel, AutoTokenizer; \\
+#     [ (VitsModel.from_pretrained(m), AutoTokenizer.from_pretrained(m)) \\
+#       for m in set(__import__('app').MMS_TTS_MODELS.values()) ]"
+
+MMS_TTS_MODELS = {
+    'en': 'facebook/mms-tts-eng',
+    'hi': 'facebook/mms-tts-hin',
+    'hinglish': 'facebook/mms-tts-hin',
+    'ta': 'facebook/mms-tts-tam',
+    'te': 'facebook/mms-tts-tel',
+    'bn': 'facebook/mms-tts-ben',
+    'mr': 'facebook/mms-tts-mar',
+    'gu': 'facebook/mms-tts-guj',
+    'kn': 'facebook/mms-tts-kan',
+    'ml': 'facebook/mms-tts-mal',
+    'pa': 'facebook/mms-tts-pan',
+}
+
+TTS_MAX_CHARS = 800  # ponytail: naive truncation; chunk+concat if long answers get cut off
+
+# Lazily loaded + cached VitsModel/tokenizer, keyed by HF model id
+_tts_models = {}
+
+def get_tts_model(language):
+    """Load (and cache) the MMS-TTS model for an app language code. Lazy — never at startup."""
+    model_id = MMS_TTS_MODELS.get(language, MMS_TTS_MODELS['en'])
+    if model_id not in _tts_models:
+        from transformers import VitsModel, AutoTokenizer
+        print(f"⏳ Loading TTS model {model_id} (first use — may download)...")
+        model = VitsModel.from_pretrained(model_id)
+        model.eval()
+        tokenizer = AutoTokenizer.from_pretrained(model_id)
+        _tts_models[model_id] = (model, tokenizer)
+        print(f"✅ TTS model {model_id} ready")
+    return _tts_models[model_id]
+
+@app.route('/api/tts', methods=['POST'])
+def tts():
+    """Synthesize speech offline with MMS-TTS. Returns raw WAV (audio/wav) or JSON error."""
+    try:
+        data = request.get_json(silent=True) or {}
+        text = (data.get('text') or '').strip()[:TTS_MAX_CHARS]
+        language = data.get('language', 'en')
+        if not text:
+            return jsonify({"error": "No text provided"}), 400
+
+        import io
+        import numpy as np
+        import torch
+        from scipy.io.wavfile import write as wav_write
+
+        model, tokenizer = get_tts_model(language)
+        inputs = tokenizer(text, return_tensors="pt")
+        with torch.no_grad():
+            waveform = model(**inputs).waveform.squeeze().cpu().numpy()
+
+        # float32 [-1,1] -> int16 PCM for broad browser <audio> compatibility
+        pcm16 = (np.clip(waveform, -1.0, 1.0) * 32767).astype(np.int16)
+        buf = io.BytesIO()
+        wav_write(buf, model.config.sampling_rate, pcm16)
+        from flask import Response
+        return Response(buf.getvalue(), mimetype='audio/wav')
+
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
+
+# ══════════════════════════════════════════════════════════════
 # Main
 # ══════════════════════════════════════════════════════════════
 
