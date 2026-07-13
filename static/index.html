@@ -158,7 +158,7 @@
             <div class="home-chat-input">
               <span class="home-chat-spark"><i data-lucide="sparkles"></i></span>
               <input type="text" id="home-chat-input" placeholder="Type your legal question..." onkeydown="if(event.key==='Enter')homeChatSend()">
-              <button class="hc-icon" onclick="navigateTo('document')" title="Upload a document" aria-label="Upload a document"><i data-lucide="paperclip"></i></button>
+              <button class="hc-icon" onclick="attachDocument()" title="Attach a document to chat" aria-label="Attach a document"><i data-lucide="paperclip"></i></button>
               <button class="hc-icon" id="home-chat-mic" onclick="homeChatVoice()" title="Speak" aria-label="Voice input"><i data-lucide="mic"></i></button>
               <button class="home-chat-send" onclick="homeChatSend()" aria-label="Send"><i data-lucide="send"></i></button>
             </div>
@@ -299,8 +299,11 @@
                   <i data-lucide="swords" style="width: 16px; height: 16px;"></i> Devil's Advocate Mode
                 </label>
               </div>
+              <div id="doc-chip" class="doc-chip" style="display:none"></div>
+              <input type="file" id="chat-doc-input" accept="image/*,.pdf,.txt" style="display:none" onchange="handleChatDocUpload(event)">
               <div class="chat-input-wrapper">
                 <textarea id="chat-input" rows="1" placeholder="Describe your legal problem here..." onkeydown="handleChatKeydown(event)"></textarea>
+                <button class="voice-btn" id="attach-btn" onclick="attachDocument()" title="Attach a document" aria-label="Attach a document"><i data-lucide="paperclip"></i></button>
                 <button class="voice-btn" id="voice-btn" onclick="toggleVoice()" title="Voice input" aria-label="Voice input"><i data-lucide="mic"></i></button>
                 <button class="send-btn" id="send-btn" onclick="sendMessage()" title="Send message" aria-label="Send message"><i data-lucide="send"></i></button>
               </div>

@@ -2904,3 +2904,28 @@ svg.inline-icon, .inline-icon { width: 16px; height: 16px; vertical-align: -2px;
   }
 }
 
+
+/* Attached-document chip (chat RAG) */
+.doc-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 8px 12px;
+  background: var(--primary-subtle);
+  color: var(--primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  font-size: 0.9rem;
+}
+.doc-chip-x {
+  border: none;
+  background: transparent;
+  color: var(--primary);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+}
+.doc-chip-x:hover { color: var(--danger); }
