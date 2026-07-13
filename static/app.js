@@ -32,6 +32,8 @@ const state = {
   recognition: null,
   bnsDirection: 'ipc_to_bns',
   bnsSearchTimeout: null,
+  crpcDirection: 'crpc_to_bnss',
+  crpcSearchTimeout: null,
   lastSituation: '',
   lastAdvice: '',
   autoSpeak: localStorage.getItem('adhikaar_autospeak') === '1',
@@ -251,23 +253,27 @@ async function sendMessage() {
   // Show typing indicator
   showTyping();
 
+  const isDevilMode = $('devil-mode-toggle') && $('devil-mode-toggle').checked;
+  const endpoint = isDevilMode ? '/api/devil-advocate' : '/api/chat';
+  const bodyData = isDevilMode 
+    ? { situation: message, language: state.language, session_id: state.sessionId }
+    : { message: message, language: state.language, session_id: state.sessionId };
+
   try {
-    const data = await apiCall('/api/chat', {
+    const data = await apiCall(endpoint, {
       method: 'POST',
-      body: JSON.stringify({
-        message: message,
-        language: state.language,
-        session_id: state.sessionId,
-      }),
+      body: JSON.stringify(bodyData),
     });
 
     hideTyping();
-    state.lastAdvice = data.response;
+    if (!isDevilMode) {
+      state.lastAdvice = data.response;
+    }
 
     // Add assistant message with action buttons
     addMessage('assistant', data.response, {
       powerImbalance: data.power_imbalance,
-      showActions: true,
+      showActions: !isDevilMode,
     });
 
   } catch (error) {
@@ -298,7 +304,6 @@ function addMessage(role, content, options = {}) {
       actionsDiv.className = 'message-actions';
 
       const actions = [
-        { label: 'Devil\'s Advocate', icon: 'swords', cls: 'devil', fn: () => runDevilAdvocate() },
         { label: 'What If I Do Nothing?', icon: 'clock', cls: '', fn: () => runConsequenceSimulator() },
         { label: 'Explain to Elder', icon: 'users', cls: '', fn: () => runPanchayatBridge() },
         { label: 'Rights Card', icon: 'id-card', cls: '', fn: () => generateRightsCard() },
@@ -812,6 +817,21 @@ function toggleVoice() {
 // BNS Converter
 // ══════════════════════════════════════════════════════════════
 
+// Open the merged converter view on a given code tab (from home cards)
+function openConverter(code) {
+  navigateTo('bns');
+  setConverterCode(code || 'ipc_bns');
+}
+
+// Switch between IPC↔BNS and CrPC↔BNSS panels inside the converter view
+function setConverterCode(code) {
+  const isCrpc = code === 'crpc_bnss';
+  $('code-ipc-bns').classList.toggle('active', !isCrpc);
+  $('code-crpc-bnss').classList.toggle('active', isCrpc);
+  $('panel-ipc-bns').style.display = isCrpc ? 'none' : 'block';
+  $('panel-crpc-bnss').style.display = isCrpc ? 'block' : 'none';
+}
+
 function setBnsDirection(direction) {
   state.bnsDirection = direction;
 
@@ -868,6 +888,75 @@ async function doSearchBns() {
       `).join('');
     } else {
       resultsContainer.innerHTML = '<div class="empty-state"><div class="empty-icon">🤷</div><p>No exact matches found. Try a different section number or offence name.</p></div>';
+    }
+
+    if (data.ai_explanation) {
+      aiContainer.innerHTML = `
+        <div class="ai-explanation">
+          <h4>🤖 AI Explanation</h4>
+          <div class="explanation-text markdown-body">${renderMarkdown(data.ai_explanation)}</div>
+        </div>
+      `;
+    }
+  } catch (error) {
+    resultsContainer.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><p>Could not search. Please check if the server is running.</p></div>';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// CrPC ↔ BNSS Converter
+// ══════════════════════════════════════════════════════════════
+
+function setCrpcDirection(direction) {
+  state.crpcDirection = direction;
+  $('toggle-crpc-bnss').classList.toggle('active', direction === 'crpc_to_bnss');
+  $('toggle-bnss-crpc').classList.toggle('active', direction === 'bnss_to_crpc');
+  searchCrpc();
+}
+
+function searchCrpc() {
+  clearTimeout(state.crpcSearchTimeout);
+  state.crpcSearchTimeout = setTimeout(doSearchCrpc, 400);
+}
+
+async function doSearchCrpc() {
+  const query = $('crpc-search').value.trim();
+  const resultsContainer = $('crpc-results');
+  const aiContainer = $('crpc-ai-explanation');
+
+  if (!query) {
+    resultsContainer.innerHTML = '<div class="empty-state"><div class="empty-icon">🔍</div><p>Type a section number to search</p></div>';
+    aiContainer.innerHTML = '';
+    return;
+  }
+
+  resultsContainer.innerHTML = '<div class="loading"><div class="spinner"></div><span>Searching...</span></div>';
+  aiContainer.innerHTML = '';
+
+  try {
+    const data = await apiCall('/api/crpc-convert', {
+      method: 'POST',
+      body: JSON.stringify({ query: query, direction: state.crpcDirection }),
+    });
+
+    if (data.results && data.results.length > 0) {
+      resultsContainer.innerHTML = data.results.map(r => `
+        <div class="result-card">
+          <div class="section-mapping">
+            <span class="section-badge ipc">CrPC ${escapeHtml(r.crpc_section)}</span>
+            <span class="section-arrow">→</span>
+            <span class="section-badge bns">BNSS ${escapeHtml(r.bnss_section)}</span>
+          </div>
+          <div class="offence-name">${escapeHtml(r.offence)}</div>
+          <div class="description">${escapeHtml(r.description).slice(0, 220)}${r.description.length > 220 ? '...' : ''}</div>
+          <div class="key-changes">
+            <strong>⚡ Key Changes:</strong> ${escapeHtml(r.key_changes)}
+          </div>
+          <div class="punishment">📂 ${escapeHtml(r.category)}</div>
+        </div>
+      `).join('');
+    } else {
+      resultsContainer.innerHTML = '<div class="empty-state"><div class="empty-icon">🤷</div><p>No exact match found. Try another section number (e.g., 144, 154, 438).</p></div>';
     }
 
     if (data.ai_explanation) {
@@ -1514,10 +1603,20 @@ async function generateDraft() {
   if (!currentDraftType) return;
   const def = DRAFT_TYPES[currentDraftType];
   const fields = {};
+  let allFilled = true;
   def.fields.forEach(([key, label]) => {
     const el = $(`draft-${key}`);
-    if (el && el.value.trim()) fields[label] = el.value.trim();
+    if (el && el.value.trim()) {
+      fields[label] = el.value.trim();
+    } else {
+      allFilled = false;
+    }
   });
+
+  if (!allFilled) {
+    alert("Please fill all options to generate the PDF/Document.");
+    return;
+  }
 
   const btn = $('draft-generate-btn');
   btn.disabled = true;
@@ -1604,25 +1703,14 @@ function prefillCourtroom() {
 async function startCourtroom() {
   const situation = $('courtroom-situation').value.trim();
   if (!situation) { alert('Please describe your case first.'); return; }
-  courtroom.round = 0;
   courtroom.situation = situation;
-  courtroom.history = '';
   $('courtroom-rounds').innerHTML = '';
   $('courtroom-setup').style.display = 'none';
   $('courtroom-stage').style.display = 'block';
-  nextCourtRound();
-}
-
-async function nextCourtRound() {
-  if (courtroom.round >= 3) return;
-  courtroom.round += 1;
-  const btn = $('courtroom-next-btn');
-  btn.disabled = true;
-  btn.textContent = `Round ${courtroom.round} in session…`;
 
   const roundDiv = document.createElement('div');
   roundDiv.className = 'court-round';
-  roundDiv.innerHTML = `<div class="court-round-label">Round ${courtroom.round} of 3${courtroom.round === 3 ? ' — closing & verdict' : ''}</div>
+  roundDiv.innerHTML = `<div class="court-round-label">Hearing in Session</div>
     <div class="court-loading"><div class="typing-dots"><span></span><span></span><span></span></div> The court is deliberating…</div>`;
   $('courtroom-rounds').appendChild(roundDiv);
   roundDiv.scrollIntoView({ behavior: 'smooth' });
@@ -1632,34 +1720,30 @@ async function nextCourtRound() {
       method: 'POST',
       body: JSON.stringify({
         situation: courtroom.situation,
-        round: courtroom.round,
-        history: courtroom.history,
         language: state.language,
       }),
     });
-    const r = data.roles;
-    courtroom.history += `\n--- Round ${courtroom.round} ---\n${data.raw}`;
+    
     roundDiv.querySelector('.court-loading').remove();
-    roundDiv.innerHTML += `
-      ${r.your_lawyer ? courtBubble('your-lawyer', 'shield', 'Your Lawyer', r.your_lawyer) : ''}
-      ${r.opposing_lawyer ? courtBubble('opposing', 'swords', 'Opposing Lawyer', r.opposing_lawyer) : ''}
-      ${r.judge ? courtBubble('judge', 'gavel', courtroom.round === 3 ? 'Judge — Assessment' : 'Judge', r.judge) : ''}`;
+    
+    let html = '';
+    if (data.messages && data.messages.length > 0) {
+      data.messages.forEach(msg => {
+        if (msg.role === 'YOUR_LAWYER') {
+          html += courtBubble('your-lawyer', 'shield', 'Your Lawyer', msg.text);
+        } else if (msg.role === 'OPPOSING_LAWYER') {
+          html += courtBubble('opposing', 'swords', 'Opposing Lawyer', msg.text);
+        } else if (msg.role === 'NEXT_STEPS') {
+          html += courtBubble('judge', 'clipboard-list', 'Next Steps', msg.text);
+        }
+      });
+    }
+    
+    roundDiv.innerHTML += html;
     refreshIcons();
   } catch (e) {
     let hint = e.message || 'Unknown error';
-    if (hint.includes('404')) hint = 'The server is running OLD code (404). Stop it with Ctrl+C and run "python app.py" again.';
-    else if (hint.includes('500')) hint = 'The server hit an error (500) — look at the python terminal for the traceback.';
-    else if (hint.includes('Failed to fetch')) hint = 'Could not reach the server at all — is "python app.py" running?';
-    roundDiv.querySelector('.court-loading').innerHTML = `⚠️ ${escapeHtml(hint)} Then press Next Round to retry.`;
-    courtroom.round -= 1;
-  } finally {
-    if (courtroom.round >= 3) {
-      btn.style.display = 'none';
-    } else {
-      btn.disabled = false;
-      btn.textContent = 'Next Round';
-      btn.style.display = '';
-    }
+    roundDiv.querySelector('.court-loading').innerHTML = `⚠️ ${escapeHtml(hint)} Try again.`;
   }
 }
 
@@ -1671,15 +1755,9 @@ function courtBubble(cls, icon, name, text) {
 }
 
 function resetCourtroom() {
-  courtroom.round = 0;
-  courtroom.history = '';
   $('courtroom-rounds').innerHTML = '';
   $('courtroom-setup').style.display = 'block';
   $('courtroom-stage').style.display = 'none';
-  const btn = $('courtroom-next-btn');
-  btn.style.display = '';
-  btn.disabled = false;
-  btn.textContent = 'Next Round';
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1993,7 +2071,7 @@ initTheme();
 // ══════════════════════════════════════════════════════════════
 
 const I18N = {
-en: { nav_home:'Home', nav_chat:'Talk to Legal Helper', nav_cases:'My Cases', nav_draft:'Draft a Document', nav_court:'Virtual Courtroom', nav_bns:'IPC ↔ BNS Converter', nav_aid:'Find Legal Aid', nav_doc:'Translate Legal Document',
+en: { nav_home:'Home', nav_chat:'Talk to Legal Helper', nav_cases:'My Cases', nav_draft:'Draft a Document', nav_court:'Virtual Courtroom', nav_bns:'Section Converter', nav_crpc:'CrPC ↔ BNSS Converter', nav_aid:'Find Legal Aid', nav_doc:'Translate Legal Document',
 badge:'100% private · runs on your device', hero_sub:'Salary not paid? Deposit stuck? Got a legal notice? Ask in Hindi, English, or 9 other languages — free, offline, nothing leaves your computer.', cta1:'Ask Your Question', cta2:'See How It Works',
 tr1:'No signup', tr2:'Works offline', tr3:'11 languages', tr4:'Free forever',
 st1:'IPC ↔ BNS sections mapped', st2:'Indian languages supported', st3:'Data sent to the cloud',
@@ -2008,7 +2086,7 @@ bns_t:'IPC ↔ BNS Section Converter', bns_d:'India\'s criminal law changed on 1
 cases_t:'My Cases', cases_d:'Each case keeps its own conversation, documents, and deadlines — saved privately on this device.', draft_t:'Draft a Legal Document', draft_d:'Answer a few questions and get a ready-to-use document you can print and submit.', court_t:'Virtual Courtroom', court_d:'Watch both sides argue your case before an AI judge — and find your weak points before the other side does.',
 ncase:'New Case', shear:'Start Hearing', nround:'Next Round', vmode:'Voice Mode / आवाज़ मोड' },
 
-hi: { nav_home:'होम', nav_chat:'कानूनी सहायक से बात करें', nav_cases:'मेरे केस', nav_draft:'दस्तावेज़ बनाएं', nav_court:'वर्चुअल अदालत', nav_bns:'IPC ↔ BNS परिवर्तक', nav_aid:'कानूनी सहायता खोजें', nav_doc:'कानूनी दस्तावेज़ समझें',
+hi: { nav_home:'होम', nav_chat:'कानूनी सहायक से बात करें', nav_cases:'मेरे केस', nav_draft:'दस्तावेज़ बनाएं', nav_court:'वर्चुअल अदालत', nav_bns:'सेक्शन परिवर्तक', nav_crpc:'CrPC ↔ BNSS परिवर्तक', nav_aid:'कानूनी सहायता खोजें', nav_doc:'कानूनी दस्तावेज़ समझें',
 badge:'100% निजी · आपके डिवाइस पर चलता है', hero_sub:'वेतन नहीं मिला? जमा राशि फंसी है? कानूनी नोटिस मिला? हिंदी, अंग्रेज़ी या 9 अन्य भाषाओं में पूछें — मुफ्त, ऑफलाइन, आपका डेटा बाहर नहीं जाता।', cta1:'अपना सवाल पूछें', cta2:'कैसे काम करता है देखें',
 tr1:'साइनअप नहीं चाहिए', tr2:'ऑफलाइन चलता है', tr3:'11 भाषाएं', tr4:'हमेशा मुफ्त',
 st1:'IPC ↔ BNS धाराएं जोड़ी गईं', st2:'भारतीय भाषाएं समर्थित', st3:'क्लाउड को भेजा गया डेटा',
@@ -2023,7 +2101,7 @@ bns_t:'IPC ↔ BNS धारा परिवर्तक', bns_d:'1 जुला
 cases_t:'मेरे केस', cases_d:'हर केस की बातचीत, दस्तावेज़ और समय-सीमाएं — इसी डिवाइस पर निजी।', draft_t:'कानूनी दस्तावेज़ बनाएं', draft_d:'कुछ सवालों के जवाब दें और छापने-जमा करने योग्य दस्तावेज़ पाएं।', court_t:'वर्चुअल अदालत', court_d:'AI जज के सामने दोनों पक्षों की बहस देखें — अपनी कमजोरियां पहले जानें।',
 ncase:'नया केस', shear:'सुनवाई शुरू करें', nround:'अगला दौर', vmode:'आवाज़ मोड' },
 
-hinglish: { nav_home:'Home', nav_chat:'Legal Helper se baat karein', nav_cases:'Mere Cases', nav_draft:'Document banayein', nav_court:'Virtual Adalat', nav_bns:'IPC ↔ BNS Converter', nav_aid:'Legal Aid dhundein', nav_doc:'Legal Document samjhein',
+hinglish: { nav_home:'Home', nav_chat:'Legal Helper se baat karein', nav_cases:'Mere Cases', nav_draft:'Document banayein', nav_court:'Virtual Adalat', nav_bns:'Section Converter', nav_crpc:'CrPC ↔ BNSS Converter', nav_aid:'Legal Aid dhundein', nav_doc:'Legal Document samjhein',
 badge:'100% private · aapke device par chalta hai', hero_sub:'Salary nahi mili? Deposit atka hai? Legal notice aaya? Hindi, English ya 9 aur bhashaon mein poochein — free, offline, data bahar nahi jaata.', cta1:'Apna sawaal poochein', cta2:'Kaise kaam karta hai dekhein',
 tr1:'No signup', tr2:'Offline chalta hai', tr3:'11 bhashayein', tr4:'Hamesha free',
 st1:'IPC ↔ BNS sections mapped', st2:'Bhartiya bhashayein', st3:'Cloud ko bheja gaya data',
