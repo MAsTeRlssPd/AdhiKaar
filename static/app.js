@@ -2049,7 +2049,7 @@ function applyTranslations() {
   };
 
   // Sidebar nav
-  [['home','nav_home'],['chat','nav_chat'],['cases','nav_cases'],['draft','nav_draft'],['courtroom','nav_court'],['bns','nav_bns'],['crpc','nav_crpc'],['legal-aid','nav_aid'],['document','nav_doc']]
+  [['home','nav_home'],['chat','nav_chat'],['cases','nav_cases'],['draft','nav_draft'],['courtroom','nav_court'],['bns','nav_bns'],['legal-aid','nav_aid'],['document','nav_doc']]
     .forEach(([v, k]) => setText(`.nav-item[data-view="${v}"] .nav-label`, k));
   setWithIcon('.kiosk-launch-btn', 'accessibility', 'vmode');
 
