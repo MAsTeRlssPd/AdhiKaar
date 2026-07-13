@@ -396,6 +396,7 @@ function clearChat() {
   `;
   refreshIcons();
   applyTranslations();
+  renderChatSidebar();
 }
 
 function handleChatKeydown(e) {
@@ -1108,8 +1109,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Render case dashboard + re-render on nav
   renderCases();
+  renderChatSidebar();
   document.querySelectorAll('[data-view="cases"]').forEach(el =>
     el.addEventListener('click', renderCases));
+  document.querySelectorAll('[data-view="chat"]').forEach(el =>
+    el.addEventListener('click', renderChatSidebar));
   document.querySelectorAll('[data-view="courtroom"]').forEach(el =>
     el.addEventListener('click', prefillCourtroom));
 });
@@ -1133,15 +1137,70 @@ function getActiveCase() {
   return loadCases().find(c => c.id === id) || null;
 }
 
+function renderChatSidebar() {
+  const listEl = $('chat-history-list');
+  if (!listEl) return;
+
+  const cases = loadCases();
+  const activeId = localStorage.getItem('adhikaar_active_case');
+
+  if (cases.length === 0) {
+    listEl.innerHTML = '<div style="text-align: center; color: var(--text-tertiary); font-size: var(--font-size-xs); padding: var(--space-md);">No previous chats</div>';
+    return;
+  }
+
+  listEl.innerHTML = cases.map(c => {
+    const isActive = c.id === activeId;
+    return `
+      <div class="chat-history-item ${isActive ? 'active' : ''}" onclick="openCase('${c.id}')">
+        <span class="chat-item-title">${escapeHtml(c.title)}</span>
+        <button class="chat-item-delete" onclick="deleteCase('${c.id}', event)" title="Delete Chat">
+          <i data-lucide="trash-2"></i>
+        </button>
+      </div>
+    `;
+  }).join('');
+
+  refreshIcons();
+}
+
 function persistToActiveCase(role, content) {
   const cases = loadCases();
-  const id = localStorage.getItem('adhikaar_active_case');
-  const c = cases.find(x => x.id === id);
+  let id = localStorage.getItem('adhikaar_active_case');
+  let c = cases.find(x => x.id === id);
+  
+  if (!c && role === 'user') {
+    // Automatically create a new case/chat
+    const title = content.slice(0, 30) + (content.length > 30 ? '...' : '');
+    const newCase = {
+      id: generateId(),
+      title: title.trim(),
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      sessionId: state.sessionId, // reuse the current sessionId
+      summary: content.slice(0, 120),
+      history: [],
+      drafts: [],
+      deadlines: [],
+    };
+    cases.unshift(newCase);
+    saveCases(cases);
+    localStorage.setItem('adhikaar_active_case', newCase.id);
+    c = newCase;
+    
+    // Update UI
+    updateCaseBanner();
+  }
+  
   if (!c) return;
+  
   c.history.push({ role, content, time: Date.now() });
   c.updatedAt = Date.now();
   if (!c.summary && role === 'user') c.summary = content.slice(0, 120);
   saveCases(cases);
+  
+  renderChatSidebar();
+  if (state.currentView === 'cases') renderCases();
 }
 
 function createCase() {
@@ -1162,6 +1221,7 @@ function createCase() {
   cases.unshift(newCase);
   saveCases(cases);
   openCase(newCase.id);
+  renderChatSidebar();
 }
 
 function openCase(id) {
@@ -1191,6 +1251,7 @@ function openCase(id) {
   updateCaseBanner();
   navigateTo('chat');
   renderCases();
+  renderChatSidebar();
 }
 
 function clearChatWelcomeOnly(container) {
@@ -1227,8 +1288,10 @@ function deleteCase(id, event) {
   if (localStorage.getItem('adhikaar_active_case') === id) {
     localStorage.removeItem('adhikaar_active_case');
     updateCaseBanner();
+    clearChat();
   }
   renderCases();
+  renderChatSidebar();
 }
 
 function addDeadline(id, event) {

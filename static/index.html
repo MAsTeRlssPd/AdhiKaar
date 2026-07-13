@@ -271,39 +271,54 @@
           </div>
         </div>
 
-        <div class="chat-messages" id="chat-messages">
-          <div class="chat-welcome" id="chat-welcome">
-            <div class="welcome-icon"><i data-lucide="scale"></i></div>
-            <h3>Welcome to अधिKaar</h3>
-            <p>Tell me about your legal problem in your own words. I'll help you understand your rights and options.</p>
-            <div class="suggestions">
-              <button class="suggestion-chip" onclick="sendSuggestion('My employer has not paid my salary for 3 months')">Unpaid salary</button>
-              <button class="suggestion-chip" onclick="sendSuggestion('My landlord is not returning my security deposit')">Security deposit</button>
-              <button class="suggestion-chip" onclick="sendSuggestion('I received a legal notice and I don\'t understand it')">Got a legal notice</button>
-              <button class="suggestion-chip" onclick="sendSuggestion('Police refused to file my FIR')">FIR not filed</button>
-              <button class="suggestion-chip" onclick="sendSuggestion('I am facing domestic violence from my husband and in-laws')">Domestic violence</button>
-              <button class="suggestion-chip" onclick="sendSuggestion('Someone cheated me online and took my money')">Online fraud</button>
+        <div class="chat-layout">
+          <!-- Chat Sidebar (Previous Chats list) -->
+          <div class="chat-sidebar" id="chat-sidebar-pane">
+            <div class="chat-sidebar-header">
+              <h3><i data-lucide="history" class="inline-icon" style="width: 16px; height: 16px; margin-right: 4px;"></i> Previous Chats</h3>
+            </div>
+            <div class="chat-history-list" id="chat-history-list">
+              <!-- Dynamically populated -->
             </div>
           </div>
-        </div>
 
-        <div class="chat-input-container">
-          <div class="chat-mode-toggle" style="margin-bottom: 8px;">
-            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; color: var(--text-secondary); font-size: 0.9rem;">
-              <input type="checkbox" id="devil-mode-toggle">
-              <i data-lucide="swords" style="width: 16px; height: 16px;"></i> Devil's Advocate Mode
-            </label>
-          </div>
-          <div class="chat-input-wrapper">
-            <textarea id="chat-input" rows="1" placeholder="Describe your legal problem here..." onkeydown="handleChatKeydown(event)"></textarea>
-            <button class="voice-btn" id="voice-btn" onclick="toggleVoice()" title="Voice input" aria-label="Voice input"><i data-lucide="mic"></i></button>
-            <button class="send-btn" id="send-btn" onclick="sendMessage()" title="Send message" aria-label="Send message"><i data-lucide="send"></i></button>
-          </div>
-          <div class="chat-input-hint">
-            Press Enter to send · Shift+Enter for new line · tap the mic for voice input
-          </div>
-          <div class="chat-disclaimer">
-            अधिKaar provides legal information, not legal advice. For complex matters, consult a qualified lawyer or call NALSA: 15100.
+          <!-- Chat Main Area -->
+          <div class="chat-main">
+            <div class="chat-messages" id="chat-messages">
+              <div class="chat-welcome" id="chat-welcome">
+                <div class="welcome-icon"><i data-lucide="scale"></i></div>
+                <h3>Welcome to अधिKaar</h3>
+                <p>Tell me about your legal problem in your own words. I'll help you understand your rights and options.</p>
+                <div class="suggestions">
+                  <button class="suggestion-chip" onclick="sendSuggestion('My employer has not paid my salary for 3 months')">Unpaid salary</button>
+                  <button class="suggestion-chip" onclick="sendSuggestion('My landlord is not returning my security deposit')">Security deposit</button>
+                  <button class="suggestion-chip" onclick="sendSuggestion('I received a legal notice and I don\'t understand it')">Got a legal notice</button>
+                  <button class="suggestion-chip" onclick="sendSuggestion('Police refused to file my FIR')">FIR not filed</button>
+                  <button class="suggestion-chip" onclick="sendSuggestion('I am facing domestic violence from my husband and in-laws')">Domestic violence</button>
+                  <button class="suggestion-chip" onclick="sendSuggestion('Someone cheated me online and took my money')">Online fraud</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="chat-input-container">
+              <div class="chat-mode-toggle" style="margin-bottom: 8px;">
+                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; color: var(--text-secondary); font-size: 0.9rem;">
+                  <input type="checkbox" id="devil-mode-toggle">
+                  <i data-lucide="swords" style="width: 16px; height: 16px;"></i> Devil's Advocate Mode
+                </label>
+              </div>
+              <div class="chat-input-wrapper">
+                <textarea id="chat-input" rows="1" placeholder="Describe your legal problem here..." onkeydown="handleChatKeydown(event)"></textarea>
+                <button class="voice-btn" id="voice-btn" onclick="toggleVoice()" title="Voice input" aria-label="Voice input"><i data-lucide="mic"></i></button>
+                <button class="send-btn" id="send-btn" onclick="sendMessage()" title="Send message" aria-label="Send message"><i data-lucide="send"></i></button>
+              </div>
+              <div class="chat-input-hint">
+                Press Enter to send · Shift+Enter for new line · tap the mic for voice input
+              </div>
+              <div class="chat-disclaimer">
+                अधिKaar provides legal information, not legal advice. For complex matters, consult a qualified lawyer or call NALSA: 15100.
+              </div>
+            </div>
           </div>
         </div>
       </section>

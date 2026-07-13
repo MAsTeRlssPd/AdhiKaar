@@ -13,6 +13,7 @@ import os
 import sys
 import uuid
 import traceback
+import re
 
 # Fix Windows console encoding for emoji/Unicode in print() statements
 if hasattr(sys.stdout, 'reconfigure'):
@@ -110,17 +111,205 @@ legal_aid_collection = load_collection("legal_aid")
 # RAG Helper
 # ══════════════════════════════════════════════════════════════
 
-def retrieve_context(query, collection, n_results=3, max_chars=1200):
-    """Retrieve relevant documents from ChromaDB, capped to avoid context overflow."""
+def retrieve_context(query, collection, n_results=3, max_chars=1200, threshold=1.4):
+    """Retrieve relevant documents from ChromaDB, filtered by a distance threshold."""
     if collection is None:
         return ""
     try:
         results = collection.query(query_texts=[query], n_results=n_results)
         docs = results.get('documents', [[]])[0]
-        return "\n".join(docs)[:max_chars]
+        distances = results.get('distances', [[]])[0]
+        
+        filtered_docs = []
+        for doc, dist in zip(docs, distances):
+            if dist <= threshold:
+                filtered_docs.append(doc)
+        
+        return "\n".join(filtered_docs)[:max_chars]
     except Exception as e:
         print(f"RAG retrieval error: {e}")
         return ""
+
+KEYWORD_MAPPINGS = {
+    # Labor
+    "salary": "salary wages labor employment pay unpaid contract job PF ESI work seth malik office",
+    "wages": "salary wages labor employment pay unpaid contract job PF ESI work seth malik office",
+    "employer": "salary wages labor employment pay unpaid contract job PF ESI work seth malik office",
+    "vetan": "salary wages labor employment pay unpaid contract job PF ESI work seth malik office",
+    "kam": "salary wages labor employment pay unpaid contract job PF ESI work seth malik office",
+    "naukri": "salary wages labor employment pay unpaid contract job PF ESI work seth malik office",
+    "malik": "salary wages labor employment pay unpaid contract job PF ESI work seth malik office",
+    "fired": "salary wages labor employment pay unpaid contract job PF ESI work seth malik office wrongful termination notice",
+    
+    # Tenancy
+    "rent": "landlord tenant rent deposit security lease agreement makan malik kiraya kirayedar",
+    "landlord": "landlord tenant rent deposit security lease agreement makan malik kiraya kirayedar",
+    "tenant": "landlord tenant rent deposit security lease agreement makan malik kiraya kirayedar",
+    "kiraya": "landlord tenant rent deposit security lease agreement makan malik kiraya kirayedar",
+    "kirayedar": "landlord tenant rent deposit security lease agreement makan malik kiraya kirayedar",
+    "makan": "landlord tenant rent deposit security lease agreement makan malik kiraya kirayedar",
+    "makaan": "landlord tenant rent deposit security lease agreement makan malik kiraya kirayedar",
+    "deposit": "landlord tenant rent deposit security lease agreement makan malik kiraya kirayedar",
+    "security": "landlord tenant rent deposit security lease agreement makan malik kiraya kirayedar",
+    
+    # Domestic Violence
+    "violence": "domestic violence abuse husband wife cruelty dowry beating maar torture pati patni hinsa",
+    "domestic": "domestic violence abuse husband wife cruelty dowry beating maar torture pati patni hinsa",
+    "marpeet": "domestic violence abuse husband wife cruelty dowry beating maar torture pati patni hinsa",
+    "maar": "domestic violence abuse husband wife cruelty dowry beating maar torture pati patni hinsa",
+    "pati": "domestic violence abuse husband wife cruelty dowry beating maar torture pati patni hinsa",
+    "patni": "domestic violence abuse husband wife cruelty dowry beating maar torture pati patni hinsa",
+    "hinsa": "domestic violence abuse husband wife cruelty dowry beating maar torture pati patni hinsa",
+    "abuse": "domestic violence abuse husband wife cruelty dowry beating maar torture pati patni hinsa",
+    "dahej": "domestic violence abuse husband wife cruelty dowry beating maar torture pati patni hinsa",
+    "dowry": "domestic violence abuse husband wife cruelty dowry beating maar torture pati patni hinsa",
+    
+    # Cyber Crime
+    "cyber": "cyber crime online fraud hacking netbanking otp upi bank net banking cheated scam blackmail",
+    "fraud": "cyber crime online fraud hacking netbanking otp upi bank net banking cheated scam blackmail",
+    "online": "cyber crime online fraud hacking netbanking otp upi bank net banking cheated scam blackmail",
+    "paise": "cyber crime online fraud hacking netbanking otp upi bank net banking cheated scam blackmail",
+    "otp": "cyber crime online fraud hacking netbanking otp upi bank net banking cheated scam blackmail",
+    "upi": "cyber crime online fraud hacking netbanking otp upi bank net banking cheated scam blackmail",
+    "bank": "cyber crime online fraud hacking netbanking otp upi bank net banking cheated scam blackmail",
+    "cheated": "cyber crime online fraud hacking netbanking otp upi bank net banking cheated scam blackmail",
+    
+    # Consumer
+    "consumer": "consumer complaint defective product refund warranty service cheated fraud online shop bill",
+    "product": "consumer complaint defective product refund warranty service cheated fraud online shop bill",
+    "service": "consumer complaint defective product refund warranty service cheated fraud online shop bill",
+    "shikayat": "consumer complaint defective product refund warranty service cheated fraud online shop bill",
+    "refund": "consumer complaint defective product refund warranty service cheated fraud online shop bill",
+    "warranty": "consumer complaint defective product refund warranty service cheated fraud online shop bill",
+    "bill": "consumer complaint defective product refund warranty service cheated fraud online shop bill",
+    
+    # Cheque Bounce
+    "cheque": "cheque bounce dishonour NI Act Section 138 payment return memo",
+    "bounce": "cheque bounce dishonour NI Act Section 138 payment return memo",
+    
+    # Police
+    "police": "police FIR arrest bail custody complaint thana daroga SHO zero FIR",
+    "fir": "police FIR arrest bail custody complaint thana daroga SHO zero FIR",
+    "arrest": "police FIR arrest bail custody complaint thana daroga SHO zero FIR",
+    "bail": "police FIR arrest bail custody complaint thana daroga SHO zero FIR",
+    "thana": "police FIR arrest bail custody complaint thana daroga SHO zero FIR",
+    "daroga": "police FIR arrest bail custody complaint thana daroga SHO zero FIR",
+    
+    # Property
+    "property": "property land inheritance partition encroachment registration title batwara zameen kabza",
+    "land": "property land inheritance partition encroachment registration title batwara zameen kabza",
+    "zameen": "property land inheritance partition encroachment registration title batwara zameen kabza",
+    "ghar": "property land inheritance partition encroachment registration title batwara zameen kabza",
+    "hissa": "property land inheritance partition encroachment registration title batwara zameen kabza",
+    "batwara": "property land inheritance partition encroachment registration title batwara zameen kabza",
+    "kabza": "property land inheritance partition encroachment registration title batwara zameen kabza"
+}
+
+def expand_query_multilingual(query):
+    query_lower = query.lower()
+    words = query_lower.split()
+    matched_expansions = []
+    
+    for word in words:
+        clean_word = "".join(c for c in word if c.isalnum())
+        if clean_word in KEYWORD_MAPPINGS:
+            matched_expansions.append(KEYWORD_MAPPINGS[clean_word])
+            
+    if matched_expansions:
+        unique_expansions = list(set(matched_expansions))
+        expanded_query = query + " " + " ".join(unique_expansions)
+        print(f"🔑 Multilingual RAG Expansion: '{query}' -> '{expanded_query}'")
+        return expanded_query
+        
+    return query
+
+def get_english_keywords_from_llm(query, language):
+    """Extract English search terms from non-English query using LLM."""
+    try:
+        prompt = (
+            "Translate the following user question into 3-5 English search keywords "
+            "related to Indian law. Reply with ONLY the space-separated keywords.\n\n"
+            f"Question ({language}): {query}\n"
+            "Keywords:"
+        )
+        response = ollama.chat(
+            model=get_working_model(),
+            messages=[{'role': 'user', 'content': prompt}],
+            options={'temperature': 0, 'num_ctx': 256}
+        )
+        result = response['message']['content'].strip()
+        print(f"🤖 LLM translated query to English keywords: '{result}'")
+        return result
+    except Exception as e:
+        print(f"LLM translation error: {e}")
+        return ""
+
+def preprocess_query_for_rag(query, language):
+    """Preprocess query for optimal ChromaDB matching (handles translations & keyword expansion)."""
+    query_expanded = expand_query_multilingual(query)
+    
+    if language not in ['en', 'hinglish'] and query_expanded == query:
+        llm_keywords = get_english_keywords_from_llm(query, language)
+        if llm_keywords:
+            query_expanded = query + " " + llm_keywords
+            
+    return query_expanded
+
+def extract_section_numbers(query):
+    return re.findall(r'\b\d{3,4}\b', query)
+
+def check_section_keywords(query):
+    """Scan query for section numbers and pull BNS/IPC info from static memory."""
+    sections = extract_section_numbers(query)
+    extra_contexts = []
+    
+    for num in sections:
+        for entry in IPC_BNS_DATA:
+            if entry.get('ipc_section') == num or entry.get('bns_section') == num:
+                doc = (
+                    f"IPC Section {entry['ipc_section']} corresponds to BNS Section {entry['bns_section']}. "
+                    f"Offence: {entry['offence']}. "
+                    f"Description: {entry['description']} "
+                    f"Punishment: {entry['punishment']}. "
+                    f"Key Changes: {entry['key_changes']}."
+                )
+                extra_contexts.append(doc)
+                
+    return "\n".join(extra_contexts)
+
+def check_case_type_keywords(query):
+    """Scan query for case type keywords and pull details from rights JSON in memory."""
+    query_lower = query.lower()
+    extra_contexts = []
+    
+    case_types = RIGHTS_DATA.get('case_types', [])
+    for ct in case_types:
+        match_count = 0
+        for kw in ct.get('keywords', []):
+            if kw.lower() in query_lower:
+                match_count += 1
+                
+        if match_count >= 2 or ct['name'].lower() in query_lower or ct.get('name_hi', '') in query_lower:
+            scenarios = ". ".join(ct['common_scenarios'])
+            rights = ". ".join(ct['rights'])
+            steps = ". ".join(ct['steps'])
+            docs = ", ".join(ct['documents_needed'])
+            bns = ", ".join(ct.get('relevant_sections', {}).get('bns', []))
+            other = ", ".join(ct.get('relevant_sections', {}).get('other_laws', []))
+            
+            doc = (
+                f"Case Type: {ct['name']}. "
+                f"Common Scenarios: {scenarios}. "
+                f"Rights: {rights}. "
+                f"Action Steps: {steps}. "
+                f"Documents Needed: {docs}. "
+                f"Relevant BNS Sections: {bns}. "
+                f"Other Laws: {other}."
+            )
+            extra_contexts.append(doc)
+            break
+            
+    return "\n".join(extra_contexts)
 
 # ══════════════════════════════════════════════════════════════
 # System Prompts
@@ -140,51 +329,27 @@ LANGUAGE_INSTRUCTIONS = {
     "hinglish": "Respond in Hinglish (mix of Hindi and English, like how people normally talk). Use Roman script. Koi bhi legal term ko simple language mein samjhao."
 }
 
-MAIN_SYSTEM_PROMPT = """You are an extremely knowledgeable human legal expert with an encyclopedic understanding of all legal and illegal cases, rights, and Indian law. Your purpose is to provide clear, concise, and direct legal advice. 
+MAIN_SYSTEM_PROMPT = """You are an extremely knowledgeable human legal expert with an encyclopedic understanding of Indian law. Your purpose is to provide clear, concise, and direct legal advice to citizens.
 
-CRITICAL BEHAVIOR RULES:
+CRITICAL RESPONSE RULES:
 
-1. **NO AI DISCLAIMERS (STRICT MANDATE)**: NEVER reveal, hint, or say that you are an AI, a chatbot, or a language model. You are a real human legal expert. If asked, you are a human lawyer providing counsel.
+1. **NO AI DISCLAIMERS (STRICT MANDATE)**: NEVER reveal, hint, or say that you are an AI, a chatbot, or a language model. Speak as a human lawyer.
 
-2. **CONCISE & CLEAR**: Your answers must be concise, perfectly clear, and directly address the user's issues without any robotic fluff. Talk like a real human.
+2. **DYNAMIC RESPONSE LENGTH & DEPTH**:
+   - Assess the complexity and intent of the user's input.
+   - For simple greetings, affirmations, or thank-yous (e.g., "hi", "yes", "thanks"): Respond briefly in 2-3 lines.
+   - For a new legal situation/first turn description: Summarize your understanding of their situation (e.g., "📋 Understanding: ...") and give brief, high-level legal advice in 4-6 lines. Do not list detailed step-by-step actions, section definitions, or list of mistakes immediately.
+   - For detailed questions: If the user asks for sections, legal steps, mistakes, or documents, do NOT limit the answer. Provide comprehensive, extensive, and highly detailed answers with every single legal fact, citation, and explanation.
 
-3. **CONFIRMATION LOOP (MANDATORY)**: Before giving ANY legal advice, you MUST FIRST restate the user's situation in simple language and ask for confirmation. Format:
-   "📋 Let me make sure I understand your situation:
-   [Your understanding of their situation in 2-3 simple sentences]
-   
-   Is this correct? If I've misunderstood anything, please tell me."
-   
-   Only give advice AFTER the user confirms. If they correct you, restate with the correction.
+3. **INTENT-BASED DETAILS**:
+   - **BNS/IPC Sections**: If asked which sections will be used or what law applies, list the exact BNS sections and corresponding old IPC section numbers, offence name, description, and punishment from the database context.
+   - **Legal Steps**: If asked for exact legal steps or what to do next, provide a detailed, sequential, numbered action plan.
+   - **Mistakes to Avoid**: If asked what mistakes to avoid or what not to do, provide a clear list of protective warnings.
+   - **Required Documents**: If asked what documents are needed or how to make their case strong, list all the relevant papers, records, files, or messages to compile as evidence.
 
-4. **POWER-IMBALANCE DETECTION**: Analyze the situation for power imbalances:
-   - Employer vs Worker → worker is vulnerable
-   - Landlord vs Tenant → tenant is vulnerable  
-   - Police vs Citizen → citizen is vulnerable
-   - Husband/In-laws vs Wife → wife is vulnerable
-   - Company vs Consumer → consumer is vulnerable
-   - Government vs Citizen → citizen is vulnerable
-   
-   When detected, add a ⚠️ PROTECTIVE ADVISORY section:
-   - "You are NOT legally required to sign anything on the spot"
-   - "You have the right to consult a lawyer before taking any action"
-   - "Do NOT hand over original documents to anyone"
-   - "Recording conversations/keeping written evidence can help your case"
-   - Other relevant protective advice based on the specific situation
+4. **POWER-IMBALANCE DETECTION**: If the situation involves a power imbalance (e.g., Landlord/Tenant, Employer/Worker, Police/Citizen, Domestic Violence), always include a strong ⚠️ PROTECTIVE ADVISORY.
 
-5. **RESPONSE FORMAT** (after confirmation):
-   📌 **Your Rights**: List 3-5 key rights that apply
-   📋 **What You Should Do**: Step-by-step action plan (numbered)
-   ⏰ **Important Deadlines**: Any time-sensitive actions
-   📞 **Get Help**: Relevant helpline numbers
-   ⚠️ **Protective Advisory**: (only if power imbalance detected)
-
-6. **LEGAL REFERENCES**: Always cite specific law sections using BNS (Bharatiya Nyaya Sanhita) numbers. If the user mentions old IPC sections, explain the new BNS equivalent.
-
-7. **TONE**: Be confident, clear, and professional like a top-tier lawyer. Reassure the user that they have rights and options.
-
-8. **SAFETY FIRST**: If the situation involves immediate physical danger, ALWAYS start with safety advice and emergency numbers (112 for police, 181 for women helpline).
-
-9. **LANGUAGE MATCHING**: You MUST automatically detect the language (or language mix, like Hinglish) used by the user and respond in exactly the same language. For example, if the user writes in Hinglish, respond in Hinglish. If they write in Telugu, respond in Telugu.
+5. **LEGAL REFERENCES**: Always cite specific law sections using BNS numbers. If old IPC sections apply, explain the conversion.
 
 {language_instruction}
 
@@ -443,7 +608,7 @@ def get_languages():
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
-    """Main conversation endpoint with confirmation loop and power-imbalance detection."""
+    """Main conversation endpoint with RAG context and dynamic intent detection."""
     try:
         data = request.get_json(silent=True) or {}
         message = data.get('message', '')
@@ -452,12 +617,24 @@ def chat():
         
         session = get_session(session_id)
         
+        # Preprocess and expand search query for ChromaDB (handles translation and keywords)
+        search_query = preprocess_query_for_rag(message, language)
+        
         # Retrieve relevant context from RAG
         rag_context = ""
         if rights_collection:
-            rag_context += retrieve_context(message, rights_collection, n_results=2)
+            rag_context += retrieve_context(search_query, rights_collection, n_results=2)
         if ipc_bns_collection:
-            rag_context += "\n" + retrieve_context(message, ipc_bns_collection, n_results=2)
+            rag_context += "\n" + retrieve_context(search_query, ipc_bns_collection, n_results=2)
+        
+        # Inject in-memory hybrid booster matches if any
+        extra_bns = check_section_keywords(message)
+        if extra_bns:
+            rag_context += "\n" + extra_bns
+            
+        extra_rights = check_case_type_keywords(message)
+        if extra_rights and extra_rights[:100] not in rag_context:
+            rag_context += "\n" + extra_rights
         
         # Detect power imbalance
         power_imbalances = detect_power_imbalance(message)
