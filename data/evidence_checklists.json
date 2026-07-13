@@ -1,0 +1,861 @@
+{
+  "schema_version": 1,
+  "templates": [
+    {
+      "id": "unpaid_wages",
+      "title": "Recover Unpaid Wages or Salary",
+      "title_hi": "बकाया वेतन या मजदूरी की वसूली",
+      "category": "labour",
+      "description": "Steps to claim wages, salary, or overtime that an employer has withheld or delayed, whether you are a factory worker, a shop employee, or a private-sector staff member.",
+      "documents": [
+        {
+          "name": "Proof of employment",
+          "why": "Establishes that you worked for the employer and were entitled to wages.",
+          "how_to_get": "Keep your appointment or offer letter, ID card, contract, or attendance record. If you have none, WhatsApp chats or emails from a supervisor also help."
+        },
+        {
+          "name": "Wage and payment records",
+          "why": "Shows the agreed pay and how much is actually unpaid.",
+          "how_to_get": "Collect payslips, salary-account bank statements, and records of any partial payments made to you."
+        },
+        {
+          "name": "Written record of amount owed",
+          "why": "A dated chronology helps the authority calculate the exact dues quickly.",
+          "how_to_get": "Prepare a simple table: pay period, amount due, amount received, balance."
+        },
+        {
+          "name": "Communication about pay",
+          "why": "Messages promising or refusing payment are strong evidence.",
+          "how_to_get": "Save emails, SMS, and WhatsApp messages about salary, deductions, or termination."
+        }
+      ],
+      "steps": [
+        "Send a written demand (email or registered letter) to your employer asking for the exact unpaid amount and keep proof of sending.",
+        "If ignored, file a claim with the Inspector/Authority under the Payment of Wages Act, 1936, or approach the Labour Commissioner for your area.",
+        "For workmen, you may raise an industrial dispute before the Labour Court under the Industrial Disputes Act, 1947.",
+        "Attend hearings with your documents; the authority can order payment plus compensation.",
+        "If you cannot afford a lawyer, seek free legal aid from the District Legal Services Authority (DLSA)."
+      ],
+      "deadlines": [
+        {"what": "Claim before the Authority under the Payment of Wages Act, 1936", "timeframe": "Within 12 months of the date the wages became payable (delay may be condoned for sufficient cause)"},
+        {"what": "Ordinary civil suit for recovery of money", "timeframe": "Within 3 years under the Limitation Act, 1963"}
+      ],
+      "tips": [
+        "Never hand over your original documents; share photocopies only.",
+        "Note down the names and designations of witnesses who saw you working.",
+        "Deductions from wages are legal only in the limited cases listed in the Payment of Wages Act."
+      ],
+      "helpline": "Shram Suvidha / Ministry of Labour grievance helpline; National Legal Services Authority (NALSA) 15100"
+    },
+    {
+      "id": "security_deposit_refund",
+      "title": "Get Back a Rental Security Deposit",
+      "title_hi": "किराए की जमानत राशि वापस पाना",
+      "category": "tenancy",
+      "description": "How to recover a security or advance deposit that a landlord refuses to return, or from which unfair deductions have been made, after you vacate a rented home.",
+      "documents": [
+        {
+          "name": "Rent agreement / lease deed",
+          "why": "Proves the deposit amount and the terms for its refund.",
+          "how_to_get": "Use your signed copy of the registered or notarised agreement."
+        },
+        {
+          "name": "Deposit payment proof",
+          "why": "Shows how much you paid and when.",
+          "how_to_get": "Keep the receipt, bank transfer entry, UPI record, or written acknowledgement from the landlord."
+        },
+        {
+          "name": "Move-in and move-out condition evidence",
+          "why": "Counters false claims of damage used to withhold the deposit.",
+          "how_to_get": "Dated photos or videos of the property when you entered and when you left, plus any inventory list."
+        },
+        {
+          "name": "Handover proof",
+          "why": "Shows you returned possession and cleared dues.",
+          "how_to_get": "Keep proof of key handover, final electricity/water meter readings, and last rent payment."
+        }
+      ],
+      "steps": [
+        "Send a polite written refund request to the landlord stating the amount and a reasonable deadline.",
+        "If refused, send a formal legal notice (a lawyer or legal-aid clinic can help draft it).",
+        "If still unpaid, file a civil suit for recovery, or approach the Rent Controller / Rent Tribunal if your state's Rent Act covers your tenancy.",
+        "Small amounts can sometimes be pursued through a consumer forum or the state's model-tenancy authority where notified."
+      ],
+      "deadlines": [
+        {"what": "Civil suit to recover the deposit (money due)", "timeframe": "Within 3 years from the date the refund became due, under the Limitation Act, 1963"},
+        {"what": "Notice/refund period under a Rent Control or Model Tenancy Act", "timeframe": "Varies by state; many Model Tenancy laws require refund at handover or within a fixed period stated in that state's Act"}
+      ],
+      "tips": [
+        "Do a joint move-out inspection with the landlord if possible and get the condition noted in writing.",
+        "Reasonable deductions for actual damage or unpaid dues are allowed; blanket forfeiture usually is not.",
+        "Keep all communication in writing so verbal promises can be proven."
+      ],
+      "helpline": "State Rent Authority (where notified); National Legal Services Authority (NALSA) 15100"
+    },
+    {
+      "id": "domestic_violence",
+      "title": "Protection from Domestic Violence",
+      "title_hi": "घरेलू हिंसा से सुरक्षा",
+      "category": "family",
+      "description": "How a woman facing physical, emotional, sexual, verbal, or economic abuse at home can seek protection, residence, and maintenance orders under the Protection of Women from Domestic Violence Act, 2005.",
+      "documents": [
+        {
+          "name": "Identity and relationship proof",
+          "why": "Shows you share or shared a household with the respondent.",
+          "how_to_get": "Aadhaar, marriage certificate, ration card, or any document linking you to the shared home."
+        },
+        {
+          "name": "Evidence of abuse",
+          "why": "Supports your application for protection and relief.",
+          "how_to_get": "Medical reports of injuries, photographs, threatening messages, call recordings, and names of witnesses."
+        },
+        {
+          "name": "Record of the incidents",
+          "why": "A dated account helps the Protection Officer and court understand the pattern.",
+          "how_to_get": "Write down each incident with date, place, and what happened."
+        },
+        {
+          "name": "Financial documents",
+          "why": "Needed to claim maintenance and residence rights.",
+          "how_to_get": "Bank statements, proof of household expenses, and any record of the respondent's income."
+        }
+      ],
+      "steps": [
+        "Contact a Protection Officer, a registered service provider, or the police to file a Domestic Incident Report.",
+        "File an application before the Magistrate seeking protection, residence, maintenance, custody, or compensation orders.",
+        "Request an urgent interim/ex-parte order if you are in immediate danger.",
+        "You can also file a criminal complaint for cruelty (BNS Section 85/86, earlier IPC 498A) if applicable.",
+        "Seek free legal aid and shelter-home support if you have no safe place to stay."
+      ],
+      "deadlines": [
+        {"what": "Application under the Domestic Violence Act, 2005", "timeframe": "No fixed limitation period; abuse can be reported at any time, but acting promptly strengthens the case (courts generally expect reasonably recent grievances)"}
+      ],
+      "tips": [
+        "You have a legal right to stay in the shared household; you cannot simply be thrown out.",
+        "Preserve evidence safely, ideally with a trusted person outside the home.",
+        "Call 181 or 112 immediately if you are in danger right now."
+      ],
+      "helpline": "Women Helpline 181; Police 112; NCW helpline 7827170170"
+    },
+    {
+      "id": "consumer_defective_product",
+      "title": "Complain About a Defective Product or Bad Service",
+      "title_hi": "खराब उत्पाद या सेवा की शिकायत",
+      "category": "consumer",
+      "description": "How to seek a refund, replacement, or compensation for a defective product, deficient service, or unfair trade practice under the Consumer Protection Act, 2019.",
+      "documents": [
+        {
+          "name": "Proof of purchase",
+          "why": "Establishes the transaction and its value, which also decides the forum.",
+          "how_to_get": "Keep the invoice, bill, order confirmation, or payment record."
+        },
+        {
+          "name": "Warranty / guarantee card",
+          "why": "Shows the promised terms the seller or manufacturer must honour.",
+          "how_to_get": "Use the card or the terms printed on the packaging or website."
+        },
+        {
+          "name": "Evidence of the defect",
+          "why": "Demonstrates the product or service failed.",
+          "how_to_get": "Photos, videos, service-centre reports, or an expert opinion where needed."
+        },
+        {
+          "name": "Complaint correspondence",
+          "why": "Shows you gave the seller a chance to fix the issue.",
+          "how_to_get": "Save emails, chat transcripts, and complaint-ticket numbers with the company."
+        }
+      ],
+      "steps": [
+        "Raise a complaint directly with the seller or manufacturer and keep the ticket number.",
+        "If unresolved, file a complaint with the National Consumer Helpline (1915) or online at the e-Daakhil portal.",
+        "File a formal complaint before the District, State, or National Consumer Disputes Redressal Commission based on the claim amount.",
+        "Attend hearings and produce your documents; the Commission can order refund, replacement, and compensation."
+      ],
+      "deadlines": [
+        {"what": "Filing a consumer complaint", "timeframe": "Within 2 years from the date the cause of action arose (delay may be condoned if you show sufficient cause), under Section 69 of the Consumer Protection Act, 2019"}
+      ],
+      "tips": [
+        "You can file the complaint yourself; a lawyer is not compulsory.",
+        "Filing is free or low-cost for smaller claims.",
+        "The complaint can be filed where you live, not only where the seller is located."
+      ],
+      "helpline": "National Consumer Helpline 1915"
+    },
+    {
+      "id": "online_upi_fraud",
+      "title": "Report Online / UPI Financial Fraud",
+      "title_hi": "ऑनलाइन / यूपीआई धोखाधड़ी की रिपोर्ट",
+      "category": "cyber",
+      "description": "Immediate steps to report and try to recover money lost to UPI, net-banking, card, or online-payment fraud, and to limit your liability.",
+      "documents": [
+        {
+          "name": "Transaction details",
+          "why": "Banks and the cyber cell need exact details to freeze and trace the money.",
+          "how_to_get": "Note the amount, date, time, UPI transaction ID / UTR number, and the receiver's UPI ID or account."
+        },
+        {
+          "name": "Bank statement / SMS alerts",
+          "why": "Proves the unauthorised debit.",
+          "how_to_get": "Take screenshots of transaction SMS/app notifications and download the statement."
+        },
+        {
+          "name": "Fraud communication",
+          "why": "Shows how you were deceived (phishing link, fake call, fake app).",
+          "how_to_get": "Save the caller's number, screenshots of messages, links, and any screen-share app you were told to install."
+        }
+      ],
+      "steps": [
+        "Immediately call the national cybercrime helpline 1930 and report on cybercrime.gov.in to trigger a freeze on the fraudulent transfer.",
+        "Report the unauthorised transaction to your bank in writing without delay and ask them to block the card/account.",
+        "Change your UPI PIN, net-banking, and email passwords.",
+        "File a written complaint at the nearest cyber police station or the National Cyber Crime Reporting Portal.",
+        "Follow up with the bank's grievance officer and, if unresolved, the Banking Ombudsman."
+      ],
+      "deadlines": [
+        {"what": "Reporting the unauthorised transaction to your bank for limited/zero liability", "timeframe": "As early as possible; under RBI's customer-liability rules, reporting within 3 working days of the transaction generally means zero customer liability, and delay increases your liability"},
+        {"what": "Reporting to cyber helpline for a chance of freezing funds", "timeframe": "Within the 'golden hour' - the sooner the better, ideally within the first few hours"}
+      ],
+      "tips": [
+        "Never share OTP, PIN, or CVV; no genuine bank asks for them.",
+        "Do not install any screen-sharing or remote-access app on a stranger's instruction.",
+        "Report even small amounts; it helps trace organised fraud networks."
+      ],
+      "helpline": "Cyber Crime Helpline 1930; report at cybercrime.gov.in"
+    },
+    {
+      "id": "fir_refusal",
+      "title": "Police Refusing to Register Your FIR",
+      "title_hi": "पुलिस द्वारा एफआईआर दर्ज करने से इनकार",
+      "category": "criminal",
+      "description": "What to do when a police station refuses to register a First Information Report for a cognizable offence.",
+      "documents": [
+        {
+          "name": "Written complaint",
+          "why": "You are entitled to submit your complaint in writing and get an acknowledgement.",
+          "how_to_get": "Write a clear, dated account of the offence and keep a copy for yourself."
+        },
+        {
+          "name": "Proof of the incident",
+          "why": "Supports registration and later investigation.",
+          "how_to_get": "Collect medical reports, photos, CCTV, witness names, or any relevant evidence."
+        },
+        {
+          "name": "Proof of attempts to report",
+          "why": "Shows the police declined to act.",
+          "how_to_get": "Keep acknowledgement receipts, the postal proof if sent by registered post, or a diary note of the date and officer."
+        }
+      ],
+      "steps": [
+        "Submit your written complaint at the police station and insist on a receiving stamp or diary entry.",
+        "If refused, send the written complaint to the Superintendent of Police (SP) by registered post under BNSS Section 173(4) (earlier CrPC 154(3)).",
+        "If still no action, file a complaint before the jurisdictional Magistrate under BNSS Section 175(3) (earlier CrPC 156(3)) directing the police to register and investigate.",
+        "For serious offences you may also approach the State Human Rights Commission or the High Court.",
+        "Keep copies of every complaint and postal receipt."
+      ],
+      "deadlines": [
+        {"what": "Registering an FIR for a cognizable offence", "timeframe": "The police must register it without delay; there is generally no limitation bar on lodging an FIR itself, though prosecution of some minor offences has time limits under the law"}
+      ],
+      "tips": [
+        "For certain serious offences against women, refusal to register an FIR is itself punishable.",
+        "Always keep a signed, dated copy of your complaint.",
+        "You can send the complaint online or by email to senior officers as additional proof."
+      ],
+      "helpline": "Police 112; National Legal Services Authority (NALSA) 15100"
+    },
+    {
+      "id": "illegal_eviction",
+      "title": "Facing Illegal Eviction by a Landlord",
+      "title_hi": "मकान मालिक द्वारा गैरकानूनी बेदखली",
+      "category": "tenancy",
+      "description": "How a tenant can respond when a landlord tries to evict them by force, by cutting off water or electricity, or without following due legal process.",
+      "documents": [
+        {
+          "name": "Rent agreement",
+          "why": "Proves your lawful tenancy and possession.",
+          "how_to_get": "Use your signed copy of the agreement; if none exists, rent receipts help."
+        },
+        {
+          "name": "Rent payment proof",
+          "why": "Shows you are not in default and have a right to stay.",
+          "how_to_get": "Bank entries, UPI records, or written receipts for rent paid."
+        },
+        {
+          "name": "Evidence of the illegal act",
+          "why": "Supports a police complaint or injunction.",
+          "how_to_get": "Photos/videos of locked doors, disconnected utilities, or damage, plus witness names and any threatening messages."
+        }
+      ],
+      "steps": [
+        "Inform the landlord in writing that forced eviction without a court order is illegal.",
+        "If threatened or locked out, file a police complaint immediately; forced dispossession can be a criminal offence.",
+        "File a civil suit for injunction to restrain the landlord and to restore possession if you were dispossessed.",
+        "Where a state Rent Control Act applies, only the Rent Controller can order eviction on the grounds listed in that Act.",
+        "Seek free legal aid if you cannot afford a lawyer."
+      ],
+      "deadlines": [
+        {"what": "Suit to recover possession after being dispossessed without consent (Specific Relief Act, Section 6)", "timeframe": "Within 6 months of dispossession"},
+        {"what": "Ordinary suit based on title to immovable property", "timeframe": "Within 12 years under the Limitation Act, 1963"}
+      ],
+      "tips": [
+        "A landlord cannot legally evict you by force, changing locks, or cutting utilities; only a court can order eviction.",
+        "Keep paying rent (or deposit it in court) so you are not treated as a defaulter.",
+        "Record the date and time of any eviction attempt immediately."
+      ],
+      "helpline": "Police 112; National Legal Services Authority (NALSA) 15100"
+    },
+    {
+      "id": "workplace_sexual_harassment",
+      "title": "Sexual Harassment at the Workplace",
+      "title_hi": "कार्यस्थल पर यौन उत्पीड़न",
+      "category": "labour",
+      "description": "How a woman can complain about sexual harassment at work under the Sexual Harassment of Women at Workplace (Prevention, Prohibition and Redressal) Act, 2013 (POSH Act).",
+      "documents": [
+        {
+          "name": "Written complaint",
+          "why": "Starts the formal inquiry by the Internal Committee.",
+          "how_to_get": "Write a dated account of each incident with names, dates, and places."
+        },
+        {
+          "name": "Evidence of harassment",
+          "why": "Supports your complaint before the committee.",
+          "how_to_get": "Save messages, emails, CCTV references, and names of colleagues who witnessed the conduct."
+        },
+        {
+          "name": "Employment proof",
+          "why": "Shows you and the respondent are connected to the same workplace.",
+          "how_to_get": "ID card, appointment letter, or salary slip."
+        }
+      ],
+      "steps": [
+        "Submit a written complaint to the Internal Committee (IC) of your organisation, or to the Local Committee (LC) if your workplace has fewer than 10 employees or the respondent is the employer.",
+        "The committee must conduct an inquiry and can recommend interim relief such as transfer or leave.",
+        "Cooperate with the inquiry and submit your evidence and witnesses.",
+        "You may also file a criminal complaint (for example under BNS provisions on outraging modesty / sexual harassment).",
+        "If dissatisfied with the committee's findings, you can appeal as provided under the Act."
+      ],
+      "deadlines": [
+        {"what": "Filing a complaint before the Internal/Local Committee", "timeframe": "Within 3 months of the incident, or of the last incident in a series; the committee may extend this by a further 3 months for recorded reasons"},
+        {"what": "Appeal against the committee's recommendation", "timeframe": "Within 90 days of the recommendation"}
+      ],
+      "tips": [
+        "Every workplace with 10 or more employees is legally required to have an Internal Committee.",
+        "Retaliation for filing a genuine complaint is prohibited under the Act.",
+        "Your identity and the proceedings are meant to be kept confidential."
+      ],
+      "helpline": "Women Helpline 181; SHe-Box online complaint portal"
+    },
+    {
+      "id": "dowry_harassment",
+      "title": "Dowry Demand or Harassment",
+      "title_hi": "दहेज की मांग या उत्पीड़न",
+      "category": "family",
+      "description": "How to act against demands for dowry and cruelty connected to dowry, under the Dowry Prohibition Act, 1961 and the cruelty provisions of the BNS.",
+      "documents": [
+        {
+          "name": "Evidence of dowry demand",
+          "why": "Proves the illegal demand was made.",
+          "how_to_get": "Save messages, call recordings, emails, or witness statements about the demand."
+        },
+        {
+          "name": "Record of items given",
+          "why": "Establishes what was given as dowry and by whom.",
+          "how_to_get": "Keep a list of cash, jewellery, and goods with any receipts, photos, or wedding records."
+        },
+        {
+          "name": "Evidence of cruelty or harassment",
+          "why": "Supports a complaint of cruelty linked to dowry.",
+          "how_to_get": "Medical reports, photographs of injuries, threatening messages, and names of witnesses."
+        }
+      ],
+      "steps": [
+        "Report the demand or harassment to the police; both giving/taking dowry and demanding it are offences.",
+        "File a complaint for cruelty under BNS Section 85/86 (earlier IPC 498A) if you face cruelty from a husband or his relatives.",
+        "You may also seek protection and maintenance under the Domestic Violence Act, 2005.",
+        "Preserve all evidence and note the names of relatives involved.",
+        "Seek free legal aid and, if needed, protection or shelter support."
+      ],
+      "deadlines": [
+        {"what": "Complaint under the Dowry Prohibition Act, 1961", "timeframe": "Act promptly; some offences under this Act carry statutory time limits for taking cognizance, so early complaint is important"},
+        {"what": "Cruelty complaint (BNS Section 85/86)", "timeframe": "No fixed limitation for this serious offence, but delay should be explained"}
+      ],
+      "tips": [
+        "Demanding, giving, or taking dowry are all offences; the woman and her family are protected complainants.",
+        "Keep evidence with a trusted person outside the marital home.",
+        "Call 181 or 112 if you are in immediate danger."
+      ],
+      "helpline": "Women Helpline 181; Police 112; NCW 7827170170"
+    },
+    {
+      "id": "cheque_bounce",
+      "title": "Cheque Bounce (Dishonour of Cheque)",
+      "title_hi": "चेक बाउंस (चेक का अनादर)",
+      "category": "financial",
+      "description": "How to recover money when a cheque given to you bounces, under Section 138 of the Negotiable Instruments Act, 1881.",
+      "documents": [
+        {
+          "name": "The dishonoured cheque",
+          "why": "Central evidence of the debt and the dishonour.",
+          "how_to_get": "Keep the original bounced cheque safely."
+        },
+        {
+          "name": "Bank return memo",
+          "why": "Shows the cheque was returned unpaid and the reason.",
+          "how_to_get": "Your bank issues a cheque-return memo when the cheque bounces; collect it."
+        },
+        {
+          "name": "Proof of the underlying debt",
+          "why": "Establishes the cheque was for a legally enforceable liability.",
+          "how_to_get": "Loan agreement, invoice, ledger, or messages showing the amount owed."
+        },
+        {
+          "name": "Copy of the demand notice",
+          "why": "Sending the statutory notice is a mandatory step before filing.",
+          "how_to_get": "Keep a copy of the notice and the postal/courier receipt and acknowledgement."
+        }
+      ],
+      "steps": [
+        "On dishonour, get the cheque-return memo from your bank.",
+        "Send a written demand notice to the drawer demanding payment within 15 days.",
+        "If the drawer does not pay within 15 days, file a criminal complaint under Section 138 before the Magistrate.",
+        "Attend hearings with your documents; you may also file a civil recovery suit in parallel.",
+        "Consider a mutual settlement, which courts encourage in cheque cases."
+      ],
+      "deadlines": [
+        {"what": "Sending the demand notice to the drawer", "timeframe": "Within 30 days of receiving the bank's cheque-return memo"},
+        {"what": "Drawer's window to pay after receiving the notice", "timeframe": "15 days from receipt of the notice"},
+        {"what": "Filing the complaint under Section 138", "timeframe": "Within 1 month after the 15-day payment period expires (courts may condone delay for sufficient cause)"}
+      ],
+      "tips": [
+        "The demand notice must be sent within 30 days of the return memo, or the case can fail; do not delay.",
+        "Send the notice by registered post and keep proof of dispatch.",
+        "You can present the cheque again within its validity, but the deadlines run from the dishonour you rely on."
+      ],
+      "helpline": "National Legal Services Authority (NALSA) 15100"
+    },
+    {
+      "id": "property_land_dispute",
+      "title": "Property or Land Ownership Dispute",
+      "title_hi": "संपत्ति या भूमि स्वामित्व विवाद",
+      "category": "property",
+      "description": "How to protect and assert your rights in a dispute over ownership, possession, boundaries, or encroachment of immovable property.",
+      "documents": [
+        {
+          "name": "Title documents",
+          "why": "Establish your ownership or interest in the property.",
+          "how_to_get": "Sale deed, gift deed, will, partition deed, or registered agreement; obtain certified copies from the Sub-Registrar if needed."
+        },
+        {
+          "name": "Revenue and tax records",
+          "why": "Support possession and ownership claims.",
+          "how_to_get": "Mutation records, khata/patta, land-record extracts (RTC/7-12/jamabandi), and property-tax receipts from the local office or online portal."
+        },
+        {
+          "name": "Survey / map records",
+          "why": "Fix boundaries in encroachment disputes.",
+          "how_to_get": "Apply for an official survey or obtain the survey sketch from the revenue department."
+        },
+        {
+          "name": "Evidence of possession",
+          "why": "Possession is a key factor in property suits.",
+          "how_to_get": "Utility bills, photographs, and witness statements showing who occupies the property."
+        }
+      ],
+      "steps": [
+        "Get certified copies of all title and revenue records and verify the chain of ownership.",
+        "Send a legal notice to the opposing party stating your claim.",
+        "File the appropriate civil suit - for declaration of title, possession, injunction, or partition.",
+        "Seek an interim injunction to stop any sale, construction, or dispossession during the case.",
+        "Consider mediation or Lok Adalat, which can settle property disputes faster."
+      ],
+      "deadlines": [
+        {"what": "Suit for possession based on title to immovable property", "timeframe": "Within 12 years under the Limitation Act, 1963"},
+        {"what": "Suit for possession after dispossession without consent (Specific Relief Act, Section 6)", "timeframe": "Within 6 months of dispossession"},
+        {"what": "Suit to cancel a document or declare it void", "timeframe": "Generally within 3 years from when the facts became known, under the Limitation Act, 1963"}
+      ],
+      "tips": [
+        "Do not delay; adverse possession by another party can arise over long periods of uninterrupted possession.",
+        "Always work from certified copies and keep originals in a safe place.",
+        "Get any boundary settlement or family partition recorded in writing and registered."
+      ],
+      "helpline": "National Legal Services Authority (NALSA) 15100"
+    },
+    {
+      "id": "motor_accident_claim",
+      "title": "Compensation for a Road / Motor Accident",
+      "title_hi": "सड़क / मोटर दुर्घटना के लिए मुआवजा",
+      "category": "accident",
+      "description": "How an accident victim or the family of a deceased can claim compensation under the Motor Vehicles Act before the Motor Accident Claims Tribunal (MACT).",
+      "documents": [
+        {
+          "name": "FIR / police records",
+          "why": "Establishes how the accident happened and who was involved.",
+          "how_to_get": "Get a copy of the FIR, the charge sheet, and the accident report from the police station."
+        },
+        {
+          "name": "Medical records",
+          "why": "Proves the injuries and treatment costs.",
+          "how_to_get": "Hospital discharge summary, bills, prescriptions, disability certificate, and (in fatal cases) the post-mortem report."
+        },
+        {
+          "name": "Vehicle and insurance details",
+          "why": "Identify the insurer who pays the compensation.",
+          "how_to_get": "Registration number, insurance policy, and driving-licence details of the offending vehicle (police can help obtain these)."
+        },
+        {
+          "name": "Proof of income and dependency",
+          "why": "Determines the amount of compensation.",
+          "how_to_get": "Salary slips, income-tax returns, or income certificate; in death cases, proof of legal heirs and dependency."
+        }
+      ],
+      "steps": [
+        "Ensure the accident is reported to the police and an FIR / accident report is recorded.",
+        "Get all medical treatment documented with bills and certificates.",
+        "File a claim petition before the Motor Accident Claims Tribunal (MACT) for the area where the accident occurred or where you reside.",
+        "The insurer of the offending vehicle is usually made a party and pays the award.",
+        "You can also access no-fault/interim relief schemes and, for hit-and-run cases, the government compensation scheme."
+      ],
+      "deadlines": [
+        {"what": "Filing the claim petition before MACT", "timeframe": "Within 6 months of the accident, as introduced by Section 166(3) of the Motor Vehicles Act (amended by the 2019 Act); file as early as possible and seek condonation if delayed"}
+      ],
+      "tips": [
+        "Note the offending vehicle's number and photograph the scene if you safely can.",
+        "Keep every medical bill and prescription; small receipts add up in the claim.",
+        "Cashless treatment and interim relief may be available soon after the accident."
+      ],
+      "helpline": "Emergency 112; Ambulance 108"
+    },
+    {
+      "id": "medical_negligence",
+      "title": "Medical Negligence Complaint",
+      "title_hi": "चिकित्सा लापरवाही की शिकायत",
+      "category": "consumer",
+      "description": "How to seek compensation or action when injury or death results from a doctor's or hospital's negligent treatment.",
+      "documents": [
+        {
+          "name": "Complete medical records",
+          "why": "Central evidence of the treatment given and where it went wrong.",
+          "how_to_get": "Request the full case file, prescriptions, test reports, operation notes, and discharge summary; hospitals must provide records on request."
+        },
+        {
+          "name": "Payment receipts",
+          "why": "Shows a service was paid for, letting you approach a consumer forum.",
+          "how_to_get": "Keep all hospital and pharmacy bills and payment proofs."
+        },
+        {
+          "name": "Second / expert medical opinion",
+          "why": "Helps establish that the treatment fell below accepted standards.",
+          "how_to_get": "Consult another qualified doctor and obtain a written opinion."
+        },
+        {
+          "name": "Post-mortem report (in death cases)",
+          "why": "Links the cause of death to the alleged negligence.",
+          "how_to_get": "Obtain through the police / hospital where a post-mortem was conducted."
+        }
+      ],
+      "steps": [
+        "Obtain the complete medical records in writing from the hospital.",
+        "Get an independent expert opinion on whether the standard of care was breached.",
+        "File a complaint before the Consumer Disputes Redressal Commission for compensation (medical service is covered as a 'service').",
+        "You may also complain to the State Medical Council for disciplinary action against the doctor.",
+        "In serious cases involving death or grievous harm, a criminal complaint may also be filed."
+      ],
+      "deadlines": [
+        {"what": "Consumer complaint for deficient medical service", "timeframe": "Within 2 years from the date the cause of action arose, under the Consumer Protection Act, 2019 (delay condonable for sufficient cause)"},
+        {"what": "Ordinary civil suit for damages", "timeframe": "Generally within 3 years under the Limitation Act, 1963"}
+      ],
+      "tips": [
+        "You have a right to your own medical records; ask in writing and keep the request copy.",
+        "Not every bad outcome is negligence; an expert opinion strengthens a genuine case.",
+        "Preserve original reports and imaging films."
+      ],
+      "helpline": "National Consumer Helpline 1915; State Medical Council"
+    },
+    {
+      "id": "cybercrime_blackmail",
+      "title": "Online Blackmail, Sextortion or Cyber Harassment",
+      "title_hi": "ऑनलाइन ब्लैकमेल, सेक्सटॉर्शन या साइबर उत्पीड़न",
+      "category": "cyber",
+      "description": "What to do if someone is threatening to leak your photos/videos, blackmailing you online, or harassing you through the internet.",
+      "documents": [
+        {
+          "name": "Screenshots of threats",
+          "why": "Primary evidence of the blackmail or harassment.",
+          "how_to_get": "Capture the chats, profile, phone number/handle, and any demands for money, with visible dates and times."
+        },
+        {
+          "name": "Transaction proof (if you paid)",
+          "why": "Helps trace the offender and recover money.",
+          "how_to_get": "Save UPI/bank records of any payment made to the blackmailer."
+        },
+        {
+          "name": "The offending links / accounts",
+          "why": "Needed to request takedown and to trace the accused.",
+          "how_to_get": "Note the URLs, usernames, and platform on which the content or threats appear."
+        }
+      ],
+      "steps": [
+        "Do not pay and do not give in to further demands; paying rarely stops blackmail.",
+        "Preserve all evidence and stop deleting chats.",
+        "Report immediately on the National Cyber Crime Reporting Portal (cybercrime.gov.in) and call 1930.",
+        "File a complaint at the cyber police station under the relevant IT Act and BNS provisions.",
+        "Use the platform's reporting/takedown tools to remove the content and block the offender."
+      ],
+      "deadlines": [
+        {"what": "Reporting cyber blackmail / harassment", "timeframe": "As soon as possible; there is no benefit in waiting, and quick reporting improves the chance of tracing the offender and removing content"}
+      ],
+      "tips": [
+        "A dedicated women-and-children reporting option lets you report certain content anonymously.",
+        "Never share intimate media; once shared it can be misused.",
+        "Talking to a trusted person or counsellor helps; you are the victim, not at fault."
+      ],
+      "helpline": "Cyber Crime Helpline 1930; report at cybercrime.gov.in; Women Helpline 181"
+    },
+    {
+      "id": "wrongful_termination",
+      "title": "Wrongful or Unfair Termination from Job",
+      "title_hi": "नौकरी से गलत या अनुचित बर्खास्तगी",
+      "category": "labour",
+      "description": "How to challenge a dismissal that was carried out without notice, without due process, or against labour law.",
+      "documents": [
+        {
+          "name": "Appointment and service records",
+          "why": "Establish your terms of employment and length of service.",
+          "how_to_get": "Appointment letter, employment contract, and salary slips."
+        },
+        {
+          "name": "Termination letter",
+          "why": "Shows the reason and manner of dismissal.",
+          "how_to_get": "Keep the termination or relieving letter; if none was given, note that in writing."
+        },
+        {
+          "name": "Evidence of unfairness",
+          "why": "Supports a claim of victimisation or lack of due process.",
+          "how_to_get": "Emails, performance records, and any proof that no proper inquiry or notice was given."
+        }
+      ],
+      "steps": [
+        "Send a written representation to the employer asking for reasons and reinstatement or dues.",
+        "For a 'workman' under the Industrial Disputes Act, raise an industrial dispute; the Labour Commissioner attempts conciliation and may refer it to the Labour Court/Tribunal.",
+        "Managerial/other employees may need to file a civil suit or use their contract's dispute mechanism.",
+        "Claim your final settlement dues (notice pay, gratuity, unpaid salary) separately.",
+        "Seek free legal aid from the DLSA if needed."
+      ],
+      "deadlines": [
+        {"what": "Application to the Labour Court on dismissal/discharge (Industrial Disputes Act, Section 2A)", "timeframe": "Within 3 years from the date of dismissal/discharge"},
+        {"what": "Ordinary civil suit relating to the contract", "timeframe": "Generally within 3 years under the Limitation Act, 1963"}
+      ],
+      "tips": [
+        "Retrenchment of eligible workmen requires notice, notice pay, and compensation under the law.",
+        "Collect your evidence before you lose access to work email or systems.",
+        "Gratuity is payable after 5 years of continuous service regardless of the reason for exit (except for specified misconduct)."
+      ],
+      "helpline": "Shram Suvidha / Labour Commissioner; NALSA 15100"
+    },
+    {
+      "id": "police_misconduct",
+      "title": "Complaint Against Police Misconduct",
+      "title_hi": "पुलिस के दुर्व्यवहार के खिलाफ शिकायत",
+      "category": "criminal",
+      "description": "How to complain about custodial abuse, illegal detention, refusal to act, corruption, or other misconduct by police officers.",
+      "documents": [
+        {
+          "name": "Written account of the incident",
+          "why": "Forms the basis of your complaint.",
+          "how_to_get": "Write a dated, factual account with the officer's name, rank, and station if known."
+        },
+        {
+          "name": "Evidence of misconduct",
+          "why": "Supports the complaint.",
+          "how_to_get": "Medical report for any injury, photos, CCTV references, and names of witnesses."
+        },
+        {
+          "name": "Related documents",
+          "why": "Show the context (for example an illegal detention or a demand for a bribe).",
+          "how_to_get": "Keep any memos, receipts, notices, or messages connected to the incident."
+        }
+      ],
+      "steps": [
+        "Send a written complaint to the Superintendent of Police / senior officer above the officer complained against.",
+        "Approach the Police Complaints Authority in your state, set up following Supreme Court directions.",
+        "File a complaint with the State or National Human Rights Commission for custodial abuse or illegal detention.",
+        "You may move the jurisdictional Magistrate or the High Court for serious violations or to register an FIR against the officer.",
+        "Get any injuries medically examined immediately and preserve the report."
+      ],
+      "deadlines": [
+        {"what": "Complaint to a Human Rights Commission", "timeframe": "Generally within 1 year of the incident (NHRC ordinarily does not entertain matters older than one year)"},
+        {"what": "Complaint to police authorities / Magistrate", "timeframe": "Act promptly; serious offences have no fixed limitation but early reporting preserves evidence"}
+      ],
+      "tips": [
+        "Get medical documentation of any custodial injury as soon as possible.",
+        "You have a right to know the grounds of arrest and to inform a relative.",
+        "Keep copies of every complaint and its acknowledgement."
+      ],
+      "helpline": "State Human Rights Commission / NHRC; Police 112; NALSA 15100"
+    },
+    {
+      "id": "rti_first_appeal",
+      "title": "RTI First Appeal (No or Bad Reply)",
+      "title_hi": "आरटीआई प्रथम अपील (जवाब नहीं या गलत जवाब)",
+      "category": "civic",
+      "description": "How to file a first appeal under the Right to Information Act, 2005 when a public authority does not reply, gives an incomplete reply, or wrongly refuses information.",
+      "documents": [
+        {
+          "name": "Copy of the original RTI application",
+          "why": "Shows what information you asked for and when.",
+          "how_to_get": "Keep your submitted application with its date and the proof of fee payment."
+        },
+        {
+          "name": "The PIO's reply (or proof of no reply)",
+          "why": "Establishes the ground for appeal.",
+          "how_to_get": "Keep the reply received; if none came, note the date the 30-day reply period ended."
+        },
+        {
+          "name": "Postal / online submission proof",
+          "why": "Fixes the timeline for the appeal deadline.",
+          "how_to_get": "Registered-post receipts or the online RTI acknowledgement."
+        }
+      ],
+      "steps": [
+        "Address the first appeal to the First Appellate Authority (usually an officer senior to the PIO in the same department).",
+        "State your original request, what was denied or missing, and the relief you seek.",
+        "Attach copies of the application and the reply; no fee is required for the first appeal.",
+        "If the first appeal fails, file a second appeal before the Central or State Information Commission.",
+        "Attend any hearing and keep copies of all correspondence."
+      ],
+      "deadlines": [
+        {"what": "PIO's time to reply to an RTI application", "timeframe": "30 days from receipt (48 hours where life or liberty is involved)"},
+        {"what": "Filing the first appeal", "timeframe": "Within 30 days of receiving the PIO's reply, or of the expiry of the 30-day reply period (the Appellate Authority may allow a later appeal for sufficient cause)"},
+        {"what": "Filing the second appeal to the Information Commission", "timeframe": "Within 90 days of the first-appeal decision or of the date it was due"}
+      ],
+      "tips": [
+        "The first appeal needs no fee and no lawyer.",
+        "Quote the exact points of your RTI that were not answered.",
+        "Keep the original application number handy in all correspondence."
+      ],
+      "helpline": "Central Information Commission / State Information Commission"
+    },
+    {
+      "id": "maintenance_claim",
+      "title": "Claim Maintenance (Spouse, Child or Parent)",
+      "title_hi": "भरण-पोषण का दावा (पति/पत्नी, बच्चा या माता-पिता)",
+      "category": "family",
+      "description": "How a wife, child, or parent unable to maintain themselves can claim monthly maintenance from a person legally bound to support them.",
+      "documents": [
+        {
+          "name": "Proof of relationship",
+          "why": "Establishes the legal duty to maintain you.",
+          "how_to_get": "Marriage certificate, birth certificate, or other proof linking you to the respondent."
+        },
+        {
+          "name": "Proof of the respondent's income",
+          "why": "Determines the amount of maintenance.",
+          "how_to_get": "Salary slips, income-tax returns, property details, or any evidence of earning and lifestyle."
+        },
+        {
+          "name": "Proof of your own needs",
+          "why": "Shows you cannot maintain yourself.",
+          "how_to_get": "Records of expenses, medical needs, children's school fees, and your own limited or absent income."
+        }
+      ],
+      "steps": [
+        "File an application for maintenance before the Magistrate under BNSS Section 144 (earlier CrPC Section 125) - available regardless of religion.",
+        "Alternatively, use personal-law remedies (for example the Hindu Adoptions and Maintenance Act) or claim maintenance under the Domestic Violence Act.",
+        "Request interim maintenance so support starts while the case is pending.",
+        "Produce evidence of the respondent's income and your needs at the hearing.",
+        "Seek free legal aid if you cannot afford a lawyer."
+      ],
+      "deadlines": [
+        {"what": "Application for maintenance under BNSS Section 144 (CrPC 125)", "timeframe": "No fixed limitation period; it can be filed whenever the need arises, and arrears are usually recoverable within a limited past period as the court directs"}
+      ],
+      "tips": [
+        "Senior citizens can claim maintenance quickly under the Maintenance and Welfare of Parents and Senior Citizens Act, 2007.",
+        "Ask for interim maintenance early so you have support during the case.",
+        "Courts can attach salary or property if maintenance orders are ignored."
+      ],
+      "helpline": "Women Helpline 181; Senior Citizen Helpline 14567; NALSA 15100"
+    },
+    {
+      "id": "defamation",
+      "title": "Defamation (Damage to Reputation)",
+      "title_hi": "मानहानि (प्रतिष्ठा को नुकसान)",
+      "category": "civil",
+      "description": "How to respond when someone spreads false statements - spoken, written, or online - that harm your reputation.",
+      "documents": [
+        {
+          "name": "The defamatory statement",
+          "why": "Central evidence of what was published and where.",
+          "how_to_get": "Save the article, post, message, or recording with the date, author, and platform; take clear screenshots for online content."
+        },
+        {
+          "name": "Proof of falsity and harm",
+          "why": "Shows the statement is untrue and damaged you.",
+          "how_to_get": "Evidence contradicting the statement, and proof of harm such as lost work, cancelled deals, or witness accounts."
+        },
+        {
+          "name": "Identity of the publisher",
+          "why": "Needed to serve notice and sue.",
+          "how_to_get": "Note the account details, website, publication, or person responsible."
+        }
+      ],
+      "steps": [
+        "Preserve the defamatory content immediately before it is deleted.",
+        "Send a legal notice demanding an apology, retraction, and takedown.",
+        "For online content, use the platform's grievance/takedown process under the IT rules.",
+        "File a civil suit for damages and an injunction, and/or a criminal complaint for defamation (BNS Section 356, earlier IPC 499/500).",
+        "Keep records of all losses caused by the statement."
+      ],
+      "deadlines": [
+        {"what": "Civil suit for damages for defamation", "timeframe": "Within 1 year from the date the defamatory words were published/spoken, under the Limitation Act, 1963"},
+        {"what": "Criminal complaint for defamation", "timeframe": "Generally within 3 years, as defamation is punishable with imprisonment up to 2 years (limitation for such offences is 3 years under the CrPC/BNSS)"}
+      ],
+      "tips": [
+        "Truth spoken for the public good is a valid defence, so make sure the statement is actually false.",
+        "Screenshot online content with the URL and date visible before it disappears.",
+        "A well-drafted legal notice often achieves a retraction without a full trial."
+      ],
+      "helpline": "National Legal Services Authority (NALSA) 15100"
+    },
+    {
+      "id": "tenant_rights",
+      "title": "Know and Enforce Your Tenant Rights",
+      "title_hi": "किरायेदार के अधिकार जानें और लागू करें",
+      "category": "tenancy",
+      "description": "A general guide for tenants on rights around rent, essential services, repairs, privacy, and lawful eviction.",
+      "documents": [
+        {
+          "name": "Rent agreement",
+          "why": "Defines the rights and duties of both sides.",
+          "how_to_get": "Keep your signed copy; insist on a written agreement even for informal tenancies."
+        },
+        {
+          "name": "Rent payment records",
+          "why": "Prove you are a lawful, non-defaulting tenant.",
+          "how_to_get": "Bank/UPI records or written rent receipts for every payment."
+        },
+        {
+          "name": "Communication with the landlord",
+          "why": "Evidence of repair requests, rent-hike disputes, or threats.",
+          "how_to_get": "Keep messages, emails, and letters, and confirm important verbal talks in writing."
+        }
+      ],
+      "steps": [
+        "Insist on a written rent agreement and always get a receipt for rent paid.",
+        "Raise repair or service issues (water, electricity) with the landlord in writing.",
+        "If the landlord cuts essential services or demands an unlawful rent hike, send a written objection and, if needed, complain to the Rent Authority or police.",
+        "Remember eviction requires due legal process - a court or Rent Controller order, not force.",
+        "For disputes, approach the Rent Controller / Rent Tribunal (where the state Rent Act applies) or a civil court."
+      ],
+      "deadlines": [
+        {"what": "Recovery of a wrongfully withheld deposit or amount", "timeframe": "Within 3 years under the Limitation Act, 1963"},
+        {"what": "Suit for possession after forced dispossession (Specific Relief Act, Section 6)", "timeframe": "Within 6 months of dispossession"},
+        {"what": "Rent-control notice periods and grounds", "timeframe": "Governed by the specific state Rent Control or Model Tenancy Act, which varies by state"}
+      ],
+      "tips": [
+        "A landlord cannot forcibly evict you, seize belongings, or cut utilities without a court order.",
+        "Register long-term rent agreements to make them stronger evidence.",
+        "Keep the property in good condition and pay rent on time to protect your position."
+      ],
+      "helpline": "State Rent Authority (where notified); NALSA 15100"
+    }
+  ]
+}
