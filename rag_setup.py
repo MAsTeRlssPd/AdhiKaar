@@ -220,6 +220,41 @@ def setup_rag():
         ids.append(f"rights_{doc_count}")
         doc_count += 1
 
+    # Case studies — real-world Q&A pairs that make chat answers concrete.
+    for cs in load_json('case_studies.json').get('cases', []):
+        doc = (
+            f"Case study ({cs.get('category', '')}): {cs.get('scenario', '')} "
+            f"Question: {cs.get('question', '')} Answer: {cs.get('answer', '')} "
+            f"Keywords: {', '.join(cs.get('keywords', []))}"
+        )
+        documents.append(doc)
+        metadatas.append({
+            "type": "case_study",
+            "case_id": cs['id'],
+            "category": cs.get('category', ''),
+            "doc_type": "case_study"
+        })
+        ids.append(f"rights_{doc_count}")
+        doc_count += 1
+
+    # Document templates — so answers can point to the right format to file.
+    for tpl in load_json('document_templates.json').get('templates', []):
+        doc = (
+            f"Legal document format: {tpl.get('title', '')} ({tpl.get('category', '')}). "
+            f"When to use: {tpl.get('when_to_use', '')} "
+            f"Where to submit: {tpl.get('where_to_submit', '')} "
+            f"Tips: {' '.join(tpl.get('tips', []))}"
+        )
+        documents.append(doc)
+        metadatas.append({
+            "type": "document_template",
+            "template_id": tpl['id'],
+            "category": tpl.get('category', ''),
+            "doc_type": "template"
+        })
+        ids.append(f"rights_{doc_count}")
+        doc_count += 1
+
     batch_size = 40
     for start in range(0, len(documents), batch_size):
         end = min(start + batch_size, len(documents))
@@ -229,7 +264,7 @@ def setup_rag():
             ids=ids[start:end]
         )
 
-    print(f"  ✅ Added {doc_count} rights knowledge documents (incl. evidence checklists)")
+    print(f"  ✅ Added {doc_count} rights knowledge documents (incl. checklists, case studies, templates)")
     
     # ── 3. Legal Aid Directory Collection ──
     print("📚 Loading legal aid directory...")
