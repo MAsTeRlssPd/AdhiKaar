@@ -101,18 +101,40 @@ EVIDENCE_CHECKLISTS = load_json('evidence_checklists.json', {'templates': []}).g
 DOCUMENT_TEMPLATES = load_json('document_templates.json', {'templates': []}).get('templates', [])
 
 
+def _get_template(template_id):
+    return next((t for t in DOCUMENT_TEMPLATES if t.get('id') == template_id), None)
+
+
+def _template_placeholders(template_id):
+    """Extract the ordered, de-duplicated list of [PLACEHOLDER] tokens from a
+    template's sample_text — the fields a user must supply for a complete document."""
+    tpl = _get_template(template_id)
+    if not tpl:
+        return []
+    found = re.findall(r'\[([A-Z][^\]]{0,80})\]', tpl.get('sample_text', ''))
+    seen, ordered = set(), []
+    for raw in found:
+        key = raw.strip()
+        norm = key.upper()
+        if norm not in seen:
+            seen.add(norm)
+            ordered.append(key)
+    return ordered
+
+
 def _template_instruction(template_id):
     """Build a drafting instruction from a document template so /api/draft-document
     can produce any of the ~45 templates, not just the hardcoded handful."""
-    tpl = next((t for t in DOCUMENT_TEMPLATES if t['id'] == template_id), None)
+    tpl = _get_template(template_id)
     if not tpl:
         return None
     structure = "; ".join(tpl.get('structure', []))
     return (
         f"Draft a {tpl['title']}. Purpose: {tpl.get('when_to_use', '')} "
         f"Follow this structure: {structure}. "
-        f"Base it on this standard format, filling in the user's details and using "
-        f"[PLACEHOLDERS] for anything missing:\n{tpl.get('sample_text', '')}\n"
+        f"Use this standard format, and substitute EVERY [PLACEHOLDER] with the exact "
+        f"value the user provided — this is a final document, so it must contain no "
+        f"square-bracket placeholders:\n{tpl.get('sample_text', '')}\n"
         f"After the document, note where to submit it: {tpl.get('where_to_submit', '')}"
     )
 
@@ -1669,31 +1691,225 @@ DRAFTING_PROMPTS = {
 DRAFT_SYSTEM_PROMPT = """You are an expert Indian legal drafter. {doc_instruction}
 
 RULES:
-- Use the exact details provided by the user. Where a required detail is missing, insert a clear placeholder like [YOUR FULL ADDRESS].
+- This is the FINAL, submission-ready document. Every detail is provided below — use the exact values given by the user.
+- Your output MUST NOT contain any square-bracket placeholders like [NAME] or [ADDRESS]. If a detail is genuinely not provided and cannot be inferred, omit that clause naturally rather than leaving a placeholder.
 - Write the document itself in formal {doc_language} (standard for Indian legal documents).
 - Cite current laws: BNS (not IPC), BNSS (not CrPC), Consumer Protection Act 2019, etc.
 - Format the output as:
 
-## 📄 DOCUMENT
+## DOCUMENT
 
 [The complete, ready-to-use document]
 
-## 📝 HOW TO USE THIS
+## HOW TO USE THIS
 
 [Simple explanation in the user's language: where to submit it, what to attach, deadlines, what happens next]
 
 {language_instruction}
 """
 
+DRAFT_SUGGEST_PROMPT = """You are an Indian legal expert helping a citizen choose which document to prepare for their situation.
+
+From the CANDIDATE DOCUMENTS below, choose the 2 to 3 that are most useful for the user's situation. For each, write one short sentence saying why it helps, in the user's language.
+
+Return ONLY valid JSON in exactly this shape:
+{{"suggestions": [{{"template_id": "<id from the candidates>", "reason": "<one short sentence>"}}]}}
+
+Only use template_id values that appear in the candidates. Do not invent ids.
+
+CANDIDATE DOCUMENTS:
+{candidates}
+"""
+
+DRAFT_REQUIREMENTS_PROMPT = """You are helping a citizen fill in the details needed to complete an Indian legal document.
+
+Below is the list of FIELDS the document needs and the user's SITUATION. For each field, return:
+- "key": the field name exactly as given
+- "label": a short, friendly label in the user's language explaining what to enter
+- "prefill": the value for this field if it can be found in the SITUATION, else an empty string
+- "required": true for essential fields, false for optional ones
+
+Return ONLY valid JSON in exactly this shape:
+{{"fields": [{{"key": "...", "label": "...", "prefill": "...", "required": true}}]}}
+
+FIELDS:
+{fields}
+
+SITUATION:
+{situation}
+"""
+
+
+@app.route('/api/draft-suggest', methods=['POST'])
+def draft_suggest():
+    """Given a described situation, suggest which document templates would help."""
+    try:
+        data = request.get_json(silent=True) or {}
+        situation = data.get('situation', '').strip()
+        language = data.get('language', 'en')
+
+        if not situation:
+            return jsonify({"suggestions": []})
+
+        # RAG shortlist: query the rights_knowledge collection (which indexes the
+        # document templates) for the closest template ids.
+        candidate_ids = []
+        if rights_collection:
+            try:
+                res = rights_collection.query(
+                    query_texts=[preprocess_query_for_rag(situation, language)],
+                    n_results=6,
+                    where={"doc_type": "template"},
+                )
+                for meta in (res.get('metadatas') or [[]])[0]:
+                    tid = (meta or {}).get('template_id') or (meta or {}).get('id')
+                    if tid and tid not in candidate_ids:
+                        candidate_ids.append(tid)
+            except Exception as e:
+                print(f"draft-suggest RAG error: {e}")
+
+        # Fallback / supplement: deterministic keyword match over template titles.
+        if len(candidate_ids) < 3:
+            sl = situation.lower()
+            for tpl in DOCUMENT_TEMPLATES:
+                hay = f"{tpl.get('title','')} {tpl.get('when_to_use','')} {tpl.get('category','')}".lower()
+                if any(w in hay for w in sl.split() if len(w) > 4):
+                    if tpl['id'] not in candidate_ids:
+                        candidate_ids.append(tpl['id'])
+                if len(candidate_ids) >= 6:
+                    break
+
+        candidates = [_get_template(tid) for tid in candidate_ids if _get_template(tid)]
+        if not candidates:
+            candidates = DOCUMENT_TEMPLATES[:6]
+
+        cand_brief = [
+            {"template_id": t['id'], "title": t.get('title', ''),
+             "when_to_use": t.get('when_to_use', ''), "category": t.get('category', '')}
+            for t in candidates
+        ]
+
+        # Let the model pick the best 2-3 with a localized reason.
+        suggestions = []
+        try:
+            system_prompt = DRAFT_SUGGEST_PROMPT.format(
+                candidates=json.dumps(cand_brief, ensure_ascii=False)
+            )
+            raw = call_gemma_lang(
+                [{"role": "system", "content": system_prompt},
+                 {"role": "user", "content": f"Situation: {situation}"}],
+                language, temperature=0.3, response_format='json'
+            )
+            parsed = json.loads(raw)
+            valid_ids = {t['id'] for t in candidates}
+            for s in parsed.get('suggestions', []):
+                tid = s.get('template_id')
+                if tid in valid_ids:
+                    tpl = _get_template(tid)
+                    suggestions.append({
+                        "template_id": tid,
+                        "title": tpl.get('title', ''),
+                        "title_hi": tpl.get('title_hi', ''),
+                        "category": tpl.get('category', ''),
+                        "when_to_use": tpl.get('when_to_use', ''),
+                        "reason": s.get('reason', ''),
+                    })
+        except Exception as e:
+            print(f"draft-suggest LLM error: {e}")
+
+        # Fallback: return top-3 candidates without a reason if the model failed.
+        if not suggestions:
+            for t in candidates[:3]:
+                suggestions.append({
+                    "template_id": t['id'], "title": t.get('title', ''),
+                    "title_hi": t.get('title_hi', ''), "category": t.get('category', ''),
+                    "when_to_use": t.get('when_to_use', ''), "reason": t.get('when_to_use', ''),
+                })
+
+        return jsonify({"suggestions": suggestions})
+
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/draft-requirements', methods=['POST'])
+def draft_requirements():
+    """Return the fields needed to complete a chosen template, prefilled from the
+    situation where possible so the user is only asked for what is missing."""
+    try:
+        data = request.get_json(silent=True) or {}
+        template_id = data.get('template_id', '')
+        situation = data.get('situation', '')
+        language = data.get('language', 'en')
+
+        tpl = _get_template(template_id)
+        # The 4 hardcoded doc types aren't in document_templates.json; give them a
+        # sensible generic field set.
+        placeholders = _template_placeholders(template_id)
+        if not placeholders:
+            placeholders = ["YOUR NAME", "YOUR ADDRESS", "OTHER PARTY NAME",
+                            "OTHER PARTY ADDRESS", "DATE", "DETAILS OF THE MATTER"]
+
+        fields = []
+        try:
+            system_prompt = DRAFT_REQUIREMENTS_PROMPT.format(
+                fields=json.dumps(placeholders, ensure_ascii=False),
+                situation=situation or "(not provided)"
+            )
+            raw = call_gemma_lang(
+                [{"role": "system", "content": system_prompt},
+                 {"role": "user", "content": "Return the fields JSON."}],
+                language, temperature=0.2, response_format='json'
+            )
+            parsed = json.loads(raw)
+            valid = {p.upper() for p in placeholders}
+            for f in parsed.get('fields', []):
+                if (f.get('key') or '').upper() in valid:
+                    fields.append({
+                        "key": f.get('key'),
+                        "label": f.get('label') or f.get('key'),
+                        "prefill": f.get('prefill', '') or '',
+                        "required": bool(f.get('required', True)),
+                    })
+        except Exception as e:
+            print(f"draft-requirements LLM error: {e}")
+
+        # Fallback: use the raw placeholders as labels.
+        if not fields:
+            fields = [{"key": p, "label": p.title(), "prefill": "", "required": True}
+                      for p in placeholders]
+
+        return jsonify({
+            "template": {
+                "id": template_id,
+                "title": (tpl or {}).get('title', template_id),
+                "title_hi": (tpl or {}).get('title_hi', ''),
+            },
+            "fields": fields,
+        })
+
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route('/api/draft-document', methods=['POST'])
 def draft_document():
-    """Generate a formatted legal document from structured fields."""
+    """Generate a final, submission-ready legal document from structured fields."""
     try:
         data = request.get_json(silent=True) or {}
         doc_type = data.get('doc_type', 'legal_notice')
         fields = data.get('fields', {})
         situation = data.get('situation', '')
         language = data.get('language', 'en')
+
+        # Validate that required fields are present. Required = the template's
+        # placeholders (minus any the requirements step marked optional, which the
+        # client omits from `fields`). If the client sends explicit blanks, flag them.
+        missing = [k for k, v in fields.items() if not str(v).strip()]
+        if missing:
+            return jsonify({"missing": missing}), 422
 
         # Hardcoded prompt first; otherwise synthesise an instruction from a
         # matching document template (the ~45 in document_templates.json).
@@ -1714,7 +1930,24 @@ def draft_document():
             {"role": "user", "content": f"Draft the document with these details:\n{fields_text}\n\nSituation description:\n{situation}"}
         ]
 
-        response_text = call_gemma(messages, temperature=0.4)
+        response_text = call_gemma_lang(messages, language, temperature=0.4, num_ctx=4096)
+
+        # Self-repair: if the model still left [PLACEHOLDERS], ask it once to fix them.
+        leftover = re.findall(r'\[[A-Z][^\]]{2,}\]', response_text)
+        if leftover:
+            repair = messages + [
+                {"role": "assistant", "content": response_text},
+                {"role": "user", "content":
+                    "You left these placeholders unfilled: " + ", ".join(leftover[:10]) +
+                    ". Rewrite the full document using the details already provided, and "
+                    "remove any remaining square-bracket placeholders (omit the clause if "
+                    "the detail is truly unavailable)."},
+            ]
+            try:
+                response_text = call_gemma_lang(repair, language, temperature=0.3, num_ctx=4096)
+            except Exception as e:
+                print(f"draft repair error: {e}")
+
         return jsonify({"response": response_text})
 
     except Exception as e:

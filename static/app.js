@@ -1852,64 +1852,12 @@ function updateCaseBanner() {
 // DOCUMENT DRAFTING ENGINE
 // ══════════════════════════════════════════════════════════════
 
-const DRAFT_TYPES = {
-  legal_notice: {
-    title: 'Legal Notice',
-    fields: [
-      ['sender_name', 'Your full name'],
-      ['sender_address', 'Your full address'],
-      ['recipient_name', 'Name of the person/company you are sending this to'],
-      ['recipient_address', 'Their address'],
-      ['dispute_details', 'What happened? (dates, amounts, promises broken)'],
-      ['demand', 'What do you want them to do? (e.g., pay ₹50,000)'],
-      ['deadline_days', 'Days to comply (usually 15 or 30)'],
-    ],
-  },
-  consumer_complaint: {
-    title: 'Consumer Complaint',
-    fields: [
-      ['complainant_name', 'Your full name'],
-      ['complainant_address', 'Your full address'],
-      ['opposite_party', 'Company/seller name and address'],
-      ['purchase_details', 'What did you buy? (product/service, date, amount paid, receipt number)'],
-      ['problem', 'What went wrong? (defect, deficiency, unfair practice)'],
-      ['relief_sought', 'What do you want? (refund, replacement, compensation amount)'],
-    ],
-  },
-  rti_application: {
-    title: 'RTI Application',
-    fields: [
-      ['applicant_name', 'Your full name'],
-      ['applicant_address', 'Your full address'],
-      ['department', 'Which government office/department has the information?'],
-      ['information_sought', 'What exact information do you want? (be specific)'],
-      ['period', 'For what time period? (e.g., Jan 2025 to Dec 2025)'],
-    ],
-  },
-  police_complaint: {
-    title: 'Police Complaint',
-    fields: [
-      ['complainant_name', 'Your full name'],
-      ['complainant_address', 'Your full address and phone number'],
-      ['police_station', 'Police station name and area'],
-      ['incident_details', 'What happened? (date, time, place, who was involved)'],
-      ['accused_details', 'Who did it? (names/descriptions if known)'],
-      ['evidence', 'Any evidence or witnesses?'],
-    ],
-  },
-};
-
+// New draft flow: describe case -> AI suggests documents -> pick one ->
+// AI-built form (prefilled from the case) -> final submission-ready document.
 let currentDraftType = null;
+let currentDraftTitle = 'document';
+let currentDraftFields = [];   // [{ key, label, prefill, required }]
 let lastDraftText = '';
-
-// Generic field set for the ~40 extra document templates loaded from the backend
-// (the 4 above have bespoke fields; templates lean on the situation + these).
-const TEMPLATE_FIELDS = [
-  ['full_name', 'Your full name'],
-  ['address', 'Your full address'],
-  ['other_party', 'Other party name / address (if any)', true],
-  ['details', 'Key details for this document (dates, amounts, what happened)'],
-];
 
 let draftTemplatesLoaded = false;
 async function loadDraftTemplates() {
@@ -1918,9 +1866,6 @@ async function loadDraftTemplates() {
     const data = await apiCall('/api/document-templates');
     const sel = $('draft-template-select');
     (data.templates || []).forEach(t => {
-      if (!DRAFT_TYPES[t.id]) {
-        DRAFT_TYPES[t.id] = { title: t.title, fields: TEMPLATE_FIELDS };
-      }
       if (sel) {
         const opt = document.createElement('option');
         opt.value = t.id;
@@ -1934,75 +1879,154 @@ async function loadDraftTemplates() {
   }
 }
 
-function onDraftTemplateSelect() {
-  const id = $('draft-template-select').value;
-  if (!id) return;
-  document.querySelectorAll('.draft-type-card').forEach(c => c.classList.remove('selected'));
-  selectDraftType(id);
+// Step 1 → suggestions
+async function findDraftDocuments() {
+  const situation = ($('draft-situation').value || '').trim();
+  if (!situation) { showToast(t('ls_need') || 'Please describe your situation first.'); return; }
+  state.lastSituation = situation;
+
+  const btn = $('draft-find-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<i data-lucide="loader-2"></i>';
+  refreshIcons();
+  try {
+    const data = await apiCall('/api/draft-suggest', {
+      method: 'POST',
+      body: JSON.stringify({ situation, language: state.language }),
+    });
+    renderDraftSuggestions(data.suggestions || []);
+    loadDraftTemplates();
+    $('draft-step-suggest').style.display = 'block';
+    $('draft-step-suggest').scrollIntoView({ behavior: 'smooth' });
+  } catch (e) {
+    showToast('Could not fetch suggestions. Check the server and Ollama.');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<i data-lucide="search"></i> <span>${t('draft_find')}</span>`;
+    refreshIcons();
+  }
 }
 
-function selectDraftType(type) {
-  const def = DRAFT_TYPES[type];
-  if (!def) return;
-  currentDraftType = type;
-  document.querySelectorAll('.draft-type-card').forEach(c =>
-    c.classList.toggle('selected', c.dataset.doctype === type));
-  $('draft-form-title').textContent = def.title + ' — fill in the details';
-  $('draft-form').innerHTML = def.fields.map(([key, label]) => `
-    <div class="draft-field">
-      <label for="draft-${key}">${label}</label>
-      ${key.includes('details') || key.includes('problem') || key.includes('sought') || key.includes('demand')
-        ? `<textarea id="draft-${key}" rows="3"></textarea>`
-        : `<input type="text" id="draft-${key}">`}
-    </div>`).join('');
+function renderDraftSuggestions(suggestions) {
+  const c = $('draft-suggestions');
+  if (!suggestions.length) {
+    c.innerHTML = `<p class="draft-privacy">${t('conv_nomatch')}</p>`;
+    return;
+  }
+  c.innerHTML = suggestions.map(s => `
+    <button class="draft-suggestion-card" data-tid="${escapeHtml(s.template_id)}">
+      <h4>${escapeHtml(s.title)}${s.title_hi ? ' · ' + escapeHtml(s.title_hi) : ''}</h4>
+      <p>${escapeHtml(s.reason || s.when_to_use || '')}</p>
+    </button>`).join('');
+  c.querySelectorAll('.draft-suggestion-card').forEach(el =>
+    el.onclick = () => pickDraftTemplate(el.dataset.tid));
+  refreshIcons();
+}
+
+function onDraftTemplateSelect() {
+  const id = $('draft-template-select').value;
+  if (id) pickDraftTemplate(id);
+}
+
+// Step 2 → requirements form (prefilled)
+async function pickDraftTemplate(templateId) {
+  currentDraftType = templateId;
+  const situation = state.lastSituation || ($('draft-situation') && $('draft-situation').value.trim()) || '';
+
+  $('draft-form-title').textContent = '…';
+  $('draft-form').innerHTML = `<div class="loading"><div class="spinner"></div><span>${t('doc_extracting')}</span></div>`;
   $('draft-form-container').style.display = 'block';
   $('draft-result-container').style.display = 'none';
   $('draft-form-container').scrollIntoView({ behavior: 'smooth' });
+
+  try {
+    const data = await apiCall('/api/draft-requirements', {
+      method: 'POST',
+      body: JSON.stringify({ template_id: templateId, situation, language: state.language }),
+    });
+    currentDraftFields = data.fields || [];
+    currentDraftTitle = (data.template && data.template.title) || 'document';
+    $('draft-form-title').textContent = currentDraftTitle;
+    renderDraftForm(currentDraftFields);
+  } catch (e) {
+    $('draft-form').innerHTML = `<p class="draft-privacy">Could not load the form. Please try again.</p>`;
+  }
 }
 
+function renderDraftForm(fields) {
+  const isLong = k => /DETAIL|DESCRIB|FACT|MATTER|ADDRESS|REASON|GROUND|PRAYER|INFORMATION|EVENT|INCIDENT|WHAT HAPPEN/i.test(k);
+  $('draft-form').innerHTML = fields.map((f, i) => {
+    const id = `draft-f-${i}`;
+    const val = escapeHtml(f.prefill || '');
+    const req = f.required ? ' <span class="req">*</span>' : '';
+    const attrs = `id="${id}" data-idx="${i}" data-required="${f.required ? 'true' : 'false'}"`;
+    const input = isLong(f.key)
+      ? `<textarea ${attrs} rows="3">${val}</textarea>`
+      : `<input type="text" ${attrs} value="${val}">`;
+    return `<div class="draft-field"><label for="${id}">${escapeHtml(f.label)}${req}</label>${input}</div>`;
+  }).join('');
+  refreshIcons();
+}
+
+// Step 3 → generate the final document
 async function generateDraft() {
   if (!currentDraftType) return;
-  const def = DRAFT_TYPES[currentDraftType];
   const fields = {};
-  let allFilled = true;
-  def.fields.forEach(([key, label, optional]) => {
-    const el = $(`draft-${key}`);
-    if (el && el.value.trim()) {
-      fields[label] = el.value.trim();
-    } else if (!optional) {
-      allFilled = false;
-    }
+  const missingEls = [];
+  document.querySelectorAll('#draft-form [data-idx]').forEach(el => {
+    const idx = parseInt(el.dataset.idx, 10);
+    const meta = currentDraftFields[idx];
+    if (!meta) return;
+    el.classList.remove('field-error');
+    const val = el.value.trim();
+    if (val) fields[meta.key] = val;
+    else if (el.dataset.required === 'true') missingEls.push(el);
   });
 
-  if (!allFilled) {
-    alert("Please fill all required fields to generate the document.");
+  if (missingEls.length) {
+    missingEls.forEach(el => el.classList.add('field-error'));
+    showToast(t('draft_missing'));
+    missingEls[0].focus();
     return;
   }
 
   const btn = $('draft-generate-btn');
   btn.disabled = true;
-  btn.innerHTML = '<i data-lucide="loader-2"></i> Drafting… this can take a minute';
+  btn.innerHTML = '<i data-lucide="loader-2"></i> …';
   refreshIcons();
 
   try {
-    const data = await apiCall('/api/draft-document', {
+    const res = await fetch(`${API_BASE}/api/draft-document`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         doc_type: currentDraftType,
-        fields: fields,
+        fields,
         situation: state.lastSituation,
         language: state.language,
       }),
     });
+    if (res.status === 422) {
+      const d = await res.json().catch(() => ({}));
+      const miss = new Set((d.missing || []).map(String));
+      document.querySelectorAll('#draft-form [data-idx]').forEach(el => {
+        const meta = currentDraftFields[parseInt(el.dataset.idx, 10)];
+        if (meta && miss.has(meta.key)) el.classList.add('field-error');
+      });
+      showToast(t('draft_missing'));
+      return;
+    }
+    if (!res.ok) throw new Error(`API error: ${res.status}`);
+    const data = await res.json();
     lastDraftText = data.response;
     $('draft-result').innerHTML = renderMarkdown(data.response);
     $('draft-result-container').style.display = 'block';
     $('draft-result-container').scrollIntoView({ behavior: 'smooth' });
   } catch (e) {
-    alert('Could not generate the document. Check that the server and Ollama are running.');
+    showToast('Could not generate the document. Check that the server and Ollama are running.');
   } finally {
     btn.disabled = false;
-    btn.innerHTML = '<i data-lucide="sparkles"></i> Generate Document';
+    btn.innerHTML = `<i data-lucide="sparkles"></i> <span>${t('draft_generate')}</span>`;
     refreshIcons();
   }
 }
@@ -2013,7 +2037,7 @@ function downloadDraft() {
   const blob = new Blob([html], { type: 'application/msword' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `${DRAFT_TYPES[currentDraftType]?.title || 'document'}.doc`;
+  a.download = `${currentDraftTitle || 'document'}.doc`;
   a.click();
   URL.revokeObjectURL(a.href);
 }
