@@ -538,5 +538,265 @@
     "description": "All trials, inquiries and proceedings — including issue of summons, examination of witnesses and recording of evidence — may be held in electronic mode.",
     "key_changes": "BRAND NEW provision enabling end-to-end digital criminal proceedings, with no direct CrPC counterpart.",
     "category": "Digital Procedure"
+  },
+  {
+    "crpc_section": "24",
+    "bnss_section": "18",
+    "offence": "Public Prosecutors",
+    "crpc_title": "Public Prosecutors",
+    "bnss_title": "Public Prosecutors",
+    "description": "Provides for the appointment of Public Prosecutors and Additional Public Prosecutors to conduct prosecutions on behalf of the State.",
+    "key_changes": "Retained. A directorate of prosecution structure is reinforced.",
+    "category": "Prosecution"
+  },
+  {
+    "crpc_section": "53",
+    "bnss_section": "51",
+    "offence": "Medical Examination of the Accused",
+    "crpc_title": "Examination of accused by medical practitioner at the request of police officer",
+    "bnss_title": "Examination of accused by medical practitioner at the request of police officer",
+    "description": "Allows a registered medical practitioner to examine an accused person at the request of the police where it may afford evidence of an offence.",
+    "key_changes": "No substantive change. Renumbered.",
+    "category": "Investigation"
+  },
+  {
+    "crpc_section": "53A",
+    "bnss_section": "52",
+    "offence": "Medical Examination of a Person Accused of Rape",
+    "crpc_title": "Examination of person accused of rape by medical practitioner",
+    "bnss_title": "Examination of person accused of rape by medical practitioner",
+    "description": "Provides for detailed medical examination of a person accused of rape, including DNA profiling, within a fixed time.",
+    "key_changes": "Retained with continued emphasis on time-bound forensic examination.",
+    "category": "Investigation"
+  },
+  {
+    "crpc_section": "82",
+    "bnss_section": "84",
+    "offence": "Proclamation for Absconding Person",
+    "crpc_title": "Proclamation for person absconding",
+    "bnss_title": "Proclamation for person absconding",
+    "description": "A court may publish a written proclamation requiring a person against whom a warrant has been issued, who is absconding, to appear within a specified time.",
+    "key_changes": "No substantive change. Renumbered.",
+    "category": "Summons & Warrants"
+  },
+  {
+    "crpc_section": "83",
+    "bnss_section": "85",
+    "offence": "Attachment of Property of Absconder",
+    "crpc_title": "Attachment of property of person absconding",
+    "bnss_title": "Attachment of property of person absconding",
+    "description": "The court may order attachment of the property of a proclaimed person to compel appearance.",
+    "key_changes": "No substantive change. Renumbered.",
+    "category": "Summons & Warrants"
+  },
+  {
+    "crpc_section": "97",
+    "bnss_section": "100",
+    "offence": "Search for a Wrongfully Confined Person",
+    "crpc_title": "Search for persons wrongfully confined",
+    "bnss_title": "Search for persons wrongfully confined",
+    "description": "A Magistrate may issue a search warrant for a person believed to be wrongfully confined in circumstances amounting to an offence.",
+    "key_changes": "No substantive change. Renumbered.",
+    "category": "Search & Seizure"
+  },
+  {
+    "crpc_section": "129",
+    "bnss_section": "148",
+    "offence": "Dispersal of Unlawful Assembly",
+    "crpc_title": "Dispersal of assembly by use of civil force",
+    "bnss_title": "Dispersal of assembly by use of civil force",
+    "description": "An Executive Magistrate or officer in charge may command an unlawful assembly likely to disturb public peace to disperse, and use civil force if it does not.",
+    "key_changes": "No substantive change. Renumbered.",
+    "category": "Public Order"
+  },
+  {
+    "crpc_section": "145",
+    "bnss_section": "164",
+    "offence": "Dispute over Land or Water Likely to Cause Breach of Peace",
+    "crpc_title": "Procedure where dispute concerning land or water is likely to cause breach of peace",
+    "bnss_title": "Procedure where dispute concerning land or water is likely to cause breach of peace",
+    "description": "An Executive Magistrate may inquire into and pass orders in disputes over land or water that are likely to cause a breach of the peace, including attaching the subject property.",
+    "key_changes": "No substantive change. Renumbered.",
+    "category": "Public Order"
+  },
+  {
+    "crpc_section": "160",
+    "bnss_section": "179",
+    "offence": "Requiring Attendance of Witnesses",
+    "crpc_title": "Police officer's power to require attendance of witnesses",
+    "bnss_title": "Police officer's power to require attendance of witnesses",
+    "description": "A police officer may require the attendance of any person acquainted with the facts of a case, with safeguards for women, minors, elderly and disabled persons who are examined at their residence.",
+    "key_changes": "Retained with protections that men under 15 or over 60, women, and disabled persons are examined only at their place of residence.",
+    "category": "Investigation"
+  },
+  {
+    "crpc_section": "162",
+    "bnss_section": "181",
+    "offence": "Statements to Police Not to Be Signed",
+    "crpc_title": "Statements to police not to be signed; use of statements in evidence",
+    "bnss_title": "Statements to police not to be signed; use of statements in evidence",
+    "description": "A statement made to the police during investigation need not be signed and has limited use in evidence, mainly to contradict a witness.",
+    "key_changes": "No substantive change. Renumbered.",
+    "category": "Investigation"
+  },
+  {
+    "crpc_section": "165",
+    "bnss_section": "185",
+    "offence": "Search by Police Officer",
+    "crpc_title": "Search by police officer",
+    "bnss_title": "Search by police officer",
+    "description": "Allows an investigating officer, after recording reasons, to search a place for evidence during an investigation.",
+    "key_changes": "Retained; supported by mandatory audio-video recording of searches under BNSS 105.",
+    "category": "Search & Seizure"
+  },
+  {
+    "crpc_section": "170",
+    "bnss_section": "190",
+    "offence": "Sending Case to Magistrate on Sufficient Evidence",
+    "crpc_title": "Cases to be sent to Magistrate when evidence is sufficient",
+    "bnss_title": "Cases to be sent to Magistrate when evidence is sufficient",
+    "description": "When investigation shows sufficient evidence, the officer forwards the accused and the case to the Magistrate empowered to take cognizance.",
+    "key_changes": "No substantive change. Renumbered.",
+    "category": "Investigation"
+  },
+  {
+    "crpc_section": "174",
+    "bnss_section": "194",
+    "offence": "Police Inquiry into Unnatural Death",
+    "crpc_title": "Police to inquire and report on suicide, etc.",
+    "bnss_title": "Police to inquire and report on suicide, etc.",
+    "description": "The police conduct an inquest into unnatural, sudden, or suspicious deaths and report the apparent cause.",
+    "key_changes": "Retained with wider use of forensic examination for suspicious deaths.",
+    "category": "Investigation"
+  },
+  {
+    "crpc_section": "177",
+    "bnss_section": "197",
+    "offence": "Ordinary Place of Inquiry and Trial",
+    "crpc_title": "Ordinary place of inquiry and trial",
+    "bnss_title": "Ordinary place of inquiry and trial",
+    "description": "An offence is ordinarily inquired into and tried by a court within whose local jurisdiction it was committed.",
+    "key_changes": "No substantive change. Renumbered.",
+    "category": "Jurisdiction"
+  },
+  {
+    "crpc_section": "204",
+    "bnss_section": "227",
+    "offence": "Issue of Process",
+    "crpc_title": "Issue of process",
+    "bnss_title": "Issue of process",
+    "description": "When there is sufficient ground to proceed, the Magistrate issues a summons or warrant to secure the accused's attendance.",
+    "key_changes": "Retained; process may now be issued and served by electronic means.",
+    "category": "Trial Procedure"
+  },
+  {
+    "crpc_section": "211",
+    "bnss_section": "234",
+    "offence": "Contents of Charge",
+    "crpc_title": "Contents of charge",
+    "bnss_title": "Contents of charge",
+    "description": "Sets out what a formal charge must state — the offence, the law, and enough particulars for the accused to know the accusation.",
+    "key_changes": "No substantive change. Renumbered.",
+    "category": "Trial Procedure"
+  },
+  {
+    "crpc_section": "300",
+    "bnss_section": "337",
+    "offence": "Double Jeopardy — No Second Trial",
+    "crpc_title": "Person once convicted or acquitted not to be tried for same offence",
+    "bnss_title": "Person once convicted or acquitted not to be tried for same offence",
+    "description": "A person once tried and convicted or acquitted cannot be tried again for the same offence on the same facts.",
+    "key_changes": "No substantive change. Renumbered.",
+    "category": "Trial Procedure"
+  },
+  {
+    "crpc_section": "311",
+    "bnss_section": "348",
+    "offence": "Power to Summon Material Witness",
+    "crpc_title": "Power to summon material witness, or examine person present",
+    "bnss_title": "Power to summon material witness, or examine person present",
+    "description": "The court may summon any person as a witness, or recall and re-examine any person already examined, if their evidence appears essential to a just decision.",
+    "key_changes": "No substantive change. Renumbered.",
+    "category": "Trial Procedure"
+  },
+  {
+    "crpc_section": "319",
+    "bnss_section": "358",
+    "offence": "Proceeding Against Other Guilty Persons",
+    "crpc_title": "Power to proceed against other persons appearing to be guilty of offence",
+    "bnss_title": "Power to proceed against other persons appearing to be guilty of offence",
+    "description": "Where evidence in a trial shows that a person not being tried also appears to have committed the offence, the court may summon and try them together.",
+    "key_changes": "No substantive change. Renumbered.",
+    "category": "Trial Procedure"
+  },
+  {
+    "crpc_section": "321",
+    "bnss_section": "360",
+    "offence": "Withdrawal from Prosecution",
+    "crpc_title": "Withdrawal from prosecution",
+    "bnss_title": "Withdrawal from prosecution",
+    "description": "A Public Prosecutor may, with the court's consent, withdraw from the prosecution of a case.",
+    "key_changes": "NEW: The victim must be given an opportunity of being heard before withdrawal is allowed.",
+    "category": "Prosecution"
+  },
+  {
+    "crpc_section": "353",
+    "bnss_section": "392",
+    "offence": "Judgment",
+    "crpc_title": "Judgment",
+    "bnss_title": "Judgment",
+    "description": "Requires the judgment in a trial to be pronounced in open court, and provides for how it is delivered and recorded.",
+    "key_changes": "NEW: Judgments may be delivered and made available in electronic form; time limits for pronouncement introduced.",
+    "category": "Trial Procedure"
+  },
+  {
+    "crpc_section": "372",
+    "bnss_section": "413",
+    "offence": "Victim's Right to Appeal",
+    "crpc_title": "No appeal to lie unless otherwise provided (victim's proviso)",
+    "bnss_title": "No appeal to lie unless otherwise provided (victim's proviso)",
+    "description": "Bars appeals except as provided, but its proviso gives a victim the right to appeal against acquittal, conviction for a lesser offence, or inadequate compensation.",
+    "key_changes": "The victim's right to appeal is retained and carried forward.",
+    "category": "Appeals"
+  },
+  {
+    "crpc_section": "378",
+    "bnss_section": "419",
+    "offence": "Appeal Against Acquittal",
+    "crpc_title": "Appeal in case of acquittal",
+    "bnss_title": "Appeal in case of acquittal",
+    "description": "Allows the State (and in some cases the complainant) to appeal against an order of acquittal.",
+    "key_changes": "No substantive change. Renumbered.",
+    "category": "Appeals"
+  },
+  {
+    "crpc_section": "397",
+    "bnss_section": "438",
+    "offence": "Revision — Calling for Records",
+    "crpc_title": "Calling for records to exercise powers of revision",
+    "bnss_title": "Calling for records to exercise powers of revision",
+    "description": "The High Court or Sessions Court may call for and examine the record of a lower court's proceeding to satisfy itself as to correctness, legality or propriety.",
+    "key_changes": "No substantive change. Renumbered.",
+    "category": "Revision"
+  },
+  {
+    "crpc_section": "428",
+    "bnss_section": "468",
+    "offence": "Set-off of Detention Period",
+    "crpc_title": "Period of detention undergone to be set off against sentence",
+    "bnss_title": "Period of detention undergone to be set off against sentence",
+    "description": "Time already spent in custody during investigation and trial is set off against the term of imprisonment imposed on conviction.",
+    "key_changes": "No substantive change. Renumbered.",
+    "category": "Sentencing & Compensation"
+  },
+  {
+    "crpc_section": "482",
+    "bnss_section": "528",
+    "offence": "Inherent Powers of the High Court",
+    "crpc_title": "Saving of inherent powers of High Court",
+    "bnss_title": "Saving of inherent powers of High Court",
+    "description": "Preserves the High Court's inherent power to make orders to give effect to the Code, prevent abuse of process, or secure the ends of justice — the basis for quashing FIRs and proceedings.",
+    "key_changes": "No substantive change. Renumbered from 482 to 528.",
+    "category": "High Court Powers"
   }
 ]
