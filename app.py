@@ -18,6 +18,7 @@ if _oh in ('', '0.0.0.0') or _oh.startswith('0.0.0.0:'):
 import ollama
 import chromadb
 from chromadb.utils import embedding_functions
+from lawsteps_pipeline import run_pipeline as run_law_steps
 import json
 import sys
 import uuid
@@ -179,6 +180,7 @@ def load_collection(name):
 ipc_bns_collection = load_collection("ipc_bns")
 rights_collection = load_collection("rights_knowledge")
 legal_aid_collection = load_collection("legal_aid")
+official_law_collection = load_collection("official_law")
 
 # ══════════════════════════════════════════════════════════════
 # RAG Helper
@@ -202,6 +204,39 @@ def retrieve_context(query, collection, n_results=3, max_chars=1200, threshold=1
     except Exception as e:
         print(f"RAG retrieval error: {e}")
         return ""
+
+
+def retrieve_chunks(query, collection, n_results=4):
+    """Like retrieve_context, but keeps each chunk's metadata (act, section, URL).
+
+    The verified law-and-steps pipeline needs the source URL of each statute
+    excerpt — retrieve_context throws that away, which is why sources used to
+    collapse to a bare domain."""
+    if collection is None:
+        return []
+    try:
+        res = collection.query(
+            query_texts=[query], n_results=n_results,
+            include=['documents', 'metadatas'],
+        )
+        docs = res.get('documents', [[]])[0]
+        metas = res.get('metadatas', [[]])[0]
+        ids = res.get('ids', [[]])[0]
+        out = []
+        for i, doc in enumerate(docs):
+            m = metas[i] or {}
+            out.append({
+                "chunk_id": ids[i] if i < len(ids) else f"chunk_{i}",
+                "text": doc or "",
+                "act": m.get('act') or m.get('case_type_name') or m.get('title') or "",
+                "section": m.get('section_id') or m.get('heading') or "",
+                "official_url": m.get('official_url') or m.get('official_landing_url') or "",
+            })
+        return out
+    except Exception as e:
+        print(f"RAG chunk retrieval error: {e}")
+        return []
+
 
 # ── Per-session uploaded document (chat RAG) ──
 UPLOADS_DIR = os.path.join(DATA_DIR, 'uploads')
@@ -1358,59 +1393,58 @@ def law_and_steps():
         if not situation:
             return jsonify({"error": "No situation provided"}), 400
 
-        # Retrieve grounding context from all three collections + in-memory boosters
+        # Retrieve statute chunks WITH their source URLs (official law first, then
+        # curated rights knowledge for plain-language grounding).
         search_query = preprocess_query_for_rag(situation, language)
-        rag_context = ""
-        if ipc_bns_collection:
-            rag_context += retrieve_context(search_query, ipc_bns_collection, n_results=3)
-        if rights_collection:
-            rag_context += "\n" + retrieve_context(search_query, rights_collection, n_results=3)
-        if legal_aid_collection:
-            rag_context += "\n" + retrieve_context(search_query, legal_aid_collection, n_results=2)
+        chunks = []
+        chunks += retrieve_chunks(search_query, official_law_collection, n_results=4)
+        chunks += retrieve_chunks(search_query, rights_collection, n_results=2)
 
-        extra_bns = check_section_keywords(situation)
-        if extra_bns:
-            rag_context += "\n" + extra_bns
-        extra_rights = check_case_type_keywords(situation)
-        if extra_rights and extra_rights[:100] not in rag_context:
-            rag_context += "\n" + extra_rights
+        language_name = LANGUAGE_NAMES.get(language, 'English')
 
-        system_prompt = LAW_STEPS_PROMPT.format(
-            language_instruction=get_language_instruction(language),
-            rag_context=rag_context or "(no matching sources retrieved)"
-        )
+        def call_llm(messages, temperature=0.2, num_ctx=8192, response_format=None):
+            return call_gemma(messages, temperature=temperature, num_ctx=num_ctx,
+                              response_format=response_format)
 
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": f"Situation:\n{situation}\n\nProduce the verified JSON analysis."}
-        ]
+        pipe = run_law_steps(situation, chunks, language_name, call_llm)
 
-        # Six panels of JSON do not fit in the 2048 default alongside this prompt —
-        # the model gets cut off mid-array and every panel silently comes back empty.
-        response_text = call_gemma(messages, temperature=0.3, num_ctx=8192)
+        # Assemble the six-panel response the frontend expects, from verified artifacts.
+        next_steps = pipe.get('next_steps') or []
+        situation_md = pipe.get('situation_and_law', '')
+        if next_steps:
+            situation_md += "\n\n**What to do next:**\n" + "\n".join(f"- {s}" for s in next_steps)
 
-        # Parse JSON (handle markdown code fences, same approach as rights-card)
-        json_text = response_text
-        if '```json' in json_text:
-            json_text = json_text.split('```json')[1].split('```')[0]
-        elif '```' in json_text:
-            json_text = json_text.split('```')[1].split('```')[0]
+        verification = []
+        for v in pipe.get('verification', []):
+            supported = v['status'] == 'supported'
+            cited = ', '.join(v.get('cited_chunk_ids') or []) or 'No retrieved source'
+            verification.append({
+                "claim": v['claim'],
+                "supported_by": cited if supported else "Not supported by a retrieved source",
+                "status": "verified" if supported else "unverified",
+            })
 
-        try:
-            result = json.loads(json_text.strip())
-        except json.JSONDecodeError:
-            # Fail soft: at least show the model's prose in panel (a)
-            result = {
-                "situation_and_law": response_text,
-                "verification": [],
-                "sources": [],
-                "stress_test": {"for": [], "against": [], "weaknesses": []},
-                "rights_card": {"title": "Your Rights", "rights": []},
-                "explain_simply": ""
-            }
+        # Sources already carry only supported-claim URLs; fold act+section into title.
+        sources = []
+        for s in pipe.get('sources', []):
+            title = s.get('act') or s.get('title') or 'Official source'
+            if s.get('section'):
+                title = f"{title} — {s['section']}"
+            sources.append({"title": title, "url": s.get('url', '')})
+        rag_urls = " ".join(c.get('official_url', '') for c in chunks)
+        sources = _sanitize_sources(sources, rag_urls)
 
-        # No citation reaches the user without passing the deterministic guard.
-        result["sources"] = _sanitize_sources(result.get("sources"), rag_context)
+        result = {
+            "situation_and_law": situation_md,
+            "verification": verification,
+            "sources": sources,
+            "stress_test": pipe.get('stress_test', {"for": [], "against": [], "weaknesses": []}),
+            "rights_card": {
+                "title": "Your Rights",
+                "rights": pipe.get('rights', []),
+            },
+            "explain_simply": pipe.get('explain_simply', ''),
+        }
 
         return jsonify({"result": result, "session_id": session_id})
 
