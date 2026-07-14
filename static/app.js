@@ -260,9 +260,12 @@ async function sendMessage() {
 
   const isDevilMode = $('devil-mode-toggle') && $('devil-mode-toggle').checked;
   const endpoint = isDevilMode ? '/api/devil-advocate' : '/api/chat';
-  const bodyData = isDevilMode 
+  const bodyData = isDevilMode
     ? { situation: message, language: state.language, session_id: state.sessionId }
-    : { message: message, language: state.language, session_id: state.sessionId };
+    // Replay prior turns (all but the message we just added) so the server can
+    // rebuild context after a restart, when its in-memory session is empty.
+    : { message: message, language: state.language, session_id: state.sessionId,
+        history: state.chatHistory.slice(0, -1).map(m => ({ role: m.role, content: m.content })) };
 
   try {
     const data = await apiCall(endpoint, {
@@ -297,15 +300,15 @@ function attachDocument() {
   if (picker) picker.click();
 }
 
-// Read text from a file: OCR images with Tesseract, read .txt/.pdf as text.
+// Read text from a file: extract PDF text layer (OCR fallback for scans),
+// OCR images with Tesseract, read .txt directly.
 async function extractDocText(file) {
   const name = (file.name || '').toLowerCase();
   if (name.endsWith('.txt') || file.type === 'text/plain') {
     return await file.text();
   }
   if (name.endsWith('.pdf') || file.type === 'application/pdf') {
-    // Text-based PDFs read as text; scanned PDFs should use the Translate page.
-    return await file.text();
+    return await extractPdfText(file);
   }
   // Image → OCR (same engine/langs as the document page)
   if (typeof Tesseract === 'undefined') {
@@ -313,6 +316,51 @@ async function extractDocText(file) {
   }
   const result = await Tesseract.recognize(file, 'eng+hin');
   return result.data.text;
+}
+
+// A PDF is a binary container — reading it as text() gives garbage the model
+// rejects as "binary data". Use pdf.js to pull the real text layer; if the PDF
+// is scanned (no text layer), rasterise the first few pages and OCR them.
+async function extractPdfText(file) {
+  if (typeof pdfjsLib === 'undefined') {
+    throw new Error('PDF reader is still loading. Please wait a moment and try again.');
+  }
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  const maxPages = Math.min(pdf.numPages, 25);
+  let text = '';
+  for (let i = 1; i <= maxPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    text += content.items.map(it => it.str).join(' ') + '\n';
+  }
+
+  // Text-layer PDF → done.
+  if (text.trim().length >= 50) return text.trim();
+
+  // Scanned PDF (no text layer): OCR up to 5 rendered pages.
+  if (typeof Tesseract === 'undefined') {
+    throw new Error('This looks like a scanned PDF and the OCR library is still loading. Please retry in a moment.');
+  }
+  let ocr = '';
+  const ocrPages = Math.min(pdf.numPages, 5);
+  for (let i = 1; i <= ocrPages; i++) {
+    const page = await pdf.getPage(i);
+    const viewport = page.getViewport({ scale: 2 });
+    const canvas = document.createElement('canvas');
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+    const res = await Tesseract.recognize(canvas, 'eng+hin');
+    ocr += res.data.text + '\n';
+  }
+  if (ocr.trim().length < 20) {
+    throw new Error("Couldn't read text from this PDF. Try a clearer scan, or upload a photo of the page instead.");
+  }
+  return ocr.trim();
 }
 
 async function handleChatDocUpload(event) {
@@ -1116,6 +1164,71 @@ async function initLegalAid() {
   } catch (error) {
     console.error('Failed to load legal aid data:', error);
   }
+
+  initChecklists();
+}
+
+// ── Evidence & document checklists (browse) ──
+let checklistsLoaded = false;
+async function initChecklists() {
+  if (checklistsLoaded) return;
+  try {
+    const data = await apiCall('/api/evidence-checklists');
+    const sel = $('checklist-select');
+    if (!sel) return;
+    (data.templates || []).forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t.id;
+      opt.textContent = t.title_hi ? `${t.title} · ${t.title_hi}` : t.title;
+      sel.appendChild(opt);
+    });
+    checklistsLoaded = true;
+  } catch (e) {
+    console.error('Failed to load checklists:', e);
+  }
+}
+
+async function onChecklistSelect() {
+  const id = $('checklist-select').value;
+  const detail = $('checklist-detail');
+  if (!id) { detail.innerHTML = ''; return; }
+
+  detail.innerHTML = '<div class="loading"><div class="spinner"></div><span>Loading…</span></div>';
+  try {
+    const { template: t } = await apiCall(`/api/evidence-checklists?id=${encodeURIComponent(id)}`);
+    const section = (title, icon, items) => items && items.length ? `
+      <div class="checklist-block">
+        <h4>${icon} ${title}</h4>
+        ${items}
+      </div>` : '';
+
+    const docs = (t.documents || []).map(d => `
+      <div class="checklist-doc">
+        <div class="checklist-doc-name">${escapeHtml(d.name)}</div>
+        <div class="checklist-doc-why">${escapeHtml(d.why || '')}</div>
+        ${d.how_to_get ? `<div class="checklist-doc-how">How to get it: ${escapeHtml(d.how_to_get)}</div>` : ''}
+      </div>`).join('');
+    const steps = (t.steps || []).map(s => `<li>${escapeHtml(s)}</li>`).join('');
+    const deadlines = (t.deadlines || []).map(dl => `
+      <div class="checklist-deadline"><strong>${escapeHtml(dl.what || '')}</strong> — ${escapeHtml(dl.timeframe || '')}</div>`).join('');
+    const tips = (t.tips || []).map(tip => `<li>${escapeHtml(tip)}</li>`).join('');
+
+    detail.innerHTML = `
+      <div class="checklist-card">
+        <div class="checklist-head">
+          <h3>${escapeHtml(t.title)}</h3>
+          ${t.title_hi ? `<span class="checklist-head-hi">${escapeHtml(t.title_hi)}</span>` : ''}
+        </div>
+        ${t.description ? `<p class="checklist-desc">${escapeHtml(t.description)}</p>` : ''}
+        ${section('Documents to gather', '📄', docs)}
+        ${steps ? `<div class="checklist-block"><h4>🪜 Steps to take</h4><ol class="checklist-steps">${steps}</ol></div>` : ''}
+        ${deadlines ? `<div class="checklist-block"><h4>⏰ Deadlines that matter</h4>${deadlines}</div>` : ''}
+        ${tips ? `<div class="checklist-block"><h4>💡 Tips</h4><ul class="checklist-tips">${tips}</ul></div>` : ''}
+        ${t.helpline ? `<div class="checklist-helpline">📞 Helpline: ${escapeHtml(t.helpline)}</div>` : ''}
+      </div>`;
+  } catch (e) {
+    detail.innerHTML = '<div class="empty-state"><p>⚠️ Could not load this checklist.</p></div>';
+  }
 }
 
 function renderHelplines() {
@@ -1130,6 +1243,46 @@ function renderHelplines() {
       <div class="helpline-hours">🕐 ${escapeHtml(h.hours)}</div>
     </div>
   `).join('');
+}
+
+// Contact detail lines shared by SLSA + DLSA cards. Every field is optional in
+// the data (many new states have no verified phone/email yet) — guard each so a
+// card never shows an empty row or a bare "undefined".
+function contactLines(o) {
+  const rows = [];
+  if (o.officer_name) {
+    rows.push(`<p class="contact-officer">${escapeHtml(o.officer_name)}${o.designation ? ' · ' + escapeHtml(o.designation) : ''}</p>`);
+  }
+  const site = o.official_url || o.website;
+  if (site) rows.push(`<p><a href="${escapeHtml(site)}" target="_blank" rel="noopener">🌐 Official website</a></p>`);
+  if (o.email) rows.push(`<p><a href="mailto:${escapeHtml(o.email)}">✉️ ${escapeHtml(o.email)}</a></p>`);
+  return rows.join('');
+}
+
+function slsaCard(s) {
+  return `
+    <div class="contact-card">
+      <div class="contact-icon">🏛️</div>
+      <div class="contact-info">
+        <h4>${escapeHtml(s.name || 'State Legal Services Authority')}</h4>
+        ${s.address ? `<p>${escapeHtml(s.address)}</p>` : ''}
+        ${contactLines(s)}
+      </div>
+      ${s.phone ? `<div class="contact-phone">📞 ${escapeHtml(s.phone)}</div>` : ''}
+    </div>`;
+}
+
+function dlsaCard(d) {
+  return `
+    <div class="contact-card">
+      <div class="contact-icon">📍</div>
+      <div class="contact-info">
+        <h4>DLSA — ${escapeHtml(d.name)}</h4>
+        ${d.dlsa_address ? `<p>${escapeHtml(d.dlsa_address)}</p>` : ''}
+        ${contactLines(d)}
+      </div>
+      ${d.phone ? `<div class="contact-phone">📞 ${escapeHtml(d.phone)}</div>` : ''}
+    </div>`;
 }
 
 async function onStateSelect() {
@@ -1149,17 +1302,7 @@ async function onStateSelect() {
       const stateInfo = data.states[0];
 
       // Show state authority
-      resultsContainer.innerHTML = `
-        <div class="contact-card">
-          <div class="contact-icon">🏛️</div>
-          <div class="contact-info">
-            <h4>${escapeHtml(stateInfo.slsa.name)}</h4>
-            <p>${escapeHtml(stateInfo.slsa.address)}</p>
-            <p><a href="${escapeHtml(stateInfo.slsa.website)}" target="_blank">${escapeHtml(stateInfo.slsa.website)}</a></p>
-          </div>
-          <div class="contact-phone">📞 ${escapeHtml(stateInfo.slsa.phone)}</div>
-        </div>
-      `;
+      resultsContainer.innerHTML = slsaCard(stateInfo.slsa);
 
       // Populate district dropdown
       (data.districts || []).forEach(d => {
@@ -1190,32 +1333,11 @@ function onDistrictSelect() {
       let html = '';
 
       if (data.states && data.states.length > 0) {
-        const stateInfo = data.states[0];
-        html += `
-          <div class="contact-card">
-            <div class="contact-icon">🏛️</div>
-            <div class="contact-info">
-              <h4>${escapeHtml(stateInfo.slsa.name)}</h4>
-              <p>${escapeHtml(stateInfo.slsa.address)}</p>
-            </div>
-            <div class="contact-phone">📞 ${escapeHtml(stateInfo.slsa.phone)}</div>
-          </div>
-        `;
+        html += slsaCard(data.states[0].slsa);
       }
 
       if (data.districts && data.districts.length > 0) {
-        data.districts.forEach(d => {
-          html += `
-            <div class="contact-card">
-              <div class="contact-icon">📍</div>
-              <div class="contact-info">
-                <h4>DLSA — ${escapeHtml(d.name)}</h4>
-                <p>${escapeHtml(d.dlsa_address)}</p>
-              </div>
-              <div class="contact-phone">📞 ${escapeHtml(d.phone)}</div>
-            </div>
-          `;
-        });
+        data.districts.forEach(d => { html += dlsaCard(d); });
       }
 
       resultsContainer.innerHTML = html;

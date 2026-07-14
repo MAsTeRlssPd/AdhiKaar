@@ -442,6 +442,14 @@ LANGUAGE_INSTRUCTIONS = {
     "default": "Automatically detect the language of the user's latest query and respond entirely in that language without any emojis."
 }
 
+# Language of the actual document body. Hinglish keeps English structure with
+# Hindi/Hinglish phrasing where natural.
+LANGUAGE_NAMES = {
+    "en": "English", "hi": "Hindi", "ta": "Tamil", "te": "Telugu",
+    "bn": "Bengali", "mr": "Marathi", "gu": "Gujarati", "kn": "Kannada",
+    "ml": "Malayalam", "pa": "Punjabi", "hinglish": "Hinglish (Hindi-English mix in Roman script)",
+}
+
 MAIN_SYSTEM_PROMPT = """You are an extremely knowledgeable human legal expert with an encyclopedic understanding of Indian law. Your purpose is to provide clear, concise, and direct legal advice to citizens.
 
 CRITICAL RESPONSE RULES:
@@ -599,7 +607,7 @@ def get_language_instruction(lang):
     """Get language-specific instruction."""
     return LANGUAGE_INSTRUCTIONS.get(lang, LANGUAGE_INSTRUCTIONS['en'])
 
-def call_gemma(messages, temperature=0.7, fallback_cpu=False, num_ctx=2048):
+def call_gemma(messages, temperature=0.7, fallback_cpu=False, num_ctx=2048, response_format=None):
     """Call the working LLM model via Ollama (auto-detected at first call).
 
     num_ctx is shared between the prompt AND the generation. The 2048 default keeps
@@ -607,6 +615,9 @@ def call_gemma(messages, temperature=0.7, fallback_cpu=False, num_ctx=2048):
     for a large structured answer will silently run out of room and return
     truncated (unparseable) output — callers that need a big JSON back should raise
     this. GPU crashes still fall back to CPU below.
+
+    response_format: pass 'json' (or a JSON schema dict) to grammar-constrain the
+    output via Ollama's format= — the reliable fix for JSON that won't parse.
     """
     model = get_working_model()
     total_chars = sum(len(m["content"]) for m in messages)
@@ -619,11 +630,10 @@ def call_gemma(messages, temperature=0.7, fallback_cpu=False, num_ctx=2048):
         if fallback_cpu:
             options['num_gpu'] = 0
 
-        response = ollama.chat(
-            model=model,
-            messages=messages,
-            options=options
-        )
+        kwargs = {'model': model, 'messages': messages, 'options': options}
+        if response_format is not None:
+            kwargs['format'] = response_format
+        response = ollama.chat(**kwargs)
         return response['message']['content']
     except Exception as e:
         error_msg = str(e)
@@ -683,24 +693,6 @@ def detect_power_imbalance(text):
 def index():
     return send_from_directory('static', 'index.html')
 
-@app.route('/api/languages', methods=['GET'])
-def get_languages():
-    """Return supported languages."""
-    languages = [
-        {"code": "en", "name": "English", "native": "English", "speech_code": "en-IN"},
-        {"code": "hi", "name": "Hindi", "native": "हिन्दी", "speech_code": "hi-IN"},
-        {"code": "ta", "name": "Tamil", "native": "தமிழ்", "speech_code": "ta-IN"},
-        {"code": "te", "name": "Telugu", "native": "తెలుగు", "speech_code": "te-IN"},
-        {"code": "bn", "name": "Bengali", "native": "বাংলা", "speech_code": "bn-IN"},
-        {"code": "mr", "name": "Marathi", "native": "मराठी", "speech_code": "mr-IN"},
-        {"code": "gu", "name": "Gujarati", "native": "ગુજરાતી", "speech_code": "gu-IN"},
-        {"code": "kn", "name": "Kannada", "native": "ಕನ್ನಡ", "speech_code": "kn-IN"},
-        {"code": "ml", "name": "Malayalam", "native": "മലയാളം", "speech_code": "ml-IN"},
-        {"code": "pa", "name": "Punjabi", "native": "ਪੰਜਾਬੀ", "speech_code": "pa-IN"},
-        {"code": "hinglish", "name": "Hinglish", "native": "Hinglish", "speech_code": "hi-IN"}
-    ]
-    return jsonify({"languages": languages})
-
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
@@ -710,9 +702,21 @@ def chat():
         message = data.get('message', '')
         language = data.get('language', 'en')
         session_id = data.get('session_id', str(uuid.uuid4()))
-        
+
         session = get_session(session_id)
-        
+
+        # Rehydrate context after a server restart: the client stores each case's
+        # transcript in localStorage and replays recent turns here. Only seed when
+        # the server-side history is empty, so we never duplicate live turns.
+        if not session['history'] and isinstance(data.get('history'), list):
+            seeded = []
+            for h in data['history'][-MAX_HISTORY:]:
+                role = h.get('role')
+                content = (h.get('content') or '')[:2000]
+                if role in ('user', 'assistant') and content:
+                    seeded.append({"role": role, "content": content})
+            session['history'] = seeded
+
         # Preprocess and expand search query for ChromaDB (handles translation and keywords)
         search_query = preprocess_query_for_rag(message, language)
         
@@ -830,6 +834,27 @@ def devil_advocate():
         return jsonify({"error": str(e)}), 500
 
 
+def _norm_section(value):
+    """Normalise a section token for matching: lowercase, drop subsection suffix
+    and spaces so '318(4)', '318 (4)' and '318' all compare equal."""
+    v = (value or '').lower().strip()
+    v = re.split(r'[\s(]', v, 1)[0]  # '318(4)' / '318 (4)' -> '318'
+    return v
+
+
+def _match_entries(data, query, section_field, name_fields):
+    """Match converter entries. Number-like queries match the section (subsection
+    insensitive); anything else does a case-insensitive substring search over the
+    offence/title fields — so 'cheating' or 'murder' work, as the UI promises."""
+    q = query.lower().strip()
+    is_numeric = bool(re.match(r'^\d', q))  # '379', '318(4)', '354a'
+    if is_numeric:
+        qn = _norm_section(q)
+        return [e for e in data if _norm_section(e.get(section_field, '')) == qn]
+    return [e for e in data
+            if any(q in (e.get(f, '') or '').lower() for f in name_fields)]
+
+
 @app.route('/api/bns-convert', methods=['POST'])
 def bns_convert():
     """IPC ↔ BNS section converter."""
@@ -837,28 +862,16 @@ def bns_convert():
         data = request.get_json(silent=True) or {}
         query = data.get('query', '').strip()
         direction = data.get('direction', 'ipc_to_bns')  # or 'bns_to_ipc'
-        
+
         if not query:
             return jsonify({"results": [], "ai_explanation": ""})
-        
-        # Search in static data strictly
-        results = []
-        query_lower = query.lower()
-        
-        for entry in IPC_BNS_DATA:
-            match = False
-            if direction == 'ipc_to_bns':
-                # Strictly convert typed value
-                if query_lower == entry.get('ipc_section', '').lower():
-                    match = True
-            else:
-                # Strictly convert typed value
-                if query_lower == entry.get('bns_section', '').lower():
-                    match = True
-            
-            if match:
-                results.append(entry)
-        
+
+        section_field = 'ipc_section' if direction == 'ipc_to_bns' else 'bns_section'
+        results = _match_entries(
+            IPC_BNS_DATA, query, section_field,
+            ['offence', 'ipc_title', 'bns_title', 'description'],
+        )
+
         # Get AI explanation if results found, no RAG to keep it strict
         ai_explanation = ""
         if results:
@@ -889,10 +902,11 @@ def crpc_convert():
         if not query:
             return jsonify({"results": [], "ai_explanation": ""})
 
-        src = 'crpc_section' if direction == 'crpc_to_bnss' else 'bnss_section'
-        query_lower = query.lower()
-
-        results = [e for e in BNSS_CRPC_DATA if query_lower == e.get(src, '').lower()]
+        section_field = 'crpc_section' if direction == 'crpc_to_bnss' else 'bnss_section'
+        results = _match_entries(
+            BNSS_CRPC_DATA, query, section_field,
+            ['offence', 'crpc_title', 'bnss_title', 'description'],
+        )
 
         ai_explanation = ""
         if results:
@@ -1465,7 +1479,7 @@ def draft_document():
         language = data.get('language', 'en')
 
         doc_instruction = DRAFTING_PROMPTS.get(doc_type, DRAFTING_PROMPTS['legal_notice'])
-        doc_language = 'Hindi' if language == 'hi' else 'English'
+        doc_language = LANGUAGE_NAMES.get(language, 'English')
 
         system_prompt = DRAFT_SYSTEM_PROMPT.format(
             doc_instruction=doc_instruction,
