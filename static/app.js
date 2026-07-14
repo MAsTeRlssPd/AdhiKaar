@@ -10,18 +10,32 @@
 const API_BASE = '';  // Same origin
 
 const LANGUAGES = [
-  { code: 'en', name: 'English', native: 'English', speechCode: 'en-IN', label: 'EN' },
-  { code: 'hi', name: 'Hindi', native: 'हिन्दी', speechCode: 'hi-IN', label: 'हि' },
-  { code: 'hinglish', name: 'Hinglish', native: 'Hinglish', speechCode: 'hi-IN', label: 'HG' },
-  { code: 'ta', name: 'Tamil', native: 'தமிழ்', speechCode: 'ta-IN', label: 'த' },
-  { code: 'te', name: 'Telugu', native: 'తెలుగు', speechCode: 'te-IN', label: 'తె' },
-  { code: 'bn', name: 'Bengali', native: 'বাংলা', speechCode: 'bn-IN', label: 'বা' },
-  { code: 'mr', name: 'Marathi', native: 'मराठी', speechCode: 'mr-IN', label: 'म' },
-  { code: 'gu', name: 'Gujarati', native: 'ગુજરાતી', speechCode: 'gu-IN', label: 'ગુ' },
-  { code: 'kn', name: 'Kannada', native: 'ಕನ್ನಡ', speechCode: 'kn-IN', label: 'ಕ' },
-  { code: 'ml', name: 'Malayalam', native: 'മലയാളം', speechCode: 'ml-IN', label: 'മ' },
-  { code: 'pa', name: 'Punjabi', native: 'ਪੰਜਾਬੀ', speechCode: 'pa-IN', label: 'ਪ' },
+  { code: 'en', name: 'English', native: 'English', speechCode: 'en-IN', label: 'EN', base: 'en' },
+  { code: 'hi', name: 'Hindi', native: 'हिन्दी', speechCode: 'hi-IN', label: 'हि', base: 'hi' },
+  { code: 'hinglish', name: 'Hinglish', native: 'Hinglish', speechCode: 'hi-IN', label: 'HG', base: 'hi' },
+  { code: 'ta', name: 'Tamil', native: 'தமிழ்', speechCode: 'ta-IN', label: 'த', base: 'ta' },
+  { code: 'tanglish', name: 'Tanglish', native: 'Tanglish', speechCode: 'ta-IN', label: 'TG', base: 'ta' },
+  { code: 'te', name: 'Telugu', native: 'తెలుగు', speechCode: 'te-IN', label: 'తె', base: 'te' },
+  { code: 'tenglish', name: 'Tenglish', native: 'Tenglish', speechCode: 'te-IN', label: 'TE', base: 'te' },
+  { code: 'bn', name: 'Bengali', native: 'বাংলা', speechCode: 'bn-IN', label: 'বা', base: 'bn' },
+  { code: 'benglish', name: 'Benglish', native: 'Benglish', speechCode: 'bn-IN', label: 'BG', base: 'bn' },
+  { code: 'mr', name: 'Marathi', native: 'मराठी', speechCode: 'mr-IN', label: 'म', base: 'mr' },
+  { code: 'marlish', name: 'Marlish', native: 'Marlish', speechCode: 'mr-IN', label: 'MR', base: 'mr' },
+  { code: 'gu', name: 'Gujarati', native: 'ગુજરાતી', speechCode: 'gu-IN', label: 'ગુ', base: 'gu' },
+  { code: 'gujlish', name: 'Gujlish', native: 'Gujlish', speechCode: 'gu-IN', label: 'GG', base: 'gu' },
+  { code: 'kn', name: 'Kannada', native: 'ಕನ್ನಡ', speechCode: 'kn-IN', label: 'ಕ', base: 'kn' },
+  { code: 'kanglish', name: 'Kanglish', native: 'Kanglish', speechCode: 'kn-IN', label: 'KG', base: 'kn' },
+  { code: 'ml', name: 'Malayalam', native: 'മലയാളം', speechCode: 'ml-IN', label: 'മ', base: 'ml' },
+  { code: 'manglish', name: 'Manglish', native: 'Manglish', speechCode: 'ml-IN', label: 'MG', base: 'ml' },
+  { code: 'pa', name: 'Punjabi', native: 'ਪੰਜਾਬੀ', speechCode: 'pa-IN', label: 'ਪ', base: 'pa' },
+  { code: 'punglish', name: 'Punglish', native: 'Punglish', speechCode: 'pa-IN', label: 'PG', base: 'pa' },
 ];
+
+// Base language code for a romanized "-lish" variant (else the code itself).
+function langBase(code) {
+  const l = LANGUAGES.find(x => x.code === code);
+  return (l && l.base) || code;
+}
 
 const state = {
   currentView: 'home',
@@ -464,11 +478,11 @@ function addMessage(role, content, options = {}) {
       actionsDiv.className = 'message-actions';
 
       const actions = [
-        { label: 'What If I Do Nothing?', icon: 'clock', cls: '', fn: () => runConsequenceSimulator() },
-        { label: 'Explain to Elder', icon: 'users', cls: '', fn: () => runPanchayatBridge() },
-        { label: 'Rights Card', icon: 'id-card', cls: '', fn: () => generateRightsCard() },
-        { label: 'Checklist', icon: 'list-checks', cls: '', fn: () => generateChecklist() },
-        { label: 'Full Analysis', icon: 'clipboard-check', cls: '', fn: () => { navigateTo('lawsteps'); runLawSteps(); } },
+        { label: t('qa_nothing'), icon: 'clock', cls: '', fn: () => runConsequenceSimulator() },
+        { label: t('qa_elder'), icon: 'users', cls: '', fn: () => runPanchayatBridge() },
+        { label: t('qa_card'), icon: 'id-card', cls: '', fn: () => generateRightsCard() },
+        { label: t('qa_checklist'), icon: 'list-checks', cls: '', fn: () => generateChecklist() },
+        { label: t('qa_full'), icon: 'clipboard-check', cls: '', fn: () => { navigateTo('lawsteps'); runLawSteps(); } },
       ];
 
       actions.forEach(action => {
@@ -489,11 +503,11 @@ function addMessage(role, content, options = {}) {
     timeSpan.textContent = formatTime(new Date());
     const listenBtn = document.createElement('button');
     listenBtn.className = 'copy-btn';
-    listenBtn.innerHTML = '<i data-lucide="volume-2"></i> Listen';
+    listenBtn.innerHTML = `<i data-lucide="volume-2"></i> ${t('btn_listen')}`;
     listenBtn.onclick = () => toggleSpeak(listenBtn, content);
     const copyBtn = document.createElement('button');
     copyBtn.className = 'copy-btn';
-    copyBtn.innerHTML = '<i data-lucide="copy"></i> Copy';
+    copyBtn.innerHTML = `<i data-lucide="copy"></i> ${t('btn_copy')}`;
     copyBtn.onclick = () => copyMessageText(copyBtn, content);
     metaDiv.appendChild(timeSpan);
     metaDiv.appendChild(listenBtn);
@@ -604,7 +618,7 @@ async function runDevilAdvocate() {
       }),
     });
     hideTyping();
-    addMessage('assistant', '## 👿 Devil\'s Advocate Analysis\n\n' + data.response);
+    addMessage('assistant', '## ' + t('hdr_devil') + '\n\n' + data.response);
   } catch (error) {
     hideTyping();
     addMessage('assistant', '⚠️ Could not run Devil\'s Advocate mode. Please check if the server is running.');
@@ -624,7 +638,7 @@ async function runConsequenceSimulator() {
       }),
     });
     hideTyping();
-    addMessage('assistant', '## ⏰ What Happens If You Do Nothing\n\n' + data.response);
+    addMessage('assistant', '## ' + t('hdr_consequence') + '\n\n' + data.response);
   } catch (error) {
     hideTyping();
     addMessage('assistant', '⚠️ Could not run consequence simulator. Please check if the server is running.');
@@ -645,7 +659,7 @@ async function runPanchayatBridge() {
       }),
     });
     hideTyping();
-    addMessage('assistant', '## 🏘️ Community Elder Summary\n\n' + data.response);
+    addMessage('assistant', '## ' + t('hdr_elder') + '\n\n' + data.response);
   } catch (error) {
     hideTyping();
     addMessage('assistant', '⚠️ Could not generate elder summary. Please check if the server is running.');
@@ -1031,6 +1045,7 @@ async function doSearchBns() {
       body: JSON.stringify({
         query: query,
         direction: state.bnsDirection,
+        language: state.language,
       }),
     });
 
@@ -1057,7 +1072,7 @@ async function doSearchBns() {
     if (data.ai_explanation) {
       aiContainer.innerHTML = `
         <div class="ai-explanation">
-          <h4>🤖 AI Explanation</h4>
+          <h4>${t('conv_explain')}</h4>
           <div class="explanation-text markdown-body">${renderMarkdown(data.ai_explanation)}</div>
         </div>
       `;
@@ -1100,7 +1115,7 @@ async function doSearchCrpc() {
   try {
     const data = await apiCall('/api/crpc-convert', {
       method: 'POST',
-      body: JSON.stringify({ query: query, direction: state.crpcDirection }),
+      body: JSON.stringify({ query: query, direction: state.crpcDirection, language: state.language }),
     });
 
     if (data.results && data.results.length > 0) {
@@ -1126,7 +1141,7 @@ async function doSearchCrpc() {
     if (data.ai_explanation) {
       aiContainer.innerHTML = `
         <div class="ai-explanation">
-          <h4>🤖 AI Explanation</h4>
+          <h4>${t('conv_explain')}</h4>
           <div class="explanation-text markdown-body">${renderMarkdown(data.ai_explanation)}</div>
         </div>
       `;
@@ -1514,9 +1529,15 @@ document.addEventListener('DOMContentLoaded', () => {
     chatInput.addEventListener('input', () => autoResizeTextarea(chatInput));
   }
 
-  // Language select change
+  // Language select change — build options from LANGUAGES so every variant
+  // (including the romanized -lish ones) is always present and in sync.
   const langSelect = $('language-select');
   if (langSelect) {
+    langSelect.innerHTML = LANGUAGES.map(l => {
+      const label = l.native === l.name ? l.name : `${l.native} (${l.name})`;
+      return `<option value="${l.code}">${label}</option>`;
+    }).join('');
+    langSelect.value = state.language;
     langSelect.addEventListener('change', (e) => setLanguage(e.target.value));
   }
 
@@ -2586,8 +2607,8 @@ initTheme();
 
 const I18N = {
 en: { nav_home:'Home', nav_chat:'Talk to Legal Helper', nav_cases:'My Cases', nav_draft:'Draft a Document', nav_court:'Virtual Courtroom', nav_bns:'Section Converter', nav_crpc:'CrPC ↔ BNSS Converter', nav_aid:'Find Legal Aid', nav_doc:'Translate Legal Document',
-badge:'100% private · runs on your device', hero_sub:'Salary not paid? Deposit stuck? Got a legal notice? Ask in Hindi, English, or 9 other languages — free, offline, nothing leaves your computer.', cta1:'Ask Your Question', cta2:'See How It Works',
-tr1:'No signup', tr2:'Works offline', tr3:'11 languages', tr4:'Free forever',
+badge:'100% private · runs on your device', hero_sub:'Salary not paid? Deposit stuck? Got a legal notice? Ask in Hindi, English, or many other languages — free, offline, nothing leaves your computer.', cta1:'Ask Your Question', cta2:'See How It Works',
+tr1:'No signup', tr2:'Works offline', tr3:'19 languages', tr4:'Free forever',
 st1:'IPC ↔ BNS sections mapped', st2:'Indian languages supported', st3:'Data sent to the cloud',
 how:'How It Works', s1t:'Describe your problem', s1d:'Type or speak in any of 11 languages. No legal words needed.', s2t:'Confirm the summary', s2d:'The AI restates your situation — you verify it understood correctly.', s3t:'Get rights + next steps', s3d:'Clear guidance with BNS sections, deadlines, and helplines.',
 feats:'Everything अधिKaar Can Do', open:'Open',
@@ -2602,11 +2623,22 @@ ncase:'New Case', shear:'Start Hearing', nround:'Next Round', vmode:'Voice Mode 
 nav_lawsteps:'Law & Next Steps', lsv_t:'Law & Next Steps', lsv_d:'Describe your situation once and get a single verified answer — the law that applies, how each claim was checked, official sources, both sides stress-tested, a rights card, and a plain summary to share.',
 ls_sit:'Your situation', ls_btn:'Get Full Analysis', ls_need:'Please describe your situation first.', ls_wait:'Analysing… local AI can take a minute', ls_err:'Could not generate the analysis. Make sure the server and Ollama are running, then try again.', ls_none:'Nothing to show here.',
 ls_a:'Your situation & the law', ls_b:'How each statement was checked', ls_c:'Official sources with links', ls_d:'Stress test from both sides', ls_e:'Rights card', ls_f:'Explain to someone you trust',
-ls_verified:'Verified', ls_unverified:'Unverified', ls_for:'For your position', ls_against:'Against you', ls_weak:'Weak points', ls_rights:'Your Rights', ls_share:'Share as image', ls_listen:'Listen' },
+ls_verified:'Verified', ls_unverified:'Unverified', ls_for:'For your position', ls_against:'Against you', ls_weak:'Weak points', ls_rights:'Your Rights', ls_share:'Share as image', ls_listen:'Listen',
+qa_nothing:'What If I Do Nothing?', qa_elder:'Explain to Elder', qa_card:'Rights Card', qa_checklist:'Checklist', qa_full:'Full Analysis',
+btn_listen:'Listen', btn_stop:'Stop', btn_copy:'Copy', btn_copied:'Copied',
+hdr_devil:"Devil's Advocate Analysis", hdr_consequence:'What Happens If You Do Nothing', hdr_elder:'Community Elder Summary',
+conv_explain:'Detailed Explanation', conv_searching:'Searching...', conv_nomatch:'No exact matches found. Try a different section number or offence name.',
+mic_listening:'Listening…', mic_transcribing:'Transcribing…', mic_error:'Could not access the microphone.', mic_nospeech:'No speech detected. Please try again.',
+draft_step1_title:'Describe your case', draft_step1_desc:'Tell us what happened in your own words. Everything is generated on this device by a local AI — your details never leave this computer.', draft_step1_ph:'Describe your legal situation here…', draft_find:'Find the right documents',
+draft_step2_title:'Suggested documents', draft_step2_desc:'Based on your case, these documents may help. Pick one to prepare.', draft_manual:'Or choose a document format yourself',
+draft_step3_title:'Fill in the details', draft_step3_desc:'Answer these so the document is complete and ready to submit. Nothing is stored.', draft_generate:'Generate final document', draft_missing:'Please fill in the highlighted required fields.',
+draft_result_title:'Your document', draft_download:'Download', draft_print:'Print', draft_save:'Save to Case', draft_back:'Back', draft_privacy:'Everything is generated on this device by a local AI. Your details never leave this computer.',
+doc_followup_title:'Ask about this document', doc_followup_ph:'Ask a question about this document…', doc_extracting:'Reading the document…', doc_privacy:'The document is processed only on this computer.',
+kiosk_greeting:'Namaste. Tell me your problem — I am listening.', kiosk_listening:'Listening…', kiosk_thinking:'Thinking…', kiosk_error:'Sorry, something went wrong. Please try again.', kiosk_repeat:'Listen again', kiosk_exit:'Exit' },
 
 hi: { nav_home:'होम', nav_chat:'कानूनी सहायक से बात करें', nav_cases:'मेरे केस', nav_draft:'दस्तावेज़ बनाएं', nav_court:'वर्चुअल अदालत', nav_bns:'सेक्शन परिवर्तक', nav_crpc:'CrPC ↔ BNSS परिवर्तक', nav_aid:'कानूनी सहायता खोजें', nav_doc:'कानूनी दस्तावेज़ समझें',
 badge:'100% निजी · आपके डिवाइस पर चलता है', hero_sub:'वेतन नहीं मिला? जमा राशि फंसी है? कानूनी नोटिस मिला? हिंदी, अंग्रेज़ी या 9 अन्य भाषाओं में पूछें — मुफ्त, ऑफलाइन, आपका डेटा बाहर नहीं जाता।', cta1:'अपना सवाल पूछें', cta2:'कैसे काम करता है देखें',
-tr1:'साइनअप नहीं चाहिए', tr2:'ऑफलाइन चलता है', tr3:'11 भाषाएं', tr4:'हमेशा मुफ्त',
+tr1:'साइनअप नहीं चाहिए', tr2:'ऑफलाइन चलता है', tr3:'19 भाषाएं', tr4:'हमेशा मुफ्त',
 st1:'IPC ↔ BNS धाराएं जोड़ी गईं', st2:'भारतीय भाषाएं समर्थित', st3:'क्लाउड को भेजा गया डेटा',
 how:'यह कैसे काम करता है', s1t:'अपनी समस्या बताएं', s1d:'11 भाषाओं में लिखें या बोलें। कानूनी शब्द ज़रूरी नहीं।', s2t:'सारांश की पुष्टि करें', s2d:'AI आपकी स्थिति दोहराता है — आप जांचें कि सही समझा।', s3t:'अधिकार और अगले कदम पाएं', s3d:'BNS धाराओं, समय-सीमाओं और हेल्पलाइन के साथ स्पष्ट मार्गदर्शन।',
 feats:'अधिKaar की सभी सुविधाएं', open:'खोलें',
@@ -2621,11 +2653,22 @@ ncase:'नया केस', shear:'सुनवाई शुरू करें
 nav_lawsteps:'कानून और अगले कदम', lsv_t:'कानून और अगले कदम', lsv_d:'अपनी स्थिति एक बार बताएं — लागू कानून, हर दावे की जाँच, आधिकारिक स्रोत, दोनों पक्षों की परख, अधिकार कार्ड और सरल सारांश एक साथ पाएं।',
 ls_sit:'आपकी स्थिति', ls_btn:'पूरा विश्लेषण पाएं', ls_need:'कृपया पहले अपनी स्थिति बताएं।', ls_wait:'विश्लेषण हो रहा है… इसमें एक मिनट लग सकता है', ls_err:'विश्लेषण नहीं बन सका। सर्वर और Ollama चालू हैं यह जांचें, फिर दोबारा कोशिश करें।', ls_none:'यहाँ दिखाने को कुछ नहीं है।',
 ls_a:'आपकी स्थिति और कानून', ls_b:'हर बात कैसे जांची गई', ls_c:'आधिकारिक स्रोत और लिंक', ls_d:'दोनों पक्षों से परख', ls_e:'अधिकार कार्ड', ls_f:'अपनों को कैसे समझाएं',
-ls_verified:'सत्यापित', ls_unverified:'असत्यापित', ls_for:'आपके पक्ष में', ls_against:'आपके विरुद्ध', ls_weak:'कमज़ोर बिंदु', ls_rights:'आपके अधिकार', ls_share:'छवि के रूप में साझा करें', ls_listen:'सुनें' },
+ls_verified:'सत्यापित', ls_unverified:'असत्यापित', ls_for:'आपके पक्ष में', ls_against:'आपके विरुद्ध', ls_weak:'कमज़ोर बिंदु', ls_rights:'आपके अधिकार', ls_share:'छवि के रूप में साझा करें', ls_listen:'सुनें',
+qa_nothing:'कुछ न करूँ तो क्या होगा?', qa_elder:'बुज़ुर्ग को समझाएं', qa_card:'अधिकार कार्ड', qa_checklist:'चेकलिस्ट', qa_full:'पूरा विश्लेषण',
+btn_listen:'सुनें', btn_stop:'रोकें', btn_copy:'कॉपी', btn_copied:'कॉपी हो गया',
+hdr_devil:'विरोधी पक्ष का विश्लेषण', hdr_consequence:'कुछ न करने पर क्या होगा', hdr_elder:'सामुदायिक सहायक सारांश',
+conv_explain:'विस्तृत व्याख्या', conv_searching:'खोज रहे हैं...', conv_nomatch:'कोई सटीक मिलान नहीं मिला। दूसरा धारा नंबर या अपराध का नाम आज़माएं।',
+mic_listening:'सुन रहे हैं…', mic_transcribing:'लिख रहे हैं…', mic_error:'माइक्रोफ़ोन तक नहीं पहुँच सके।', mic_nospeech:'कोई आवाज़ नहीं सुनी। कृपया दोबारा कोशिश करें।',
+draft_step1_title:'अपना मामला बताएं', draft_step1_desc:'अपने शब्दों में बताएं क्या हुआ। सब कुछ इसी डिवाइस पर लोकल AI द्वारा बनता है — आपकी जानकारी बाहर नहीं जाती।', draft_step1_ph:'अपनी कानूनी स्थिति यहाँ बताएं…', draft_find:'सही दस्तावेज़ खोजें',
+draft_step2_title:'सुझाए गए दस्तावेज़', draft_step2_desc:'आपके मामले के आधार पर ये दस्तावेज़ मदद कर सकते हैं। तैयार करने के लिए एक चुनें।', draft_manual:'या खुद कोई दस्तावेज़ प्रारूप चुनें',
+draft_step3_title:'विवरण भरें', draft_step3_desc:'इन्हें भरें ताकि दस्तावेज़ पूरा और जमा करने योग्य हो। कुछ भी संग्रहीत नहीं होता।', draft_generate:'अंतिम दस्तावेज़ बनाएं', draft_missing:'कृपया चिह्नित आवश्यक फ़ील्ड भरें।',
+draft_result_title:'आपका दस्तावेज़', draft_download:'डाउनलोड', draft_print:'प्रिंट', draft_save:'केस में सहेजें', draft_back:'वापस', draft_privacy:'सब कुछ इसी डिवाइस पर लोकल AI द्वारा बनता है। आपकी जानकारी बाहर नहीं जाती।',
+doc_followup_title:'इस दस्तावेज़ के बारे में पूछें', doc_followup_ph:'इस दस्तावेज़ के बारे में सवाल पूछें…', doc_extracting:'दस्तावेज़ पढ़ रहे हैं…', doc_privacy:'दस्तावेज़ केवल इसी कंप्यूटर पर संसाधित होता है।',
+kiosk_greeting:'नमस्ते। अपनी समस्या बताइए — मैं सुन रहा हूँ।', kiosk_listening:'सुन रहे हैं…', kiosk_thinking:'सोच रहे हैं…', kiosk_error:'क्षमा करें, कुछ गड़बड़ हुई। कृपया दोबारा कोशिश करें।', kiosk_repeat:'फिर सुनें', kiosk_exit:'बाहर निकलें' },
 
 hinglish: { nav_home:'Home', nav_chat:'Legal Helper se baat karein', nav_cases:'Mere Cases', nav_draft:'Document banayein', nav_court:'Virtual Adalat', nav_bns:'Section Converter', nav_crpc:'CrPC ↔ BNSS Converter', nav_aid:'Legal Aid dhundein', nav_doc:'Legal Document samjhein',
 badge:'100% private · aapke device par chalta hai', hero_sub:'Salary nahi mili? Deposit atka hai? Legal notice aaya? Hindi, English ya 9 aur bhashaon mein poochein — free, offline, data bahar nahi jaata.', cta1:'Apna sawaal poochein', cta2:'Kaise kaam karta hai dekhein',
-tr1:'No signup', tr2:'Offline chalta hai', tr3:'11 bhashayein', tr4:'Hamesha free',
+tr1:'No signup', tr2:'Offline chalta hai', tr3:'19 bhashayein', tr4:'Hamesha free',
 st1:'IPC ↔ BNS sections mapped', st2:'Bhartiya bhashayein', st3:'Cloud ko bheja gaya data',
 how:'Yeh kaise kaam karta hai', s1t:'Apni problem batayein', s1d:'11 bhashaon mein likhein ya bolein.', s2t:'Summary confirm karein', s2d:'AI aapki baat dohrata hai — aap check karein.', s3t:'Rights aur agle kadam', s3d:'BNS sections, deadlines aur helplines ke saath.',
 feats:'अधिKaar ke saare features', open:'Kholein',
@@ -2640,7 +2683,18 @@ ncase:'Naya Case', shear:'Sunwai shuru karein', nround:'Agla Round', vmode:'Voic
 nav_lawsteps:'Kanoon aur Agle Kadam', lsv_t:'Kanoon aur Agle Kadam', lsv_d:'Apni situation ek baar batayein — laagu kanoon, har claim ki jaanch, official sources, dono taraf ki parakh, rights card aur simple summary ek saath.',
 ls_sit:'Aapki situation', ls_btn:'Poora analysis paayein', ls_need:'Pehle apni situation batayein.', ls_wait:'Analysis ho raha hai… ek minute lag sakta hai', ls_err:'Analysis nahi ban saka. Server aur Ollama chalu hain check karein, phir dobara try karein.', ls_none:'Yahan dikhane ko kuch nahi hai.',
 ls_a:'Aapki situation aur kanoon', ls_b:'Har baat kaise check hui', ls_c:'Official sources aur links', ls_d:'Dono taraf se parakh', ls_e:'Rights Card', ls_f:'Apno ko kaise samjhayein',
-ls_verified:'Verified', ls_unverified:'Unverified', ls_for:'Aapke paksh mein', ls_against:'Aapke khilaaf', ls_weak:'Kamzor points', ls_rights:'Aapke Adhikaar', ls_share:'Image ke roop mein share karein', ls_listen:'Sunein' },
+ls_verified:'Verified', ls_unverified:'Unverified', ls_for:'Aapke paksh mein', ls_against:'Aapke khilaaf', ls_weak:'Kamzor points', ls_rights:'Aapke Adhikaar', ls_share:'Image ke roop mein share karein', ls_listen:'Sunein',
+qa_nothing:'Kuch na karun toh?', qa_elder:'Bujurg ko samjhaayein', qa_card:'Rights Card', qa_checklist:'Checklist', qa_full:'Poora Analysis',
+btn_listen:'Sunein', btn_stop:'Rokein', btn_copy:'Copy', btn_copied:'Copy ho gaya',
+hdr_devil:'Virodhi Paksh ka Analysis', hdr_consequence:'Kuch na karne par kya hoga', hdr_elder:'Community Helper Summary',
+conv_explain:'Vistaar se Samjhaein', conv_searching:'Search kar rahe hain...', conv_nomatch:'Koi exact match nahi mila. Doosra section number ya offence name try karein.',
+mic_listening:'Sun rahe hain…', mic_transcribing:'Likh rahe hain…', mic_error:'Microphone access nahi ho saka.', mic_nospeech:'Koi awaaz nahi suni. Dobara try karein.',
+draft_step1_title:'Apna case batayein', draft_step1_desc:'Apne shabdon mein batayein kya hua. Sab kuch isi device par local AI banata hai — aapki details bahar nahi jaati.', draft_step1_ph:'Apni legal situation yahan batayein…', draft_find:'Sahi documents dhundein',
+draft_step2_title:'Suggested documents', draft_step2_desc:'Aapke case ke hisaab se ye documents madad kar sakte hain. Ek chunein.', draft_manual:'Ya khud koi document format chunein',
+draft_step3_title:'Details bharein', draft_step3_desc:'Ye bharein taaki document poora aur submit karne layak ho. Kuch bhi store nahi hota.', draft_generate:'Final document banayein', draft_missing:'Highlighted required fields bharein.',
+draft_result_title:'Aapka document', draft_download:'Download', draft_print:'Print', draft_save:'Case mein save karein', draft_back:'Wapas', draft_privacy:'Sab kuch isi device par local AI banata hai. Aapki details bahar nahi jaati.',
+doc_followup_title:'Is document ke baare mein poochein', doc_followup_ph:'Is document ke baare mein sawaal poochein…', doc_extracting:'Document padh rahe hain…', doc_privacy:'Document sirf isi computer par process hota hai.',
+kiosk_greeting:'Namaste. Apni samasya batayein — main sun raha hoon.', kiosk_listening:'Sun rahe hain…', kiosk_thinking:'Soch rahe hain…', kiosk_error:'Maaf kijiye, kuch gadbad hui. Dobara try karein.', kiosk_repeat:'Phir sunein', kiosk_exit:'Bahar niklein' },
 
 ta: { nav_home:'முகப்பு', nav_chat:'சட்ட உதவியாளரிடம் பேசுங்கள்', nav_cases:'என் வழக்குகள்', nav_draft:'ஆவணம் உருவாக்கு', nav_court:'மெய்நிகர் நீதிமன்றம்', nav_bns:'IPC ↔ BNS மாற்றி', nav_aid:'சட்ட உதவி தேடு', nav_doc:'சட்ட ஆவணம் விளக்கு',
 badge:'100% தனிப்பட்டது · உங்கள் சாதனத்தில் இயங்குகிறது', hero_sub:'சம்பளம் வரவில்லையா? வைப்புத்தொகை சிக்கியதா? சட்ட நோட்டீஸ் வந்ததா? 11 மொழிகளில் கேளுங்கள் — இலவசம், ஆஃப்லைன்.', cta1:'உங்கள் கேள்வியைக் கேளுங்கள்', cta2:'எப்படி வேலை செய்கிறது',
@@ -2764,7 +2818,11 @@ ncase:'ਨਵਾਂ ਕੇਸ', shear:'ਸੁਣਵਾਈ ਸ਼ੁਰੂ ਕਰ
 };
 
 function t(key) {
-  return (I18N[state.language] || {})[key] || I18N.en[key] || '';
+  // Romanized "-lish" variants share their base language's UI strings; anything
+  // still missing falls back to English so the UI is never blank.
+  const lang = I18N[state.language] || {};
+  const base = I18N[langBase(state.language)] || {};
+  return lang[key] || base[key] || I18N.en[key] || '';
 }
 
 function applyTranslations() {
@@ -2856,6 +2914,18 @@ function applyTranslations() {
   setWithIcon('#courtroom-setup .btn-primary', 'gavel', 'shear');
   const nextBtn = $('courtroom-next-btn');
   if (nextBtn && !nextBtn.disabled && t('nround')) nextBtn.textContent = t('nround');
+
+  // Generic pass: any element carrying data-i18n / data-i18n-ph attributes.
+  // This is how newly added static markup gets translated without adding a
+  // bespoke selector here for each one.
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const v = t(el.dataset.i18n);
+    if (v) el.textContent = v;
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    const v = t(el.dataset.i18nPh);
+    if (v) el.placeholder = v;
+  });
 
   refreshIcons();
 }

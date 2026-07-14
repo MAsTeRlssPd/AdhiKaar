@@ -411,8 +411,12 @@ def get_english_keywords_from_llm(query, language):
 def preprocess_query_for_rag(query, language):
     """Preprocess query for optimal ChromaDB matching (handles translations & keyword expansion)."""
     query_expanded = expand_query_multilingual(query)
-    
-    if language not in ['en', 'hinglish'] and query_expanded == query:
+
+    # Romanized variants (hinglish, tanglish, ...) are already Latin script and
+    # usually hit KEYWORD_MAPPINGS, so skip the extra LLM keyword-translation call
+    # like we do for English and Hinglish.
+    romanized = language in ROMANIZED_LANGS
+    if language != 'en' and not romanized and query_expanded == query:
         llm_keywords = get_english_keywords_from_llm(query, language)
         if llm_keywords:
             query_expanded = query + " " + llm_keywords
@@ -491,15 +495,43 @@ LANGUAGE_INSTRUCTIONS = {
     "ml": "ഉപയോക്താവിന് മനസ്സിലാക്കാൻ ലളിതമായ മലയാളത്തിൽ നിയമോപദേശം നൽകുക. Respond in simple Malayalam.",
     "pa": "ਵਰਤੋਂਕਾਰ ਨੂੰ ਸਮਝਣ ਵਿੱਚ ਆਸਾਨੀ ਹੋਵੇ ਇਸਲਈ ਸਰਲ ਪੰਜਾਬੀ ਵਿੱਚ ਕਾਨੂੰਨੀ ਸਲਾਹ ਦਿਓ। Respond in simple Punjabi.",
     "hinglish": "Respond in Hinglish (mix of Hindi and English, like how people normally talk). Use Roman script. Koi bhi legal term ko simple language mein samjhao.",
+    "tanglish": "Respond in Tanglish (mix of Tamil and English, the way people casually text). Use only Roman (Latin) script — never Tamil script. Explain legal terms in simple words.",
+    "tenglish": "Respond in Tenglish (mix of Telugu and English, the way people casually text). Use only Roman (Latin) script — never Telugu script. Explain legal terms in simple words.",
+    "benglish": "Respond in Benglish (mix of Bengali and English, the way people casually text). Use only Roman (Latin) script — never Bengali script. Explain legal terms in simple words.",
+    "marlish": "Respond in Marathi-English mix, the way people casually text. Use only Roman (Latin) script — never Devanagari script. Explain legal terms in simple words.",
+    "gujlish": "Respond in Gujlish (mix of Gujarati and English, the way people casually text). Use only Roman (Latin) script — never Gujarati script. Explain legal terms in simple words.",
+    "kanglish": "Respond in Kanglish (mix of Kannada and English, the way people casually text). Use only Roman (Latin) script — never Kannada script. Explain legal terms in simple words.",
+    "manglish": "Respond in Manglish (mix of Malayalam and English, the way people casually text). Use only Roman (Latin) script — never Malayalam script. Explain legal terms in simple words.",
+    "punglish": "Respond in Punglish (mix of Punjabi and English, the way people casually text). Use only Roman (Latin) script — never Gurmukhi script. Explain legal terms in simple words.",
     "default": "Automatically detect the language of the user's latest query and respond entirely in that language without any emojis."
 }
+
+# Maps each romanized "-lish" variant to its base language code. Used for RAG
+# preprocessing, TTS voice selection, and whisper STT language hints.
+ROMANIZED_LANGS = {
+    "hinglish": "hi", "tanglish": "ta", "tenglish": "te", "benglish": "bn",
+    "marlish": "mr", "gujlish": "gu", "kanglish": "kn", "manglish": "ml", "punglish": "pa",
+}
+
+def base_lang(code):
+    """Return the base language code for a romanized variant, else the code itself."""
+    return ROMANIZED_LANGS.get(code, code)
 
 # Language of the actual document body. Hinglish keeps English structure with
 # Hindi/Hinglish phrasing where natural.
 LANGUAGE_NAMES = {
     "en": "English", "hi": "Hindi", "ta": "Tamil", "te": "Telugu",
     "bn": "Bengali", "mr": "Marathi", "gu": "Gujarati", "kn": "Kannada",
-    "ml": "Malayalam", "pa": "Punjabi", "hinglish": "Hinglish (Hindi-English mix in Roman script)",
+    "ml": "Malayalam", "pa": "Punjabi",
+    "hinglish": "Hinglish (Hindi-English mix in Roman script)",
+    "tanglish": "Tanglish (Tamil-English mix in Roman script)",
+    "tenglish": "Tenglish (Telugu-English mix in Roman script)",
+    "benglish": "Benglish (Bengali-English mix in Roman script)",
+    "marlish": "Marathi-English mix in Roman script",
+    "gujlish": "Gujlish (Gujarati-English mix in Roman script)",
+    "kanglish": "Kanglish (Kannada-English mix in Roman script)",
+    "manglish": "Manglish (Malayalam-English mix in Roman script)",
+    "punglish": "Punglish (Punjabi-English mix in Roman script)",
 }
 
 MAIN_SYSTEM_PROMPT = """You are an extremely knowledgeable human legal expert with an encyclopedic understanding of Indian law. Your purpose is to provide clear, concise, and direct legal advice to citizens.
@@ -558,6 +590,8 @@ Most Urgent Action: [The single most important thing to do RIGHT NOW]
 
 Be specific about Indian law — mention actual deadlines, limitation periods, and legal consequences. Don't be alarmist but be honest about real risks. Write in clear, concise human paragraphs.
 
+GROUNDING: Base every legal claim (section numbers, deadlines, authority names) on the CONTEXT below. If the CONTEXT does not support a specific claim, describe the step generally without inventing a section number. Formal, respectful tone. No emojis, no decorative symbols.
+
 {language_instruction}
 
 SITUATION CONTEXT:
@@ -575,16 +609,29 @@ RULES:
 - Format as simple text without emojis or complex formatting
 - Make clear what ACTION needs to be taken and by whom
 
+COMMUNITY GUIDANCE (very important):
+- If the issue is a village or community matter (land or boundary disputes, family disputes, unpaid wages from a local employer, water or common-land problems, caste or dowry issues), explicitly advise approaching the Gram Panchayat sarpanch or mukhiya, local NGOs or free legal-aid clinics, and ASHA or anganwadi workers where relevant.
+- Name the specific District Legal Services Authority (DLSA) contact and helpline numbers from the CONTEXT when available (for example NALSA 15100).
+- Guide the person on exactly what their NEXT step should be for their specific problem.
+- End with 2-3 short, reassuring sentences: the person has clear rights, free help exists, and this problem can be solved step by step so they should not feel afraid or alone.
+
+GROUNDING: Base section numbers, authority names, and helplines on the CONTEXT below. Do not invent contact details or section numbers that are not in the CONTEXT.
+
 FORMAT (No emojis, simple text):
 Community Helper Summary
 
 Person's Situation: [1-2 sentences]
 Their Rights: [3-5 sentences]
-What To Do: [Numbered steps]
+Who Can Help Locally: [Sarpanch/mukhiya, NGOs, legal-aid clinic, ASHA worker — as relevant]
+What To Do Next: [Numbered steps specific to their problem]
 Legal Sections: [Relevant BNS sections]
 Helpline Numbers: [Numbers]
+Reassurance: [2-3 calming, supportive sentences]
 
 {language_instruction}
+
+KNOWLEDGE BASE CONTEXT:
+{rag_context}
 
 SITUATION AND ADVICE TO SIMPLIFY:
 {context}
@@ -596,11 +643,15 @@ YOUR TASKS:
 1. Identify the document type (FIR, legal notice, court summons, etc.)
 2. Translate/explain the document in plain, simple language
 3. Highlight key information (Important dates and deadlines, Who is involved, What legal sections are mentioned, What action is required, By when must they respond/appear)
-4. What should the reader do next — clear, actionable steps
+4. List every law and section mentioned in the document (IPC/CrPC/BNS/BNSS or any other Act). For any old IPC or CrPC section, state the current BNS or BNSS equivalent using the CONTEXT below.
+5. What should the reader do next — clear, actionable steps
 
-IMPORTANT: Many legal documents are in English or formal Hindi/Urdu legal language. Translate into the user's preferred language using simple, everyday words. DO NOT use any emojis. Present the explanation in natural paragraphs.
+IMPORTANT: Many legal documents are in English or formal Hindi/Urdu legal language. Translate into the user's preferred language using simple, everyday words. DO NOT use any emojis. Present the explanation in natural paragraphs. Do not invent section numbers that are not in the document or the CONTEXT.
 
 {language_instruction}
+
+CONTEXT (section mappings from knowledge base):
+{rag_context}
 
 DOCUMENT TEXT (from OCR):
 {document_text}
@@ -630,6 +681,8 @@ People to Contact:
 
 Be specific to Indian law and the user's exact situation. Include BNS sections where relevant. Do not use emojis or checkboxes like [ ]. Just plain text.
 
+GROUNDING: Base every legal claim (section numbers, deadlines, authority names) on the CONTEXT below. If the CONTEXT does not support a specific claim, describe the step generally without inventing a section number. Formal, respectful tone. No emojis, no decorative symbols.
+
 {language_instruction}
 
 SITUATION CONTEXT:
@@ -658,6 +711,30 @@ def get_session(session_id):
 def get_language_instruction(lang):
     """Get language-specific instruction."""
     return LANGUAGE_INSTRUCTIONS.get(lang, LANGUAGE_INSTRUCTIONS['en'])
+
+def language_directive(language):
+    """A forceful, standalone language rule to append as the LAST system message.
+
+    Gemma-class models weight trailing instructions much more heavily than a single
+    line buried mid-prompt, so this is the reliable fix for features that otherwise
+    drift back to English (e.g. document drafting, converters)."""
+    name = LANGUAGE_NAMES.get(language, "English")
+    return (
+        "CRITICAL LANGUAGE RULE (highest priority):\n"
+        f"- Write your ENTIRE response in {name}.\n"
+        f"- {get_language_instruction(language)}\n"
+        "- Do NOT reply in English unless the requested language is English.\n"
+        "- Section numbers, act names (BNS, BNSS, IPC, CrPC, RTI) and proper nouns "
+        "may stay in their standard English/Latin form."
+    )
+
+def call_gemma_lang(messages, language, **kwargs):
+    """call_gemma but with a forceful language directive appended as the final
+    system message so the response reliably lands in the user's language."""
+    messages = list(messages) + [
+        {'role': 'system', 'content': language_directive(language)}
+    ]
+    return call_gemma(messages, **kwargs)
 
 def call_gemma(messages, temperature=0.7, fallback_cpu=False, num_ctx=2048, response_format=None):
     """Call the working LLM model via Ollama (auto-detected at first call).
@@ -822,9 +899,9 @@ def chat():
         
         # Add current message
         messages.append({"role": "user", "content": message})
-        
+
         # Call Gemma
-        response_text = call_gemma(messages, temperature=0.7)
+        response_text = call_gemma_lang(messages, language, temperature=0.7)
         
         # Update session history
         session['history'].append({"role": "user", "content": message})
@@ -876,14 +953,77 @@ def devil_advocate():
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": f"Here is the person's legal situation:\n{situation}\n\nConversation history:{history_text}\n\nNow argue against their position and then help them prepare."}
         ]
-        
-        response_text = call_gemma(messages, temperature=0.8)
+
+        response_text = call_gemma_lang(messages, language, temperature=0.8)
         
         return jsonify({"response": response_text})
     
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+
+
+SECTION_EXPLAIN_PROMPT = """You are explaining an Indian law section to a citizen with no legal training.
+
+Using ONLY the CONTEXT below plus the matched mapping entries, explain in a detailed but easy-to-understand way:
+1. What this section covers, in everyday words, with one simple real-life example.
+2. The old and new section numbers (IPC/CrPC vs BNS/BNSS) and exactly what changed between them.
+3. The punishment or the procedure involved.
+4. When an ordinary citizen would come across this section and what they should do.
+
+RULES:
+- Formal, respectful tone. Do NOT use any emojis or decorative symbols.
+- Do NOT invent section numbers, punishments, or facts that are not in the CONTEXT.
+- Write in clear paragraphs, not one-word bullets.
+
+{language_instruction}
+
+MATCHED MAPPING ENTRIES:
+{entries}
+
+CONTEXT FROM KNOWLEDGE BASE:
+{rag_context}
+"""
+
+
+def _section_explanation(query, results, language, kind):
+    """Detailed, RAG-grounded explanation of a matched IPC/BNS or CrPC/BNSS section.
+
+    kind is 'ipc_bns' or 'crpc_bnss'. Grounds the answer in the ipc_bns and/or
+    official_law ChromaDB collections and answers in the user's language."""
+    if not results:
+        return ""
+
+    top = results[0]
+    if kind == 'ipc_bns':
+        search = (
+            f"IPC {top.get('ipc_section','')} BNS {top.get('bns_section','')} "
+            f"{top.get('offence','')} {top.get('description','')[:200]}"
+        )
+    else:
+        search = (
+            f"CrPC {top.get('crpc_section','')} BNSS {top.get('bnss_section','')} "
+            f"{top.get('offence','')} {top.get('description','')[:200]}"
+        )
+
+    rag_context = ""
+    if kind == 'ipc_bns' and ipc_bns_collection:
+        rag_context += retrieve_context(search, ipc_bns_collection, n_results=3)
+    if official_law_collection:
+        rag_context += "\n" + retrieve_context(
+            search, official_law_collection, n_results=3, max_chars=2000
+        )
+
+    system_prompt = SECTION_EXPLAIN_PROMPT.format(
+        language_instruction=get_language_instruction(language),
+        entries=json.dumps(results[:3], ensure_ascii=False),
+        rag_context=rag_context.strip() or "(no additional statute text retrieved)",
+    )
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": f"Explain the section the user searched for: '{query}'."},
+    ]
+    return call_gemma_lang(messages, language, temperature=0.4, num_ctx=4096)
 
 
 def _norm_section(value):
@@ -914,6 +1054,7 @@ def bns_convert():
         data = request.get_json(silent=True) or {}
         query = data.get('query', '').strip()
         direction = data.get('direction', 'ipc_to_bns')  # or 'bns_to_ipc'
+        language = data.get('language', 'en')
 
         if not query:
             return jsonify({"results": [], "ai_explanation": ""})
@@ -924,15 +1065,9 @@ def bns_convert():
             ['offence', 'ipc_title', 'bns_title', 'description'],
         )
 
-        # Get AI explanation if results found, no RAG to keep it strict
-        ai_explanation = ""
-        if results:
-            messages = [
-                {"role": "system", "content": "You are a legal expert on Indian criminal law. Explain the IPC to BNS conversion briefly and clearly. Highlight any important changes in the new law. Do not use emojis."},
-                {"role": "user", "content": f"User searched for: '{query}'. Found matches: {json.dumps(results[:3], ensure_ascii=False)}. Explain the conversion briefly in simple paragraphs."}
-            ]
-            ai_explanation = call_gemma(messages, temperature=0.5)
-        
+        # Detailed, RAG-grounded explanation of the matched section, in the user's language
+        ai_explanation = _section_explanation(query, results, language, 'ipc_bns')
+
         return jsonify({
             "results": results[:10],
             "ai_explanation": ai_explanation
@@ -950,6 +1085,7 @@ def crpc_convert():
         data = request.get_json(silent=True) or {}
         query = data.get('query', '').strip()
         direction = data.get('direction', 'crpc_to_bnss')  # or 'bnss_to_crpc'
+        language = data.get('language', 'en')
 
         if not query:
             return jsonify({"results": [], "ai_explanation": ""})
@@ -960,13 +1096,7 @@ def crpc_convert():
             ['offence', 'crpc_title', 'bnss_title', 'description'],
         )
 
-        ai_explanation = ""
-        if results:
-            messages = [
-                {"role": "system", "content": "You are a legal expert on Indian criminal procedure. Explain the CrPC (1973) to BNSS (2023) conversion briefly and clearly. Highlight any important procedural changes in the new law. Do not use emojis."},
-                {"role": "user", "content": f"User searched for: '{query}'. Found matches: {json.dumps(results[:3], ensure_ascii=False)}. Explain the conversion briefly in simple paragraphs."}
-            ]
-            ai_explanation = call_gemma(messages, temperature=0.5)
+        ai_explanation = _section_explanation(query, results, language, 'crpc_bnss')
 
         return jsonify({"results": results[:10], "ai_explanation": ai_explanation})
 
@@ -1035,24 +1165,74 @@ def translate_document():
         
         if not document_text.strip():
             return jsonify({"error": "No document text provided"}), 400
-        
+
+        # Ground the section explanations: pull exact IPC/BNS mappings for any
+        # section numbers in the document, plus related mapping entries.
+        rag_context = check_section_keywords(document_text)
+        if ipc_bns_collection:
+            rag_context += "\n" + retrieve_context(
+                document_text[:500], ipc_bns_collection, n_results=3
+            )
+
         system_prompt = DOCUMENT_TRANSLATE_PROMPT.format(
             language_instruction=get_language_instruction(language),
+            rag_context=rag_context.strip() or "(no section mappings retrieved)",
             document_text=document_text
         )
-        
+
         messages = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": f"Please explain this legal document to me in simple words:\n\n{document_text}"}
         ]
-        
-        response_text = call_gemma(messages, temperature=0.5)
-        
+
+        response_text = call_gemma_lang(messages, language, temperature=0.5, num_ctx=4096)
+
         return jsonify({"response": response_text})
     
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+
+
+def index_session_document(session_id, text, filename, language):
+    """Save + chunk-index a document into the session's ChromaDB collection so chat
+    can answer from it, and return a short plain-language summary. Shared by the
+    /api/upload-document and /api/extract-document endpoints."""
+    session = get_session(session_id)
+
+    # Save a local copy (offline record; git-ignored)
+    os.makedirs(UPLOADS_DIR, exist_ok=True)
+    safe_session = re.sub(r'[^a-zA-Z0-9_-]', '', session_id) or 'default'
+    with open(os.path.join(UPLOADS_DIR, f"{safe_session}.txt"), 'w', encoding='utf-8') as f:
+        f.write(text)
+
+    # (Re)build the per-session doc collection with fresh chunks
+    col_name = doc_collection_name(session_id)
+    try:
+        chroma_client.delete_collection(col_name)
+    except Exception:
+        pass
+    col = chroma_client.create_collection(col_name, embedding_function=ef)
+    chunks = chunk_text(text)
+    col.add(documents=chunks, ids=[f"chunk_{i}" for i in range(len(chunks))])
+
+    doc_id = str(uuid.uuid4())
+    session['doc'] = {'id': doc_id, 'filename': filename, 'chunks': len(chunks)}
+
+    # 2-3 line plain-language summary in the user's language
+    summary = ""
+    try:
+        messages = [
+            {"role": "system", "content":
+                "You are a legal expert. Summarize the following document in 2-3 short, "
+                "plain-language lines so a citizen understands what it is about. Do not use emojis."},
+            {"role": "user", "content": text[:4000]}
+        ]
+        summary = call_gemma_lang(messages, language, temperature=0.3).strip()
+    except Exception as e:
+        print(f"Doc summary error: {e}")
+
+    return {"doc_id": doc_id, "filename": filename, "summary": summary, "chunks": len(chunks)}
 
 
 @app.route('/api/upload-document', methods=['POST'])
@@ -1068,47 +1248,7 @@ def upload_document():
         if not text:
             return jsonify({"error": "No document text provided"}), 400
 
-        session = get_session(session_id)
-
-        # Save a local copy (offline record; git-ignored)
-        os.makedirs(UPLOADS_DIR, exist_ok=True)
-        safe_session = re.sub(r'[^a-zA-Z0-9_-]', '', session_id) or 'default'
-        with open(os.path.join(UPLOADS_DIR, f"{safe_session}.txt"), 'w', encoding='utf-8') as f:
-            f.write(text)
-
-        # (Re)build the per-session doc collection with fresh chunks
-        col_name = doc_collection_name(session_id)
-        try:
-            chroma_client.delete_collection(col_name)
-        except Exception:
-            pass
-        col = chroma_client.create_collection(col_name, embedding_function=ef)
-        chunks = chunk_text(text)
-        col.add(documents=chunks, ids=[f"chunk_{i}" for i in range(len(chunks))])
-
-        doc_id = str(uuid.uuid4())
-        session['doc'] = {'id': doc_id, 'filename': filename, 'chunks': len(chunks)}
-
-        # 2-3 line plain-language summary
-        summary = ""
-        try:
-            messages = [
-                {"role": "system", "content":
-                    "You are a legal expert. Summarize the following document in 2-3 short, "
-                    "plain-language lines so a citizen understands what it is about. Do not use emojis. "
-                    + get_language_instruction(language)},
-                {"role": "user", "content": text[:4000]}
-            ]
-            summary = call_gemma(messages, temperature=0.3).strip()
-        except Exception as e:
-            print(f"Doc summary error: {e}")
-
-        return jsonify({
-            "doc_id": doc_id,
-            "filename": filename,
-            "summary": summary,
-            "chunks": len(chunks)
-        })
+        return jsonify(index_session_document(session_id, text, filename, language))
 
     except Exception as e:
         traceback.print_exc()
@@ -1151,21 +1291,32 @@ def panchayat_bridge():
         situation = data.get('situation', '')
         advice = data.get('advice', '')
         language = data.get('language', 'en')
-        
+
         context = f"Situation: {situation}\n\nAdvice given: {advice}"
-        
+
+        # Ground the guidance: rights + local legal-aid contacts + statute text.
+        search_query = preprocess_query_for_rag(situation, language)
+        rag_context = ""
+        if rights_collection:
+            rag_context += retrieve_context(search_query, rights_collection, n_results=3)
+        if legal_aid_collection:
+            rag_context += "\n" + retrieve_context(search_query, legal_aid_collection, n_results=3)
+        if official_law_collection:
+            rag_context += "\n" + retrieve_context(search_query, official_law_collection, n_results=2)
+
         system_prompt = PANCHAYAT_BRIDGE_PROMPT.format(
             language_instruction=get_language_instruction(language),
+            rag_context=rag_context.strip() or "(no additional context retrieved)",
             context=context
         )
-        
+
         messages = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": f"Create a simplified explanation for a community elder/helper:\n\n{context}"}
         ]
-        
-        response_text = call_gemma(messages, temperature=0.5)
-        
+
+        response_text = call_gemma_lang(messages, language, temperature=0.5)
+
         return jsonify({"response": response_text})
     
     except Exception as e:
@@ -1181,9 +1332,12 @@ def rights_checklist():
         situation = data.get('situation', '')
         language = data.get('language', 'en')
         
+        search_query = preprocess_query_for_rag(situation, language)
         rag_context = ""
         if rights_collection:
-            rag_context = retrieve_context(situation, rights_collection, n_results=5)
+            rag_context = retrieve_context(search_query, rights_collection, n_results=4)
+        if official_law_collection:
+            rag_context += "\n" + retrieve_context(search_query, official_law_collection, n_results=3)
 
         # Ground the model in a human-reviewed evidence checklist when one fits,
         # so the document list and statutory deadlines are real, not invented.
@@ -1201,7 +1355,7 @@ def rights_checklist():
             {"role": "user", "content": f"Generate a comprehensive rights checklist for this situation:\n\n{situation}"}
         ]
 
-        response_text = call_gemma(messages, temperature=0.5)
+        response_text = call_gemma_lang(messages, language, temperature=0.5)
 
         return jsonify({"response": response_text, "template": template})
     
@@ -1247,22 +1401,25 @@ def consequence_simulator():
         situation = data.get('situation', '')
         language = data.get('language', 'en')
         
+        search_query = preprocess_query_for_rag(situation, language)
         rag_context = ""
         if rights_collection:
-            rag_context = retrieve_context(situation, rights_collection, n_results=5)
-        
+            rag_context = retrieve_context(search_query, rights_collection, n_results=4)
+        if official_law_collection:
+            rag_context += "\n" + retrieve_context(search_query, official_law_collection, n_results=3)
+
         system_prompt = CONSEQUENCE_PROMPT.format(
             language_instruction=get_language_instruction(language),
             rag_context=rag_context
         )
-        
+
         messages = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": f"What happens if I do nothing about this situation?\n\n{situation}"}
         ]
-        
-        response_text = call_gemma(messages, temperature=0.7)
-        
+
+        response_text = call_gemma_lang(messages, language, temperature=0.7)
+
         return jsonify({"response": response_text})
     
     except Exception as e:
@@ -1293,8 +1450,8 @@ def rights_card():
 {get_language_instruction(language)}"""},
             {"role": "user", "content": f"Situation: {situation}\n\nAdvice given: {advice}\n\nGenerate the rights card JSON."}
         ]
-        
-        response_text = call_gemma(messages, temperature=0.3)
+
+        response_text = call_gemma_lang(messages, language, temperature=0.3)
         
         # Try to parse JSON from response
         try:
@@ -1627,7 +1784,7 @@ def courtroom():
         ]
 
         # Bump temperature slightly for more variety
-        response_text = call_gemma(messages, temperature=0.9)
+        response_text = call_gemma_lang(messages, language, temperature=0.9)
 
         # Parse the sequence of messages from the marked response
         import re
