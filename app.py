@@ -1305,6 +1305,163 @@ def clear_document():
         return jsonify({"error": str(e)}), 500
 
 
+# ══════════════════════════════════════════════════════════════
+# Server-side document text extraction (PaddleOCR + PDF text layer)
+# ══════════════════════════════════════════════════════════════
+# Moves OCR off the browser: the client uploads the raw PDF/image and we extract
+# text here with PaddleOCR (Indic-script capable), keeping the frontend's
+# Tesseract.js path only as a fallback. PaddleOCR models download once, then run
+# offline. Coverage is uneven for a few Indic scripts, so unsupported ones fall
+# back to a Devanagari or Latin pass.
+
+PADDLE_LANG_MAP = {
+    'en': 'en', 'hi': 'devanagari', 'mr': 'devanagari',
+    'ta': 'ta', 'te': 'te', 'kn': 'ka', 'ml': 'ml',
+    # bn/gu/pa lack good classic PaddleOCR packs — fall back to Latin.
+    'bn': 'en', 'gu': 'en', 'pa': 'en',
+}
+
+_ocr_engines = {}
+
+def get_ocr_engine(language):
+    """Load (and cache) a PaddleOCR engine for the app language. Lazy — never at startup."""
+    paddle_lang = PADDLE_LANG_MAP.get(base_lang(language), 'en')
+    if paddle_lang not in _ocr_engines:
+        from paddleocr import PaddleOCR
+        print(f"⏳ Loading PaddleOCR ({paddle_lang}) — first use may download models...")
+        try:
+            _ocr_engines[paddle_lang] = PaddleOCR(use_angle_cls=True, lang=paddle_lang, show_log=False)
+        except TypeError:
+            # Newer PaddleOCR (3.x) dropped some of these kwargs.
+            _ocr_engines[paddle_lang] = PaddleOCR(lang=paddle_lang)
+        print("✅ PaddleOCR ready")
+    return _ocr_engines[paddle_lang]
+
+
+def _paddle_texts(result):
+    """Pull recognised text out of a PaddleOCR result, tolerant of 2.x/3.x shapes."""
+    texts = []
+
+    def walk(obj):
+        if isinstance(obj, dict):
+            if 'rec_texts' in obj:                       # 3.x .predict()
+                texts.extend(str(t) for t in obj['rec_texts'])
+                return
+            for v in obj.values():
+                walk(v)
+        elif isinstance(obj, (list, tuple)):
+            # 2.x line: [box, (text, conf)]
+            if (len(obj) == 2 and isinstance(obj[1], (list, tuple))
+                    and obj[1] and isinstance(obj[1][0], str)):
+                texts.append(obj[1][0])
+                return
+            for it in obj:
+                walk(it)
+
+    walk(result)
+    return texts
+
+
+def _ocr_bytes_image(engine, image_bytes):
+    import numpy as np
+    import cv2  # bundled with paddleocr
+    arr = cv2.imdecode(np.frombuffer(image_bytes, np.uint8), cv2.IMREAD_COLOR)
+    if arr is None:
+        return ""
+    try:
+        result = engine.ocr(arr)
+    except Exception:
+        result = engine.predict(arr)
+    return "\n".join(_paddle_texts(result))
+
+
+def _extract_pdf(pdf_bytes, engine, max_ocr_pages=5):
+    """Return (text, pages, engine_used). Try the PDF text layer first; if the PDF
+    is scanned (little/no embedded text), rasterize and OCR the first few pages."""
+    import io
+    text, pages = "", 0
+    try:
+        from pypdf import PdfReader
+        reader = PdfReader(io.BytesIO(pdf_bytes))
+        pages = len(reader.pages)
+        text = "\n".join((p.extract_text() or "") for p in reader.pages).strip()
+    except Exception as e:
+        print(f"pypdf error: {e}")
+
+    if len(text) >= 50:
+        return text, pages, "pdf-text"
+
+    # Scanned PDF → rasterize with pypdfium2 (no poppler needed) and OCR.
+    try:
+        import numpy as np
+        import pypdfium2 as pdfium
+        pdf = pdfium.PdfDocument(pdf_bytes)
+        pages = len(pdf)
+        ocr_text = []
+        for i in range(min(pages, max_ocr_pages)):
+            bitmap = pdf[i].render(scale=200 / 72)  # ~200 dpi
+            arr = bitmap.to_numpy()
+            try:
+                result = engine.ocr(arr)
+            except Exception:
+                result = engine.predict(arr)
+            ocr_text.append("\n".join(_paddle_texts(result)))
+        return "\n".join(ocr_text).strip(), pages, "paddleocr"
+    except Exception as e:
+        print(f"PDF OCR error: {e}")
+        return text, pages, "pdf-text"
+
+
+@app.route('/api/extract-document', methods=['POST'])
+def extract_document():
+    """Extract text from an uploaded PDF/image server-side, then index it into the
+    session so chat can answer follow-up questions about it.
+
+    multipart/form-data: file=<pdf|jpg|png|txt>, language=<code>, session_id=<id>."""
+    try:
+        if 'file' not in request.files:
+            return jsonify({"error": "No file uploaded"}), 400
+
+        f = request.files['file']
+        language = request.form.get('language', 'en')
+        session_id = request.form.get('session_id', str(uuid.uuid4()))
+        filename = f.filename or 'document'
+        raw = f.read()
+        if not raw:
+            return jsonify({"error": "Empty file"}), 400
+
+        lower = filename.lower()
+        pages, engine_used = 1, "text"
+
+        if lower.endswith('.txt'):
+            text = raw.decode('utf-8', errors='replace')
+        elif lower.endswith('.pdf') or raw[:5] == b'%PDF-':
+            text, pages, engine_used = _extract_pdf(raw, get_ocr_engine(language))
+        else:  # image
+            text = _ocr_bytes_image(get_ocr_engine(language), raw)
+            engine_used = "paddleocr"
+
+        text = (text or "").strip()
+        if not text:
+            return jsonify({"error": "Could not extract any text from the document."}), 422
+
+        # Index into the per-session collection + get a localized summary.
+        indexed = index_session_document(session_id, text, filename, language)
+
+        return jsonify({
+            "text": text,
+            "pages": pages,
+            "engine": engine_used,
+            "summary": indexed.get("summary", ""),
+            "chunks": indexed.get("chunks", 0),
+            "session_id": session_id,
+        })
+
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route('/api/panchayat-bridge', methods=['POST'])
 def panchayat_bridge():
     """Generate elder-friendly explanation for community intermediaries."""

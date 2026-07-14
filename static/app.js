@@ -1396,6 +1396,16 @@ function onDistrictSelect() {
 // Document Translator
 // ══════════════════════════════════════════════════════════════
 
+function resetUploadArea(uploadArea, heading) {
+  uploadArea.innerHTML = `
+    <div class="upload-icon">📷</div>
+    <h3>${escapeHtml(heading || 'Tap to upload another document')}</h3>
+    <p>Take a photo or select from gallery. Supports JPG, PNG, PDF.</p>
+    <input type="file" id="file-input" accept="image/*,.pdf,.txt" onchange="handleFileUpload(event)">
+  `;
+  uploadArea.onclick = () => document.getElementById('file-input').click();
+}
+
 async function handleFileUpload(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -1404,54 +1414,77 @@ async function handleFileUpload(event) {
   uploadArea.innerHTML = `
     <div class="loading">
       <div class="spinner"></div>
-      <span>Reading document... This may take a moment.</span>
+      <span>${t('doc_extracting') || 'Reading the document…'}</span>
     </div>
   `;
 
   try {
-    // Use Tesseract.js for OCR
+    // Primary path: extract text on the backend (PaddleOCR / PDF text layer),
+    // which also indexes the doc into this session for chat follow-ups.
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('language', state.language);
+    fd.append('session_id', state.sessionId);
+    const res = await fetch(`${API_BASE}/api/extract-document`, { method: 'POST', body: fd });
+    if (!res.ok) throw new Error('extract ' + res.status);
+    const data = await res.json();
+
+    const ocrText = data.text || '';
+    $('ocr-text').textContent = ocrText;
+    $('ocr-result-section').style.display = 'block';
+    state.attachedDoc = file.name;   // doc is indexed → follow-up questions work
+    resetUploadArea(uploadArea);
+    // Explain it straight away.
+    doTranslateDocument(ocrText);
+
+  } catch (error) {
+    console.error('Server extraction failed, falling back to Tesseract:', error);
+    await tesseractFallback(file, uploadArea);
+  }
+}
+
+// Fallback OCR in the browser when the backend extractor is unavailable.
+async function tesseractFallback(file, uploadArea) {
+  try {
     if (typeof Tesseract === 'undefined') {
       throw new Error('OCR library not loaded yet. Please wait and try again.');
     }
-
     const result = await Tesseract.recognize(file, 'eng+hin', {
       logger: m => {
         if (m.status === 'recognizing text') {
           uploadArea.innerHTML = `
             <div class="loading">
               <div class="spinner"></div>
-              <span>Reading document... ${Math.round(m.progress * 100)}%</span>
-            </div>
-          `;
+              <span>${t('doc_extracting') || 'Reading the document…'} ${Math.round(m.progress * 100)}%</span>
+            </div>`;
         }
       },
     });
-
-    const ocrText = result.data.text;
-
-    // Show OCR result
-    $('ocr-text').textContent = ocrText;
+    $('ocr-text').textContent = result.data.text;
     $('ocr-result-section').style.display = 'block';
-
-    // Reset upload area
-    uploadArea.innerHTML = `
-      <div class="upload-icon">📷</div>
-      <h3>Tap to upload another document</h3>
-      <p>Take a photo or select from gallery.</p>
-      <input type="file" id="file-input" accept="image/*,.pdf" onchange="handleFileUpload(event)">
-    `;
-    uploadArea.onclick = () => document.getElementById('file-input').click();
-
+    resetUploadArea(uploadArea);
   } catch (error) {
-    console.error('OCR error:', error);
     uploadArea.innerHTML = `
       <div class="upload-icon">⚠️</div>
       <h3>Could not read document</h3>
       <p>${escapeHtml(error.message)}. Try pasting the text manually below.</p>
-      <input type="file" id="file-input" accept="image/*,.pdf" onchange="handleFileUpload(event)">
+      <input type="file" id="file-input" accept="image/*,.pdf,.txt" onchange="handleFileUpload(event)">
     `;
     uploadArea.onclick = () => document.getElementById('file-input').click();
   }
+}
+
+// Follow-up: the uploaded doc is already indexed into this session, so a normal
+// chat message is grounded in it.
+function askDocFollowup() {
+  const input = $('doc-followup-input');
+  const q = (input.value || '').trim();
+  if (!q) return;
+  input.value = '';
+  navigateTo('chat');
+  const chatInput = $('chat-input');
+  if (chatInput) chatInput.value = q;
+  sendMessage();
 }
 
 async function translateOcrText() {

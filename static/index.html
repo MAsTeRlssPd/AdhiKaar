@@ -455,8 +455,9 @@
           <div class="upload-icon">📷</div>
           <h3>Tap to upload document photo</h3>
           <p>Take a photo or select from gallery. Supports JPG, PNG, PDF.</p>
-          <input type="file" id="file-input" accept="image/*,.pdf" onchange="handleFileUpload(event)">
+          <input type="file" id="file-input" accept="image/*,.pdf,.txt" onchange="handleFileUpload(event)">
         </div>
+        <p class="draft-privacy" data-i18n="doc_privacy" style="text-align:center">The document is processed only on this computer.</p>
 
         <div class="text-input-area">
           <p style="text-align:center; color: var(--text-tertiary); margin-bottom: var(--space-md);">— OR paste the document text below —</p>
@@ -478,6 +479,13 @@
           <div class="translation-result">
             <h4>📖 Document Explanation</h4>
             <div class="markdown-body" id="translation-result"></div>
+          </div>
+          <div class="doc-followup">
+            <label for="doc-followup-input" data-i18n="doc_followup_title">Ask about this document</label>
+            <div class="doc-followup-row">
+              <input type="text" id="doc-followup-input" data-i18n-ph="doc_followup_ph" placeholder="Ask a question about this document…">
+              <button class="btn btn-primary btn-sm" onclick="askDocFollowup()"><i data-lucide="send"></i></button>
+            </div>
           </div>
         </div>
       </section>
