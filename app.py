@@ -2075,8 +2075,11 @@ TTS_MAX_CHARS = 800  # ponytail: naive truncation; chunk+concat if long answers 
 _tts_models = {}
 
 def get_tts_model(language):
-    """Load (and cache) the MMS-TTS model for an app language code. Lazy — never at startup."""
-    model_id = MMS_TTS_MODELS.get(language, MMS_TTS_MODELS['en'])
+    """Load (and cache) the MMS-TTS model for an app language code. Lazy — never at startup.
+
+    Romanized variants (hinglish, tanglish, ...) fall back to their base language's
+    voice — MMS tokenizers uroman-normalize Roman input, so this works well."""
+    model_id = MMS_TTS_MODELS.get(language) or MMS_TTS_MODELS.get(base_lang(language), MMS_TTS_MODELS['en'])
     if model_id not in _tts_models:
         from transformers import VitsModel, AutoTokenizer
         print(f"⏳ Loading TTS model {model_id} (first use — may download)...")
@@ -2118,6 +2121,70 @@ def tts():
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
+
+# ══════════════════════════════════════════════════════════════
+# Offline Speech-to-Text (faster-whisper)
+# ══════════════════════════════════════════════════════════════
+# The browser records raw audio with MediaRecorder and POSTs it here; we
+# transcribe locally with faster-whisper so nothing leaves the machine and
+# every Indian language is supported (unlike the browser Web Speech API).
+#
+# The "small" model (~460 MB) downloads once from Hugging Face, then runs fully
+# offline on CPU. Pre-download: python -c "from faster_whisper import WhisperModel; WhisperModel('small')"
+
+# Cap request bodies so a huge upload can't exhaust memory (shared with OCR uploads).
+app.config['MAX_CONTENT_LENGTH'] = 25 * 1024 * 1024  # 25 MB
+
+_whisper_model = None
+
+def get_whisper_model():
+    """Load (and cache) the faster-whisper model. Lazy — never at startup."""
+    global _whisper_model
+    if _whisper_model is None:
+        from faster_whisper import WhisperModel
+        print("⏳ Loading faster-whisper 'small' model (first use — may download)...")
+        _whisper_model = WhisperModel("small", device="cpu", compute_type="int8")
+        print("✅ Whisper model ready")
+    return _whisper_model
+
+
+@app.route('/api/transcribe', methods=['POST'])
+def transcribe():
+    """Transcribe a recorded audio blob to text with offline faster-whisper.
+
+    multipart/form-data: audio=<blob>, language=<app language code>.
+    Native language codes hint whisper to that language; romanized variants use
+    auto-detection (the user is speaking the base language, written back in Roman)."""
+    try:
+        if 'audio' not in request.files:
+            return jsonify({"error": "No audio uploaded"}), 400
+
+        language = request.form.get('language', 'en')
+        # Romanized variants → auto-detect; native codes → hint the base language.
+        whisper_lang = None if language in ROMANIZED_LANGS else base_lang(language)
+
+        import io
+        audio_bytes = request.files['audio'].read()
+        if not audio_bytes:
+            return jsonify({"error": "Empty audio"}), 400
+
+        model = get_whisper_model()
+        segments, info = model.transcribe(
+            io.BytesIO(audio_bytes),
+            language=whisper_lang,
+            beam_size=1,
+            vad_filter=True,
+        )
+        text = "".join(seg.text for seg in segments).strip()
+
+        return jsonify({
+            "text": text,
+            "detected_language": getattr(info, 'language', whisper_lang or ''),
+        })
+
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
 
 
 # ══════════════════════════════════════════════════════════════

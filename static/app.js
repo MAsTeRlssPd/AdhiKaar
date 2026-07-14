@@ -50,7 +50,7 @@ const state = {
   crpcSearchTimeout: null,
   lastSituation: '',
   lastAdvice: '',
-  autoSpeak: localStorage.getItem('adhikaar_autospeak') === '1',
+  autoSpeak: localStorage.getItem('adhikaar_autospeak') !== '0',  // on by default; bot speaks its answer
   attachedDoc: null,   // filename of the document attached to the current chat session
 };
 
@@ -799,18 +799,37 @@ async function shareRightsCard() {
 let activeRecognition = null;     // the one recognizer currently running
 let dictationTimer = null;        // safety auto-stop timer
 
-// Browser speech recognition is only dependable for these in practice.
-// Others (Tamil, Telugu, Bengali, Marathi, Gujarati, Kannada, Malayalam,
-// Punjabi) are hit-or-miss — we warn the user once rather than fail silently.
-const RELIABLE_STT_LANGS = ['en', 'hi', 'hinglish'];
 const warnedSttLangs = new Set();
 
-function getSpeechRecognition() {
-  return window.SpeechRecognition || window.webkitSpeechRecognition || null;
+// Voice input now records audio with MediaRecorder and transcribes it on the
+// backend with faster-whisper (offline). This works for every language, unlike
+// the browser Web Speech API. These module-level handles track the live recorder.
+let recordingStream = null;
+
+function hasMediaRecorder() {
+  return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
+}
+
+function pickAudioMime() {
+  const cands = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/mp4'];
+  for (const c of cands) {
+    if (MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(c)) return c;
+  }
+  return '';
+}
+
+async function transcribeBlob(blob) {
+  const fd = new FormData();
+  fd.append('audio', blob, 'audio.webm');
+  fd.append('language', state.language);
+  const res = await fetch(`${API_BASE}/api/transcribe`, { method: 'POST', body: fd });
+  if (!res.ok) throw new Error('transcribe ' + res.status);
+  const data = await res.json();
+  return (data.text || '').trim();
 }
 
 // Persistent "Listening…" pill (kiosk has its own; this is for chat/home/quick-ask)
-function setListeningIndicator(on) {
+function setListeningIndicator(on, label) {
   let el = document.getElementById('listening-indicator');
   if (on) {
     if (!el) {
@@ -822,9 +841,9 @@ function setListeningIndicator(on) {
         'font-size:14px', 'z-index:9998', 'display:flex', 'align-items:center', 'gap:8px',
         'box-shadow:0 4px 16px rgba(0,0,0,.2)'
       ].join(';');
-      el.innerHTML = '<span style="width:10px;height:10px;border-radius:50%;background:#fff"></span> Listening… tap the mic to stop';
       document.body.appendChild(el);
     }
+    el.innerHTML = `<span style="width:10px;height:10px;border-radius:50%;background:#fff"></span> ${escapeHtml(label || 'Listening…')}`;
     el.style.display = 'flex';
   } else if (el) {
     el.style.display = 'none';
@@ -876,89 +895,99 @@ function setMicIcon(btn, icon) {
 }
 
 /**
- * Start voice dictation into a target input/textarea.
+ * Record voice into a target input/textarea via MediaRecorder, then transcribe
+ * it offline on the backend (faster-whisper).
  *  - Appends to existing text (never overwrites what the user typed).
- *  - continuous: does NOT cut off on natural pauses; user taps mic to stop.
+ *  - Tap the mic to start, tap again to stop; then it transcribes.
  *  - Never auto-sends: the caller decides what to do via opts.onStop.
  *  - Cancels any speaking TTS first so the mic doesn't hear it.
- * Returns the recognition object, or null if it couldn't start.
  */
-function startDictation(targetEl, micBtn, opts = {}) {
-  const SR = getSpeechRecognition();
-  if (!SR) {
-    showToast('Voice input needs Chrome or Edge.');
+async function startDictation(targetEl, micBtn, opts = {}) {
+  if (!hasMediaRecorder()) {
+    showToast('Voice input is not supported in this browser.');
     return null;
   }
   if (!targetEl) return null;
 
-  // Stop TTS + any recognizer already running (prevents overlap/feedback loops)
-  window.speechSynthesis?.cancel();
+  // Stop TTS + any recorder already running (prevents overlap/feedback loops)
+  stopSpeaking();
   if (activeRecognition) { try { activeRecognition.stop(); } catch (e) {} activeRecognition = null; }
 
-  const rec = new SR();
-  rec.lang = speechLang();
-  rec.interimResults = true;
-  rec.continuous = true;   // don't cut off slow / hesitant speakers
+  let stream;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  } catch (e) {
+    showToast(t('mic_error') || 'Could not access the microphone.');
+    return null;
+  }
 
   const baseText = targetEl.value && targetEl.value.trim() ? targetEl.value.trim() + ' ' : '';
-
-  // One-time heads-up if this language is unreliable for browser speech input
-  if (!RELIABLE_STT_LANGS.includes(state.language) && !warnedSttLangs.has(state.language)) {
-    warnedSttLangs.add(state.language);
-    showToast('Voice typing for this language may be limited in your browser. If it struggles, please type instead.');
-  }
+  const mime = pickAudioMime();
+  const rec = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+  const chunks = [];
+  recordingStream = stream;
+  activeRecognition = rec;
 
   micBtn?.classList.add('recording', 'listening');
   setMicIcon(micBtn, 'square');
-  setListeningIndicator(true);
+  setListeningIndicator(true, t('mic_listening'));
 
-  const stopUI = () => {
+  const cleanupUI = () => {
     micBtn?.classList.remove('recording', 'listening');
-    setMicIcon(micBtn, 'mic');
     setListeningIndicator(false);
     clearTimeout(dictationTimer);
+  };
+
+  rec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+
+  rec.onstop = async () => {
+    cleanupUI();
+    try { recordingStream?.getTracks().forEach(tr => tr.stop()); } catch (e) {}
+    recordingStream = null;
     if (activeRecognition === rec) activeRecognition = null;
-  };
 
-  rec.onresult = (event) => {
-    let finalText = '', interim = '';
-    for (let i = 0; i < event.results.length; i++) {
-      const res = event.results[i];
-      if (res.isFinal) finalText += res[0].transcript;
-      else interim += res[0].transcript;
+    const blob = new Blob(chunks, { type: mime || 'audio/webm' });
+    if (!blob.size) {
+      setMicIcon(micBtn, 'mic');
+      if (opts.onStop) opts.onStop(targetEl.value.trim());
+      return;
     }
-    let spoken = finalText + interim;
-    // Hinglish is recognised as Hindi (Devanagari) — convert to Roman so it
-    // matches how Hinglish is typed.
-    if (state.language === 'hinglish') spoken = transliterateHiToLatin(spoken);
-    targetEl.value = baseText + spoken;
-    if (targetEl.tagName === 'TEXTAREA' && typeof autoResizeTextarea === 'function') {
-      autoResizeTextarea(targetEl);
-    }
-  };
 
-  rec.onend = () => {
-    stopUI();
-    if (opts.onStop) opts.onStop(targetEl.value.trim());
-  };
-
-  rec.onerror = (event) => {
-    stopUI();
-    // 'aborted' happens on normal manual stop — don't nag the user about it
-    if (event.error && event.error !== 'aborted') {
-      showToast(voiceErrorMessage(event.error));
+    // "Transcribing…" state — whisper is not streaming, so this can take 1-3s.
+    micBtn?.classList.add('loading');
+    setMicIcon(micBtn, 'loader-2');
+    setListeningIndicator(true, t('mic_transcribing'));
+    try {
+      const text = await transcribeBlob(blob);
+      if (text) {
+        targetEl.value = baseText + text;
+        if (targetEl.tagName === 'TEXTAREA' && typeof autoResizeTextarea === 'function') {
+          autoResizeTextarea(targetEl);
+        }
+      } else {
+        showToast(t('mic_nospeech') || 'No speech detected. Please try again.');
+      }
+    } catch (e) {
+      showToast('Could not transcribe the audio. Please try again.');
+    } finally {
+      micBtn?.classList.remove('loading');
+      setMicIcon(micBtn, 'mic');
+      setListeningIndicator(false);
+      if (opts.onStop) opts.onStop(targetEl.value.trim());
     }
   };
 
   try {
     rec.start();
   } catch (e) {
-    stopUI();
+    cleanupUI();
+    try { stream.getTracks().forEach(tr => tr.stop()); } catch (_) {}
+    setMicIcon(micBtn, 'mic');
+    if (activeRecognition === rec) activeRecognition = null;
     showToast('Could not start voice input. Please try again.');
     return null;
   }
 
-  activeRecognition = rec;
   // Safety net: auto-stop after 60s so the mic button never sticks on
   dictationTimer = setTimeout(() => { try { rec.stop(); } catch (e) {} }, 60000);
   return rec;
@@ -974,10 +1003,10 @@ function initVoice() {
   if (window.speechSynthesis) {
     window.speechSynthesis.onvoiceschanged = loadVoices;
   }
-  if (!getSpeechRecognition()) {
+  if (!hasMediaRecorder()) {
     document.querySelectorAll('#voice-btn, #home-chat-mic, #global-ask-mic, #kiosk-mic-btn')
       .forEach(b => { if (b) b.style.display = 'none'; });
-    console.log('Speech Recognition not supported — mic buttons hidden.');
+    console.log('Audio recording not supported — mic buttons hidden.');
   }
   updateAutoSpeakBtn();
 }
@@ -2149,7 +2178,7 @@ function resetCourtroom() {
 // KIOSK / VOICE-FIRST MODE
 // ══════════════════════════════════════════════════════════════
 
-const kiosk = { active: false, recognition: null, lastAnswer: '', busy: false };
+const kiosk = { active: false, recorder: null, timer: null, lastAnswer: '', busy: false };
 
 function enterKioskMode() {
   kiosk.active = true;
@@ -2169,7 +2198,7 @@ function exitKioskMode() {
   kiosk.active = false;
   $('kiosk-overlay').classList.remove('active');
   window.speechSynthesis?.cancel();
-  if (kiosk.recognition) try { kiosk.recognition.stop(); } catch (e) {}
+  if (kiosk.recorder) try { kiosk.recorder.stop(); } catch (e) {}
   document.exitFullscreen?.().catch(() => {});
 }
 
@@ -2290,7 +2319,7 @@ function toggleSpeak(btn, text) {
   const started = speak(text, { notify: true, onDone: resetSpeakBtn });
   if (started && btn) {
     activeSpeakBtn = btn;
-    btn.innerHTML = '<i data-lucide="square"></i> Stop';
+    btn.innerHTML = `<i data-lucide="square"></i> ${t('btn_stop')}`;
     refreshIcons();
   }
 }
@@ -2304,7 +2333,7 @@ function stopSpeaking() {
 
 function resetSpeakBtn() {
   if (activeSpeakBtn) {
-    activeSpeakBtn.innerHTML = '<i data-lucide="volume-2"></i> Listen';
+    activeSpeakBtn.innerHTML = `<i data-lucide="volume-2"></i> ${t('btn_listen')}`;
     activeSpeakBtn = null;
     refreshIcons();
   }
@@ -2357,38 +2386,59 @@ function kioskRepeat() {
   if (kiosk.lastAnswer) speak(kiosk.lastAnswer);
 }
 
-function kioskListen() {
+async function kioskListen() {
   if (kiosk.busy) return;
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) {
-    $('kiosk-text').textContent = 'Voice is not supported in this browser. Please use Chrome.';
+
+  // Press again while recording → stop and transcribe.
+  if (kiosk.recorder && kiosk.recorder.state === 'recording') {
+    try { kiosk.recorder.stop(); } catch (e) {}
     return;
   }
-  window.speechSynthesis?.cancel();
 
-  kiosk.recognition = new SpeechRecognition();
-  kiosk.recognition.lang = speechLang();
-  kiosk.recognition.interimResults = true;
+  if (!hasMediaRecorder()) {
+    $('kiosk-text').textContent = 'Voice is not supported in this browser.';
+    return;
+  }
+  stopSpeaking();
+
+  let stream;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  } catch (e) {
+    $('kiosk-text').textContent = t('mic_error') || 'Could not access the microphone.';
+    return;
+  }
+
+  const mime = pickAudioMime();
+  const rec = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+  const chunks = [];
+  kiosk.recorder = rec;
 
   const micBtn = $('kiosk-mic-btn');
   micBtn.classList.add('listening');
-  $('kiosk-text').textContent = state.language === 'hi' ? 'सुन रहा हूँ…' : 'Listening…';
+  $('kiosk-text').textContent = t('kiosk_listening') || 'Listening…';
 
-  kiosk.recognition.onresult = (event) => {
-    const transcript = Array.from(event.results).map(r => r[0].transcript).join('');
-    $('kiosk-text').textContent = transcript;
-    kiosk.transcript = transcript;
-  };
+  rec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
 
-  kiosk.recognition.onend = async () => {
+  rec.onstop = async () => {
     micBtn.classList.remove('listening');
-    const question = (kiosk.transcript || '').trim();
-    kiosk.transcript = '';
-    if (!question) return;
+    clearTimeout(kiosk.timer);
+    try { stream.getTracks().forEach(tr => tr.stop()); } catch (e) {}
+    kiosk.recorder = null;
+
+    const blob = new Blob(chunks, { type: mime || 'audio/webm' });
+    if (!blob.size) return;
 
     kiosk.busy = true;
-    $('kiosk-text').textContent = state.language === 'hi' ? 'सोच रहा हूँ… कृपया प्रतीक्षा करें' : 'Thinking… please wait';
+    $('kiosk-text').textContent = t('kiosk_thinking') || 'Thinking…';
     try {
+      const question = (await transcribeBlob(blob)).trim();
+      if (!question) {
+        $('kiosk-text').textContent = t('mic_nospeech') || 'No speech detected. Please try again.';
+        kiosk.busy = false;
+        return;
+      }
+      $('kiosk-text').textContent = question;
       const data = await apiCall('/api/chat', {
         method: 'POST',
         body: JSON.stringify({ message: question, language: state.language, session_id: state.sessionId }),
@@ -2402,7 +2452,7 @@ function kioskListen() {
       persistToActiveCase('user', question);
       persistToActiveCase('assistant', data.response);
     } catch (e) {
-      const msg = state.language === 'hi' ? 'माफ़ कीजिए, कुछ गड़बड़ हुई। फिर कोशिश करें।' : 'Sorry, something went wrong. Please try again.';
+      const msg = t('kiosk_error') || 'Sorry, something went wrong. Please try again.';
       $('kiosk-text').textContent = msg;
       speak(msg);
     } finally {
@@ -2410,12 +2460,10 @@ function kioskListen() {
     }
   };
 
-  kiosk.recognition.onerror = () => {
-    micBtn.classList.remove('listening');
-    $('kiosk-text').textContent = state.language === 'hi' ? 'सुनाई नहीं दिया — फिर से माइक दबाएं' : "I couldn't hear you — press the mic and try again";
-  };
-
-  kiosk.recognition.start();
+  rec.start();
+  // Safety auto-stop so the kiosk mic never sticks on.
+  clearTimeout(kiosk.timer);
+  kiosk.timer = setTimeout(() => { try { rec.stop(); } catch (e) {} }, 30000);
 }
 
 // ══════════════════════════════════════════════════════════════
