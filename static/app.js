@@ -130,6 +130,7 @@ function navigateTo(viewName) {
 
   // Initialize view-specific content
   if (viewName === 'legal-aid') initLegalAid();
+  if (viewName === 'draft') loadDraftTemplates();
   if (viewName === 'lawsteps') {
     const ta = $('ls-situation');
     if (ta && !ta.value.trim() && state.lastSituation) ta.value = state.lastSituation;
@@ -1880,9 +1881,49 @@ const DRAFT_TYPES = {
 let currentDraftType = null;
 let lastDraftText = '';
 
+// Generic field set for the ~40 extra document templates loaded from the backend
+// (the 4 above have bespoke fields; templates lean on the situation + these).
+const TEMPLATE_FIELDS = [
+  ['full_name', 'Your full name'],
+  ['address', 'Your full address'],
+  ['other_party', 'Other party name / address (if any)', true],
+  ['details', 'Key details for this document (dates, amounts, what happened)'],
+];
+
+let draftTemplatesLoaded = false;
+async function loadDraftTemplates() {
+  if (draftTemplatesLoaded) return;
+  try {
+    const data = await apiCall('/api/document-templates');
+    const sel = $('draft-template-select');
+    (data.templates || []).forEach(t => {
+      if (!DRAFT_TYPES[t.id]) {
+        DRAFT_TYPES[t.id] = { title: t.title, fields: TEMPLATE_FIELDS };
+      }
+      if (sel) {
+        const opt = document.createElement('option');
+        opt.value = t.id;
+        opt.textContent = t.title_hi ? `${t.title} · ${t.title_hi}` : t.title;
+        sel.appendChild(opt);
+      }
+    });
+    draftTemplatesLoaded = true;
+  } catch (e) {
+    console.error('Failed to load document templates:', e);
+  }
+}
+
+function onDraftTemplateSelect() {
+  const id = $('draft-template-select').value;
+  if (!id) return;
+  document.querySelectorAll('.draft-type-card').forEach(c => c.classList.remove('selected'));
+  selectDraftType(id);
+}
+
 function selectDraftType(type) {
-  currentDraftType = type;
   const def = DRAFT_TYPES[type];
+  if (!def) return;
+  currentDraftType = type;
   document.querySelectorAll('.draft-type-card').forEach(c =>
     c.classList.toggle('selected', c.dataset.doctype === type));
   $('draft-form-title').textContent = def.title + ' — fill in the details';
@@ -1903,17 +1944,17 @@ async function generateDraft() {
   const def = DRAFT_TYPES[currentDraftType];
   const fields = {};
   let allFilled = true;
-  def.fields.forEach(([key, label]) => {
+  def.fields.forEach(([key, label, optional]) => {
     const el = $(`draft-${key}`);
     if (el && el.value.trim()) {
       fields[label] = el.value.trim();
-    } else {
+    } else if (!optional) {
       allFilled = false;
     }
   });
 
   if (!allFilled) {
-    alert("Please fill all options to generate the PDF/Document.");
+    alert("Please fill all required fields to generate the document.");
     return;
   }
 

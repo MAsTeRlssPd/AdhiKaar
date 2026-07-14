@@ -3174,3 +3174,25 @@ svg.inline-icon, .inline-icon { width: 16px; height: 16px; vertical-align: -2px;
   font-weight: 600;
   color: var(--primary);
 }
+
+.draft-more {
+  margin: var(--space-lg) 0;
+  padding: var(--space-lg);
+  background: var(--bg-input);
+  border-radius: var(--radius-md);
+}
+.draft-more label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: var(--space-sm);
+  font-size: var(--font-size-sm);
+}
+.draft-more select {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  font-family: var(--font);
+  font-size: var(--font-size-sm);
+}

@@ -98,6 +98,23 @@ BNSS_CRPC_DATA = load_json('bnss_crpc_mapping.json', [])
 LEGAL_AID_DATA = load_json('legal_aid_directory.json', {'helplines': [], 'states': []})
 RIGHTS_DATA = load_json('rights_knowledge.json', {})
 EVIDENCE_CHECKLISTS = load_json('evidence_checklists.json', {'templates': []}).get('templates', [])
+DOCUMENT_TEMPLATES = load_json('document_templates.json', {'templates': []}).get('templates', [])
+
+
+def _template_instruction(template_id):
+    """Build a drafting instruction from a document template so /api/draft-document
+    can produce any of the ~45 templates, not just the hardcoded handful."""
+    tpl = next((t for t in DOCUMENT_TEMPLATES if t['id'] == template_id), None)
+    if not tpl:
+        return None
+    structure = "; ".join(tpl.get('structure', []))
+    return (
+        f"Draft a {tpl['title']}. Purpose: {tpl.get('when_to_use', '')} "
+        f"Follow this structure: {structure}. "
+        f"Base it on this standard format, filling in the user's details and using "
+        f"[PLACEHOLDERS] for anything missing:\n{tpl.get('sample_text', '')}\n"
+        f"After the document, note where to submit it: {tpl.get('where_to_submit', '')}"
+    )
 
 
 def match_checklist(situation):
@@ -1213,6 +1230,15 @@ def evidence_checklists():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route('/api/document-templates', methods=['GET'])
+def document_templates():
+    """List the document-format templates (id, title, category) for the draft picker."""
+    return jsonify({"templates": [
+        {k: t.get(k, '') for k in ('id', 'title', 'title_hi', 'category', 'when_to_use')}
+        for t in DOCUMENT_TEMPLATES
+    ]})
+
+
 @app.route('/api/consequence-simulator', methods=['POST'])
 def consequence_simulator():
     """Simulate consequences of inaction."""
@@ -1512,7 +1538,11 @@ def draft_document():
         situation = data.get('situation', '')
         language = data.get('language', 'en')
 
-        doc_instruction = DRAFTING_PROMPTS.get(doc_type, DRAFTING_PROMPTS['legal_notice'])
+        # Hardcoded prompt first; otherwise synthesise an instruction from a
+        # matching document template (the ~45 in document_templates.json).
+        doc_instruction = DRAFTING_PROMPTS.get(doc_type)
+        if not doc_instruction:
+            doc_instruction = _template_instruction(doc_type) or DRAFTING_PROMPTS['legal_notice']
         doc_language = LANGUAGE_NAMES.get(language, 'English')
 
         system_prompt = DRAFT_SYSTEM_PROMPT.format(
