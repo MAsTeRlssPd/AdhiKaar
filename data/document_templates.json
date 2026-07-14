@@ -1,0 +1,173 @@
+{
+  "schema_version": 1,
+  "templates": [
+    {
+      "id": "police_complaint_fir",
+      "title": "Police Complaint / FIR Request",
+      "title_hi": "पुलिस शिकायत / FIR अनुरोध",
+      "category": "Criminal",
+      "when_to_use": "When a cognizable offence (theft, assault, fraud, threats) has been committed and you want the police to register an FIR under BNSS Section 173.",
+      "structure": ["Addressee (SHO)", "Your details", "Date, time and place of incident", "What happened (facts in order)", "Persons involved / witnesses", "Prayer (request to register FIR and investigate)", "Signature"],
+      "sample_text": "To,\nThe Station House Officer,\n[POLICE STATION NAME], [CITY]\n\nSubject: Complaint regarding [OFFENCE, e.g. theft/assault] and request to register FIR\n\nRespected Sir/Madam,\n\nI, [YOUR NAME], son/daughter of [PARENT NAME], resident of [ADDRESS], wish to report that on [DATE] at about [TIME] near [PLACE], the following incident occurred:\n\n[DESCRIBE WHAT HAPPENED IN ORDER].\n\nThe person(s) involved is/are [NAME/DESCRIPTION]. The following persons witnessed it: [WITNESSES].\n\nI request you to kindly register an FIR and take necessary action under the applicable provisions of the Bharatiya Nyaya Sanhita, 2023.\n\nYours faithfully,\n[NAME]\n[PHONE] · [DATE]",
+      "where_to_submit": "The police station having jurisdiction over the place of the offence. If they refuse, a Zero FIR can be filed at any station, and a written complaint can be sent to the Superintendent of Police (BNSS 173(4)) or the Magistrate (BNSS 175(3)).",
+      "fees_stamp": "No fee. Always keep a stamped/signed acknowledgement copy.",
+      "tips": ["Keep it factual and chronological.", "Ask for the FIR number and a free copy — it is your right.", "If police refuse, send the same complaint by registered post to the SP."]
+    },
+    {
+      "id": "legal_notice_general",
+      "title": "Legal Notice (General)",
+      "title_hi": "कानूनी नोटिस (सामान्य)",
+      "category": "Civil",
+      "when_to_use": "A formal demand before filing a civil suit — for recovery of money, breach of contract, deposit refund, or to stop a wrong. Usually sent through an advocate.",
+      "structure": ["Sender/advocate details", "Recipient details", "Facts", "The wrong / breach", "Demand", "Time limit to comply", "Consequence of non-compliance"],
+      "sample_text": "LEGAL NOTICE\n\nTo,\n[RECIPIENT NAME], [ADDRESS]\n\nUnder instructions from and on behalf of my client [CLIENT NAME], resident of [ADDRESS], I serve you this notice:\n\n1. That [STATE THE FACTS AND YOUR RELATIONSHIP].\n2. That you have [DESCRIBE THE WRONG / BREACH / AMOUNT DUE].\n3. You are hereby called upon to [DEMAND, e.g. pay Rs ____ / return possession] within [15/30] days of receipt of this notice, failing which my client shall be constrained to initiate appropriate civil and/or criminal proceedings at your risk as to cost and consequences.\n\n[ADVOCATE NAME], Advocate\n[DATE]",
+      "where_to_submit": "Send by registered post with acknowledgement due (RPAD) and keep the postal receipt and tracking proof.",
+      "fees_stamp": "Advocate's fee varies. No court fee at notice stage.",
+      "tips": ["Send by RPAD — the receipt is proof of service.", "Keep the demand and deadline specific.", "A notice is often enough to force a settlement without a suit."]
+    },
+    {
+      "id": "consumer_complaint",
+      "title": "Consumer Complaint (Consumer Protection Act, 2019)",
+      "title_hi": "उपभोक्ता शिकायत (उपभोक्ता संरक्षण अधिनियम, 2019)",
+      "category": "Consumer",
+      "when_to_use": "Defective goods, deficient service, unfair trade practice or overcharging. File before the District/State/National Consumer Commission depending on value.",
+      "structure": ["Commission addressed", "Complainant details", "Opposite party details", "Facts of purchase/service", "Defect / deficiency", "Relief sought", "Verification"],
+      "sample_text": "BEFORE THE DISTRICT CONSUMER DISPUTES REDRESSAL COMMISSION, [DISTRICT]\n\nComplaint No. ____ of 20__\n\n[YOUR NAME], [ADDRESS] ... Complainant\nVERSUS\n[SELLER/COMPANY NAME], [ADDRESS] ... Opposite Party\n\nCOMPLAINT UNDER SECTION 35 OF THE CONSUMER PROTECTION ACT, 2019\n\n1. The complainant purchased [PRODUCT/SERVICE] on [DATE] for Rs [AMOUNT] vide bill/invoice No. [NO].\n2. The said [PRODUCT/SERVICE] suffered from the following defect/deficiency: [DESCRIBE].\n3. Despite requests dated [DATES], the opposite party failed to redress the grievance.\n\nRELIEF: The complainant prays for [refund/replacement/repair] of Rs [AMOUNT], compensation of Rs [AMOUNT] for mental agony, and cost of litigation.\n\nVERIFICATION: Verified at [PLACE] on [DATE] that the contents are true to my knowledge.\n[SIGNATURE]",
+      "where_to_submit": "District Commission (up to Rs 50 lakh), State Commission (Rs 50 lakh–2 crore), National Commission (above Rs 2 crore). Filing is allowed online via the e-Daakhil portal.",
+      "fees_stamp": "Nominal fee that scales with claim value; nil for claims up to Rs 5 lakh.",
+      "tips": ["Attach the bill, warranty and all correspondence.", "File within 2 years of the cause of action.", "e-Daakhil lets you file from home."]
+    },
+    {
+      "id": "rti_application",
+      "title": "RTI Application (Right to Information Act, 2005)",
+      "title_hi": "आरटीआई आवेदन (सूचना का अधिकार अधिनियम, 2005)",
+      "category": "Administrative",
+      "when_to_use": "To obtain information, records, status, or copies from any public authority (government office, PSU, municipal body).",
+      "structure": ["PIO addressed", "Applicant details", "Information sought (point-wise)", "Period/records", "Declaration of citizenship", "Fee details"],
+      "sample_text": "To,\nThe Public Information Officer,\n[DEPARTMENT / OFFICE NAME], [ADDRESS]\n\nSubject: Application under the Right to Information Act, 2005\n\nSir/Madam,\n\nI, [NAME], a citizen of India, request the following information:\n\n1. [QUESTION 1 — be specific].\n2. [QUESTION 2].\n3. Certified copies of [DOCUMENTS] for the period [FROM]–[TO].\n\nI am enclosing the application fee of Rs 10 by [IPO/court fee stamp/online]. If I belong to the BPL category, a copy of the proof is enclosed and no fee is payable.\n\nName: [NAME]\nAddress: [ADDRESS]\nDate: [DATE]",
+      "where_to_submit": "The Public Information Officer (PIO) of the concerned public authority. Central bodies can be filed online at rtionline.gov.in.",
+      "fees_stamp": "Rs 10 application fee (free for BPL). Rs 2 per photocopied page thereafter.",
+      "tips": ["Ask specific, answerable questions — not opinions.", "PIO must reply within 30 days.", "No reply / unsatisfactory reply → First Appeal within 30 days."]
+    },
+    {
+      "id": "cheque_bounce_notice",
+      "title": "Cheque Bounce Notice (Section 138, NI Act)",
+      "title_hi": "चेक बाउंस नोटिस (धारा 138, परक्राम्य लिखत अधिनियम)",
+      "category": "Criminal",
+      "when_to_use": "When a cheque you received is dishonoured (bounced) for insufficient funds or similar. A demand notice is mandatory before you can prosecute.",
+      "structure": ["Advocate/sender", "Drawer details", "Cheque particulars", "Dishonour facts", "Demand of amount", "15-day compliance window"],
+      "sample_text": "LEGAL NOTICE UNDER SECTION 138 OF THE NEGOTIABLE INSTRUMENTS ACT, 1881\n\nTo,\n[DRAWER NAME], [ADDRESS]\n\n1. You issued cheque No. [NO] dated [DATE] for Rs [AMOUNT] drawn on [BANK, BRANCH] in favour of my client [NAME] towards [PURPOSE].\n2. On presentation, the cheque was returned unpaid on [DATE] with the remark \"[e.g. Funds Insufficient]\" vide the bank's return memo.\n3. You are hereby called upon to pay the said sum of Rs [AMOUNT] within 15 days of receipt of this notice, failing which my client shall initiate criminal proceedings under Section 138 of the NI Act.\n\n[ADVOCATE NAME], Advocate · [DATE]",
+      "where_to_submit": "Send by RPAD to the drawer within 30 days of the bank's dishonour memo. If unpaid within 15 days, file a complaint before the Magistrate within the next 1 month.",
+      "fees_stamp": "Advocate fee varies; court fee at complaint stage is nominal.",
+      "tips": ["Notice must go within 30 days of the return memo — a hard deadline.", "Keep the returned cheque and bank memo safe.", "Complaint must be filed within 1 month after the 15-day window closes."]
+    },
+    {
+      "id": "deposit_refund_notice",
+      "title": "Notice to Landlord for Security Deposit Refund",
+      "title_hi": "मकान मालिक को सुरक्षा जमा वापसी का नोटिस",
+      "category": "Civil",
+      "when_to_use": "When a landlord withholds your security deposit after you have vacated and handed over possession.",
+      "structure": ["Landlord addressed", "Tenancy details", "Vacating and handover date", "Deposit amount", "Demand and deadline"],
+      "sample_text": "To,\n[LANDLORD NAME], [ADDRESS]\n\nSubject: Refund of security deposit for [RENTED PREMISES ADDRESS]\n\nDear Sir/Madam,\n\nI was your tenant at the above premises under the rent agreement dated [DATE] and paid a refundable security deposit of Rs [AMOUNT]. I vacated and handed over peaceful possession on [DATE], with the premises in good condition and all dues cleared.\n\nDespite my requests, you have not refunded the deposit. I call upon you to refund Rs [AMOUNT] within 15 days of this notice, failing which I will be constrained to seek legal remedies including proceedings before the Rent Authority / Consumer Commission / civil court, at your cost.\n\nYours faithfully,\n[NAME] · [PHONE] · [DATE]",
+      "where_to_submit": "Hand-deliver against acknowledgement or send by RPAD. Escalate to the Rent Authority (under the state Rent/Model Tenancy Act) or a civil small-causes court if unpaid.",
+      "fees_stamp": "No fee for the notice.",
+      "tips": ["Attach photos of the handed-over premises.", "Reference the deposit clause of your rent agreement.", "Keep the RPAD receipt as proof of service."]
+    },
+    {
+      "id": "eviction_notice_reply",
+      "title": "Reply to Eviction / Vacate Notice",
+      "title_hi": "बेदखली नोटिस का जवाब",
+      "category": "Civil",
+      "when_to_use": "When your landlord serves an eviction or vacate notice you believe is illegal, premature, or without proper cause under the applicable Rent Act.",
+      "structure": ["Landlord addressed", "Reference to their notice", "Denial / defence", "Your rights asserted", "Reservation of remedies"],
+      "sample_text": "To,\n[LANDLORD NAME], [ADDRESS]\n\nSubject: Reply to your notice dated [DATE]\n\nSir/Madam,\n\nWith reference to your notice dated [DATE] asking me to vacate [PREMISES], I state:\n\n1. I am a lawful tenant under the agreement dated [DATE] and have paid rent regularly, the last payment being on [DATE].\n2. Your notice is [denied/premature/without valid ground] because [REASON — e.g. no default, no valid ground under the Rent Act, insufficient notice period].\n3. A tenant cannot be evicted except by due process of law. Any attempt at forcible eviction, disconnection of utilities, or use of force will invite legal action, including under the Bharatiya Nyaya Sanhita, 2023.\n\nI reserve all my rights and remedies.\n\n[NAME] · [DATE]",
+      "where_to_submit": "Send by RPAD to the landlord and keep proof. If harassment continues, approach the Rent Authority or police.",
+      "fees_stamp": "No fee.",
+      "tips": ["Never stop paying rent — deposit it with the Rent Authority if the landlord refuses.", "Forcible eviction without a court order is illegal.", "Document any utility cut-off or threats."]
+    },
+    {
+      "id": "labour_wages_complaint",
+      "title": "Complaint to Labour Commissioner (Unpaid Wages)",
+      "title_hi": "श्रम आयुक्त को शिकायत (अवैतनिक वेतन)",
+      "category": "Labour",
+      "when_to_use": "When an employer withholds or delays your wages. File before the Labour Commissioner / Authority under the Payment of Wages Act, 1936 (now within the Code on Wages, 2019).",
+      "structure": ["Authority addressed", "Worker details", "Employer details", "Employment particulars", "Amount and period unpaid", "Relief sought"],
+      "sample_text": "To,\nThe Labour Commissioner / Authority under the Payment of Wages Act,\n[DISTRICT]\n\nSubject: Claim for unpaid wages\n\nSir/Madam,\n\nI, [NAME], worked as [DESIGNATION] with [EMPLOYER NAME], [ADDRESS] from [DATE] to [DATE] at an agreed wage of Rs [AMOUNT] per [month/day].\n\nMy wages for the period [FROM]–[TO], amounting to Rs [TOTAL], have not been paid despite repeated requests.\n\nI request recovery of the said amount along with compensation as provided under law, and appropriate action against the employer.\n\n[NAME] · [PHONE] · [DATE]\nEnclosures: appointment proof / ID card / attendance / pay records (if any).",
+      "where_to_submit": "The Labour Commissioner's office / prescribed Authority for your area. Many states accept complaints via the state labour department portal or the Shram Suvidha portal.",
+      "fees_stamp": "No fee.",
+      "tips": ["Claim within 12 months of wages becoming due (delay may be condoned).", "Even WhatsApp chats and UPI records help prove employment.", "Helpline 155214 for labour grievances in many states."]
+    },
+    {
+      "id": "domestic_violence_complaint",
+      "title": "Domestic Violence Complaint (PWDVA, 2005)",
+      "title_hi": "घरेलू हिंसा शिकायत (पीडब्ल्यूडीवीए, 2005)",
+      "category": "Family",
+      "when_to_use": "When a woman faces physical, emotional, sexual, verbal or economic abuse by a partner or family member. Filed with a Protection Officer or Magistrate for reliefs under the Protection of Women from Domestic Violence Act, 2005.",
+      "structure": ["Protection Officer / Magistrate addressed", "Aggrieved person details", "Respondent details", "Nature of abuse", "Reliefs sought"],
+      "sample_text": "To,\nThe Protection Officer / Judicial Magistrate,\n[DISTRICT]\n\nSubject: Application under the Protection of Women from Domestic Violence Act, 2005\n\nRespected Sir/Madam,\n\nI, [NAME], residing at [ADDRESS], state that I have been subjected to domestic violence by [RESPONDENT NAME], my [RELATIONSHIP], in the following manner: [DESCRIBE INCIDENTS WITH DATES].\n\nI seek the following reliefs: (a) a Protection Order restraining further violence; (b) a Residence Order for the shared household; (c) monetary relief / maintenance of Rs [AMOUNT]; (d) custody of children, if applicable; (e) compensation.\n\n[NAME] · [DATE]",
+      "where_to_submit": "The Protection Officer of the district, a service provider, the Magistrate's court, or the police (Women's Cell). Women Helpline 181 can guide and connect you.",
+      "fees_stamp": "No fee. Free legal aid is available (NALSA 15100).",
+      "tips": ["You can seek immediate protection and stay in the shared household.", "Keep medical records, photos, and messages as evidence.", "A Protection Officer must help you file — call 181 for support."]
+    },
+    {
+      "id": "maintenance_petition",
+      "title": "Maintenance Petition (BNSS Section 144 / erstwhile CrPC 125)",
+      "title_hi": "भरण-पोषण याचिका (BNSS धारा 144)",
+      "category": "Family",
+      "when_to_use": "When a wife, child, or parent unable to maintain themselves seeks a monthly allowance from a person with sufficient means who neglects them.",
+      "structure": ["Magistrate addressed", "Petitioner details", "Respondent details", "Relationship and neglect", "Means of respondent", "Amount claimed"],
+      "sample_text": "BEFORE THE JUDICIAL MAGISTRATE, [DISTRICT]\n\nPetition under Section 144 of the Bharatiya Nagarik Suraksha Sanhita, 2023\n\n[NAME] ... Petitioner\nVERSUS\n[NAME] ... Respondent\n\n1. The petitioner is the [wife/minor child/parent] of the respondent.\n2. The respondent has sufficient means, earning approximately Rs [AMOUNT] per month as [OCCUPATION], but has neglected and refused to maintain the petitioner since [DATE].\n3. The petitioner has no independent source of income sufficient to maintain herself/himself.\n\nPRAYER: The petitioner prays for maintenance of Rs [AMOUNT] per month and litigation cost.\n\n[SIGNATURE] · [DATE]",
+      "where_to_submit": "The Magistrate's court where the petitioner resides, where the respondent resides, or where they last lived together.",
+      "fees_stamp": "Nominal. Free legal aid available (NALSA 15100).",
+      "tips": ["Interim maintenance can be granted while the case runs.", "Bring proof of the respondent's income if you have it.", "This is quicker and cheaper than a civil maintenance suit."]
+    },
+    {
+      "id": "affidavit_general",
+      "title": "General Affidavit",
+      "title_hi": "सामान्य शपथ पत्र",
+      "category": "General",
+      "when_to_use": "A sworn written statement of facts on stamp paper, used for name change, address proof, income declaration, lost documents, and many official processes.",
+      "structure": ["Deponent details", "Numbered statements of fact", "Verification clause", "Signature and notarisation"],
+      "sample_text": "AFFIDAVIT\n\nI, [NAME], son/daughter/wife of [NAME], aged [AGE] years, resident of [ADDRESS], do hereby solemnly affirm and declare as under:\n\n1. That [STATE THE FACT, e.g. \"my name has been wrongly recorded as ____ and my correct name is ____\"].\n2. That [ADDITIONAL FACT].\n3. That the above statements are true and correct to the best of my knowledge and belief.\n\nDEPONENT\n\nVERIFICATION:\nVerified at [PLACE] on this [DATE] that the contents of the above affidavit are true and correct and nothing material has been concealed.\n\nDEPONENT",
+      "where_to_submit": "Execute on stamp paper of the value prescribed by your state and get it attested by a Notary Public or Oath Commissioner.",
+      "fees_stamp": "Stamp paper (Rs 10–100 depending on state) + notary fee.",
+      "tips": ["Use the exact stamp value your state prescribes.", "Get it notarised — an un-attested affidavit has little value.", "State only facts you can stand by; a false affidavit is an offence."]
+    },
+    {
+      "id": "anticipatory_bail_application",
+      "title": "Anticipatory Bail Application (BNSS Section 482 / erstwhile CrPC 438)",
+      "title_hi": "अग्रिम जमानत आवेदन (BNSS धारा 482)",
+      "category": "Criminal",
+      "when_to_use": "When a person apprehends arrest in a non-bailable offence and seeks pre-arrest bail from the Sessions Court or High Court. Prepare with an advocate.",
+      "structure": ["Court addressed", "Applicant details", "FIR / apprehension details", "Grounds for bail", "Prayer", "Undertaking"],
+      "sample_text": "IN THE COURT OF SESSIONS / HIGH COURT OF [STATE]\n\nApplication under Section 482 of the Bharatiya Nagarik Suraksha Sanhita, 2023, for anticipatory bail\n\n[NAME] ... Applicant\nVERSUS\nState of [STATE] ... Respondent\n\n1. That FIR No. [NO] dated [DATE] has been registered at [POLICE STATION] under Section(s) [SECTIONS] of the BNS, 2023, in which the applicant apprehends arrest.\n2. That the applicant is innocent and has been falsely implicated because [GROUNDS].\n3. That the applicant is a permanent resident, has roots in society, and will cooperate with the investigation.\n\nPRAYER: The applicant prays for anticipatory bail with a direction that in the event of arrest he/she be released on bail on such conditions as the Court deems fit. The applicant undertakes to join the investigation and abide by all conditions.\n\n[ADVOCATE] · [DATE]",
+      "where_to_submit": "The Court of Session or the High Court having jurisdiction. This should be drafted and argued by an advocate.",
+      "fees_stamp": "Court fee + advocate's fee. Free legal aid available if you cannot afford a lawyer (NALSA 15100).",
+      "tips": ["File before arrest — anticipatory bail is only for apprehended arrest.", "Engage an advocate; get free legal aid if needed.", "Be ready to join the investigation as a condition."]
+    },
+    {
+      "id": "police_misconduct_complaint",
+      "title": "Complaint against Police Misconduct (SP / NHRC / Magistrate)",
+      "title_hi": "पुलिस दुर्व्यवहार के विरुद्ध शिकायत",
+      "category": "Criminal",
+      "when_to_use": "When you face police refusal to register an FIR, illegal detention, custodial violence, or harassment.",
+      "structure": ["Authority addressed", "Complainant details", "Officers involved", "Incident facts", "Relief / action sought"],
+      "sample_text": "To,\nThe Superintendent of Police, [DISTRICT] / The National Human Rights Commission, New Delhi\n\nSubject: Complaint against misconduct by police officer(s)\n\nSir/Madam,\n\nI, [NAME], resident of [ADDRESS], submit that on [DATE] at [PLACE], officer(s) [NAME/DESCRIPTION, BADGE NO if known] of [POLICE STATION] committed the following misconduct: [DESCRIBE — e.g. refused to register FIR / detained me without cause / used force].\n\nThis violated my legal and fundamental rights. I request an inquiry, appropriate departmental and legal action against the responsible officer(s), and registration of my FIR.\n\n[NAME] · [PHONE] · [DATE]",
+      "where_to_submit": "The Superintendent of Police, the State/National Human Rights Commission (hrcnet.nic.in), the State Police Complaints Authority, or the Magistrate under BNSS 175(3) for FIR refusal.",
+      "fees_stamp": "No fee.",
+      "tips": ["Note officer names, badge numbers, date and time.", "Custodial violence can be reported directly to the NHRC and the Magistrate.", "For FIR refusal, approach the Magistrate under BNSS 175(3)."]
+    },
+    {
+      "id": "posh_workplace_complaint",
+      "title": "Workplace Sexual Harassment Complaint (POSH Act, 2013)",
+      "title_hi": "कार्यस्थल यौन उत्पीड़न शिकायत (पॉश अधिनियम, 2013)",
+      "category": "Employment",
+      "when_to_use": "When a woman faces sexual harassment at the workplace. Filed with the employer's Internal Committee (IC) under the Sexual Harassment of Women at Workplace (POSH) Act, 2013.",
+      "structure": ["Internal Committee addressed", "Complainant details", "Respondent details", "Incidents with dates", "Witnesses/evidence", "Relief sought"],
+      "sample_text": "To,\nThe Presiding Officer, Internal Committee,\n[ORGANISATION NAME]\n\nSubject: Complaint of sexual harassment at the workplace under the POSH Act, 2013\n\nMadam/Sir,\n\nI, [NAME], working as [DESIGNATION] in [DEPARTMENT], wish to lodge a complaint against [RESPONDENT NAME], [DESIGNATION], for the following acts of sexual harassment:\n\n1. On [DATE] at [PLACE]: [DESCRIBE THE INCIDENT].\n2. On [DATE]: [DESCRIBE].\n\nThe following persons witnessed/are aware of the conduct: [WITNESSES]. Supporting evidence (messages, emails) is enclosed.\n\nI request an inquiry by the Internal Committee and appropriate action, and interim relief including [transfer / leave / stopping contact].\n\n[NAME] · [DATE]",
+      "where_to_submit": "The Internal Committee (IC) that every workplace with 10+ employees must have. If none exists or the employer is the harasser, approach the Local Committee (LC) of the district officer. Complaint within 3 months of the incident (extendable by 3 months).",
+      "fees_stamp": "No fee.",
+      "tips": ["File within 3 months (extendable) of the last incident.", "You may request interim relief like a transfer or leave during the inquiry.", "Retaliation for complaining is itself prohibited."]
+    }
+  ]
+}
