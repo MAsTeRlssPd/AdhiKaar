@@ -5,15 +5,25 @@ Flask Backend with Gemma 4 via Ollama + ChromaDB RAG
 
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
+import os
+
+# The ollama Python client reads OLLAMA_HOST to decide where to CONNECT, and
+# builds its default client at import time. A server may bind 0.0.0.0, but
+# 0.0.0.0 is not a valid *connect* target on Windows — normalise it (and
+# blanks) to loopback BEFORE importing ollama so the client can reach it.
+_oh = os.environ.get('OLLAMA_HOST', '').strip()
+if _oh in ('', '0.0.0.0') or _oh.startswith('0.0.0.0:'):
+    os.environ['OLLAMA_HOST'] = '127.0.0.1:' + (_oh.split(':', 1)[1] if ':' in _oh else '11434')
+
 import ollama
 import chromadb
 from chromadb.utils import embedding_functions
 import json
-import os
 import sys
 import uuid
 import traceback
 import re
+from urllib.parse import urlparse
 
 # Fix Windows console encoding for emoji/Unicode in print() statements
 if hasattr(sys.stdout, 'reconfigure'):
@@ -86,6 +96,68 @@ IPC_BNS_DATA = load_json('ipc_bns_mapping.json', [])
 BNSS_CRPC_DATA = load_json('bnss_crpc_mapping.json', [])
 LEGAL_AID_DATA = load_json('legal_aid_directory.json', {'helplines': [], 'states': []})
 RIGHTS_DATA = load_json('rights_knowledge.json', {})
+EVIDENCE_CHECKLISTS = load_json('evidence_checklists.json', {'templates': []}).get('templates', [])
+
+
+def match_checklist(situation):
+    """Pick the evidence-checklist template that best fits a situation.
+
+    Deterministic keyword scoring — the documents and statutory deadlines in the
+    templates are human-reviewed, so grounding the model in a real template beats
+    letting it invent a document list.
+    """
+    if not situation:
+        return None
+    # Expand through the same multilingual synonym map chat/RAG already uses, so
+    # "salary not paid" reaches the "unpaid_wages" template and Hindi/Hinglish
+    # phrasing works too.
+    raw = situation.lower()
+    expanded = expand_query_multilingual(situation).lower()
+
+    def score_against(text, tpl):
+        def hit(term):
+            # Prefix match so "refusal" catches "refused", "eviction" catches "evicted".
+            return term in text or (len(term) >= 5 and term[:5] in text)
+
+        # The id names the case type — weight it double so "police refused to file
+        # my FIR" lands on fir_refusal, not the merely police-flavoured template.
+        id_terms = [t for t in tpl['id'].split('_') if len(t) >= 3]
+        other = set(tpl.get('category', '').lower().split()) | set(tpl.get('title', '').lower().split())
+        return (2 * sum(1 for t in id_terms if hit(t))
+                + sum(1 for t in other if len(t) > 3 and t not in id_terms and hit(t)))
+
+    # Rank on the expanded text (so Hinglish/synonyms match), but tie-break on the
+    # user's raw words. Expansion is deliberately broad and can drag in a sibling
+    # case type — e.g. expanding "police" injects "FIR", which ties a custodial
+    # complaint with fir_refusal. The raw text settles it.
+    ranked = sorted(
+        ((score_against(expanded, t), score_against(raw, t), t) for t in EVIDENCE_CHECKLISTS),
+        key=lambda r: (r[0], r[1]),
+        reverse=True,
+    )
+    if not ranked or ranked[0][0] < 3:
+        return None
+    # Still tied after the raw tie-break => genuinely ambiguous. Assert nothing
+    # rather than hand back a confidently wrong document list and deadlines.
+    if len(ranked) > 1 and (ranked[0][0], ranked[0][1]) == (ranked[1][0], ranked[1][1]):
+        return None
+    return ranked[0][2]
+
+
+def checklist_to_text(tpl):
+    """Flatten a checklist template into prompt/RAG-friendly text."""
+    lines = [f"Checklist: {tpl['title']} — {tpl.get('description', '')}"]
+    for d in tpl.get('documents', []):
+        lines.append(f"Document: {d['name']} — {d.get('why', '')} How to get: {d.get('how_to_get', '')}")
+    for i, s in enumerate(tpl.get('steps', []), 1):
+        lines.append(f"Step {i}: {s}")
+    for dl in tpl.get('deadlines', []):
+        lines.append(f"Deadline: {dl.get('what', '')} — {dl.get('timeframe', '')}")
+    for tip in tpl.get('tips', []):
+        lines.append(f"Tip: {tip}")
+    if tpl.get('helpline'):
+        lines.append(f"Helpline: {tpl['helpline']}")
+    return "\n".join(lines)
 
 # ══════════════════════════════════════════════════════════════
 # Initialize RAG (ChromaDB)
@@ -131,6 +203,25 @@ def retrieve_context(query, collection, n_results=3, max_chars=1200, threshold=1
         print(f"RAG retrieval error: {e}")
         return ""
 
+# ── Per-session uploaded document (chat RAG) ──
+UPLOADS_DIR = os.path.join(DATA_DIR, 'uploads')
+
+def doc_collection_name(session_id):
+    """A ChromaDB-safe, per-session collection name for the user's uploaded doc."""
+    safe = re.sub(r'[^a-zA-Z0-9]', '', session_id) or 'default'
+    return f"doc_{safe}"[:63]
+
+def chunk_text(text, size=700):
+    """Split text into ~700-char chunks for embedding."""
+    text = text.strip()
+    return [text[i:i + size] for i in range(0, len(text), size)] or [""]
+
+def load_doc_collection(session_id):
+    try:
+        return chroma_client.get_collection(doc_collection_name(session_id), embedding_function=ef)
+    except Exception:
+        return None
+
 KEYWORD_MAPPINGS = {
     # Labor
     "salary": "salary wages labor employment pay unpaid contract job PF ESI work seth malik office",
@@ -161,6 +252,26 @@ KEYWORD_MAPPINGS = {
     "pati": "domestic violence abuse husband wife cruelty dowry beating maar torture pati patni hinsa",
     "patni": "domestic violence abuse husband wife cruelty dowry beating maar torture pati patni hinsa",
     "hinsa": "domestic violence abuse husband wife cruelty dowry beating maar torture pati patni hinsa",
+    "husband": "domestic violence abuse husband wife cruelty dowry beating maar torture pati patni hinsa",
+    "wife": "domestic violence abuse husband wife cruelty dowry beating maar torture pati patni hinsa",
+    "beats": "domestic violence abuse husband wife cruelty dowry beating maar torture pati patni hinsa",
+    "beaten": "domestic violence abuse husband wife cruelty dowry beating maar torture pati patni hinsa",
+    "beating": "domestic violence abuse husband wife cruelty dowry beating maar torture pati patni hinsa",
+
+    # Workplace sexual harassment (POSH Act)
+    "harassment": "workplace sexual harassment POSH Act internal complaints committee ICC boss colleague office",
+    "harass": "workplace sexual harassment POSH Act internal complaints committee ICC boss colleague office",
+    "molest": "workplace sexual harassment POSH Act internal complaints committee ICC boss colleague office",
+    "touched": "workplace sexual harassment POSH Act internal complaints committee ICC boss colleague office",
+    "inappropriately": "workplace sexual harassment POSH Act internal complaints committee ICC boss colleague office",
+    "boss": "workplace sexual harassment POSH Act internal complaints committee ICC boss colleague office",
+
+    # Medical negligence
+    "doctor": "medical negligence hospital doctor surgery operation treatment consumer commission deficiency service",
+    "hospital": "medical negligence hospital doctor surgery operation treatment consumer commission deficiency service",
+    "surgery": "medical negligence hospital doctor surgery operation treatment consumer commission deficiency service",
+    "operated": "medical negligence hospital doctor surgery operation treatment consumer commission deficiency service",
+    "negligence": "medical negligence hospital doctor surgery operation treatment consumer commission deficiency service",
     "abuse": "domestic violence abuse husband wife cruelty dowry beating maar torture pati patni hinsa",
     "dahej": "domestic violence abuse husband wife cruelty dowry beating maar torture pati patni hinsa",
     "dowry": "domestic violence abuse husband wife cruelty dowry beating maar torture pati patni hinsa",
@@ -488,19 +599,26 @@ def get_language_instruction(lang):
     """Get language-specific instruction."""
     return LANGUAGE_INSTRUCTIONS.get(lang, LANGUAGE_INSTRUCTIONS['en'])
 
-def call_gemma(messages, temperature=0.7, fallback_cpu=False):
-    """Call the working LLM model via Ollama (auto-detected at first call)."""
+def call_gemma(messages, temperature=0.7, fallback_cpu=False, num_ctx=2048):
+    """Call the working LLM model via Ollama (auto-detected at first call).
+
+    num_ctx is shared between the prompt AND the generation. The 2048 default keeps
+    us clear of the GGML_SCHED_MAX_SPLIT_INPUTS crash, but a long prompt that asks
+    for a large structured answer will silently run out of room and return
+    truncated (unparseable) output — callers that need a big JSON back should raise
+    this. GPU crashes still fall back to CPU below.
+    """
     model = get_working_model()
     total_chars = sum(len(m["content"]) for m in messages)
-    print(f"[call_gemma] model={model} messages={len(messages)} chars={total_chars}")
+    print(f"[call_gemma] model={model} messages={len(messages)} chars={total_chars} num_ctx={num_ctx}")
     try:
         options = {
             'temperature': temperature,
-            'num_ctx': 2048,   # keep context window small to avoid GGML_SCHED_MAX_SPLIT_INPUTS crash
+            'num_ctx': num_ctx,
         }
         if fallback_cpu:
             options['num_gpu'] = 0
-            
+
         response = ollama.chat(
             model=model,
             messages=messages,
@@ -512,8 +630,8 @@ def call_gemma(messages, temperature=0.7, fallback_cpu=False):
         # If it's a CUDA crash or buffer overrun, try again forcing CPU mode
         if not fallback_cpu and ("CUDA error" in error_msg or "exit status" in error_msg or "0xc0000409" in error_msg):
             print(f"⚠️ GPU crash detected ({error_msg}). Retrying in CPU mode...")
-            return call_gemma(messages, temperature, fallback_cpu=True)
-            
+            return call_gemma(messages, temperature, fallback_cpu=True, num_ctx=num_ctx)
+
         print(f"Gemma error: {e}")
         traceback.print_exc()
         raise
@@ -613,6 +731,14 @@ def chat():
         extra_rights = check_case_type_keywords(message)
         if extra_rights and extra_rights[:100] not in rag_context:
             rag_context += "\n" + extra_rights
+
+        # Ground answers in the user's uploaded document, if one is attached to this session
+        if session.get('doc'):
+            doc_col = load_doc_collection(session_id)
+            # threshold high: user explicitly attached this doc, always surface its top chunks
+            doc_context = retrieve_context(search_query, doc_col, n_results=4, max_chars=1600, threshold=999)
+            if doc_context:
+                rag_context += "\n\nFrom the user's uploaded document:\n" + doc_context
         
         # Detect power imbalance
         power_imbalances = detect_power_imbalance(message)
@@ -863,6 +989,94 @@ def translate_document():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route('/api/upload-document', methods=['POST'])
+def upload_document():
+    """Save + index an uploaded document for the session so chat can answer from it."""
+    try:
+        data = request.get_json(silent=True) or {}
+        text = (data.get('text') or '').strip()
+        filename = data.get('filename', 'document')
+        language = data.get('language', 'en')
+        session_id = data.get('session_id', str(uuid.uuid4()))
+
+        if not text:
+            return jsonify({"error": "No document text provided"}), 400
+
+        session = get_session(session_id)
+
+        # Save a local copy (offline record; git-ignored)
+        os.makedirs(UPLOADS_DIR, exist_ok=True)
+        safe_session = re.sub(r'[^a-zA-Z0-9_-]', '', session_id) or 'default'
+        with open(os.path.join(UPLOADS_DIR, f"{safe_session}.txt"), 'w', encoding='utf-8') as f:
+            f.write(text)
+
+        # (Re)build the per-session doc collection with fresh chunks
+        col_name = doc_collection_name(session_id)
+        try:
+            chroma_client.delete_collection(col_name)
+        except Exception:
+            pass
+        col = chroma_client.create_collection(col_name, embedding_function=ef)
+        chunks = chunk_text(text)
+        col.add(documents=chunks, ids=[f"chunk_{i}" for i in range(len(chunks))])
+
+        doc_id = str(uuid.uuid4())
+        session['doc'] = {'id': doc_id, 'filename': filename, 'chunks': len(chunks)}
+
+        # 2-3 line plain-language summary
+        summary = ""
+        try:
+            messages = [
+                {"role": "system", "content":
+                    "You are a legal expert. Summarize the following document in 2-3 short, "
+                    "plain-language lines so a citizen understands what it is about. Do not use emojis. "
+                    + get_language_instruction(language)},
+                {"role": "user", "content": text[:4000]}
+            ]
+            summary = call_gemma(messages, temperature=0.3).strip()
+        except Exception as e:
+            print(f"Doc summary error: {e}")
+
+        return jsonify({
+            "doc_id": doc_id,
+            "filename": filename,
+            "summary": summary,
+            "chunks": len(chunks)
+        })
+
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/clear-document', methods=['POST'])
+def clear_document():
+    """Drop the session's uploaded doc collection, state, and local file."""
+    try:
+        data = request.get_json(silent=True) or {}
+        session_id = data.get('session_id', '')
+
+        try:
+            chroma_client.delete_collection(doc_collection_name(session_id))
+        except Exception:
+            pass
+
+        if session_id in sessions:
+            sessions[session_id].pop('doc', None)
+
+        safe_session = re.sub(r'[^a-zA-Z0-9_-]', '', session_id) or 'default'
+        try:
+            os.remove(os.path.join(UPLOADS_DIR, f"{safe_session}.txt"))
+        except OSError:
+            pass
+
+        return jsonify({"ok": True})
+
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route('/api/panchayat-bridge', methods=['POST'])
 def panchayat_bridge():
     """Generate elder-friendly explanation for community intermediaries."""
@@ -904,21 +1118,47 @@ def rights_checklist():
         rag_context = ""
         if rights_collection:
             rag_context = retrieve_context(situation, rights_collection, n_results=5)
-        
+
+        # Ground the model in a human-reviewed evidence checklist when one fits,
+        # so the document list and statutory deadlines are real, not invented.
+        template = match_checklist(situation)
+        if template:
+            rag_context += "\n\nReviewed evidence checklist for this kind of case:\n" + checklist_to_text(template)
+
         system_prompt = CHECKLIST_PROMPT.format(
             language_instruction=get_language_instruction(language),
             rag_context=rag_context
         )
-        
+
         messages = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": f"Generate a comprehensive rights checklist for this situation:\n\n{situation}"}
         ]
-        
+
         response_text = call_gemma(messages, temperature=0.5)
-        
-        return jsonify({"response": response_text})
+
+        return jsonify({"response": response_text, "template": template})
     
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/evidence-checklists', methods=['GET'])
+def evidence_checklists():
+    """Browse the reviewed evidence checklists. ?id=<template_id> returns one in full."""
+    try:
+        tpl_id = request.args.get('id', '').strip()
+        if tpl_id:
+            tpl = next((t for t in EVIDENCE_CHECKLISTS if t['id'] == tpl_id), None)
+            if not tpl:
+                return jsonify({"error": "No such checklist"}), 404
+            return jsonify({"template": tpl})
+
+        return jsonify({"templates": [
+            {k: t[k] for k in ('id', 'title', 'title_hi', 'category', 'description') if k in t}
+            for t in EVIDENCE_CHECKLISTS
+        ]})
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
@@ -1003,6 +1243,163 @@ def rights_card():
                 "helplines": ["NALSA: 15100", "Tele-Law: 14454", "Police: 112", "Women: 181"]
             }})
     
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
+# ══════════════════════════════════════════════════════════════
+# Law & Next Steps — single verified structured analysis
+# ══════════════════════════════════════════════════════════════
+
+NATIONAL_URLS = [
+    {"title": "India Code — Bharatiya Nyaya Sanhita / BNSS and all central acts",
+     "url": "https://www.indiacode.nic.in"},
+    {"title": "NALSA — free legal aid and helpline 15100",
+     "url": "https://nalsa.gov.in"},
+]
+
+def _official_urls():
+    """Every official URL we are willing to show, taken from bundled legal-aid data."""
+    urls = [u["url"] for u in NATIONAL_URLS]
+    for st in LEGAL_AID_DATA.get('states', []):
+        site = (st.get('slsa') or {}).get('website') or st.get('website')
+        if site and site not in urls:
+            urls.append(site)
+    return urls
+
+def _sanitize_sources(sources, rag_context):
+    """Deterministic citation guard, ported from Nyaya's verifier.
+
+    A model can produce a confident deep link to a page that does not exist, and a
+    fabricated legal citation is exactly the failure this feature exists to prevent.
+    So: a URL is shown verbatim only if it appears in data we actually retrieved.
+    Anything else collapses to the domain root of a known official site, and an
+    unknown host is dropped to India Code. No prompt rule can guarantee this; this
+    check can.
+    """
+    known = set(_official_urls())
+    known.update(re.findall(r'https?://[^\s,;"\')<>]+', rag_context or ''))
+    roots = {urlparse(u).netloc.lower(): u for u in _official_urls()}
+
+    cleaned = []
+    for src in (sources or []):
+        if not isinstance(src, dict):
+            continue
+        title = str(src.get('title') or '').strip() or 'Official source'
+        url = str(src.get('url') or '').strip()
+        if url not in known:
+            # Not something we retrieved — keep the domain if it is official, drop the path.
+            url = roots.get(urlparse(url).netloc.lower(), NATIONAL_URLS[0]["url"])
+        cleaned.append({"title": title, "url": url})
+
+    # Always leave the person somewhere official to go.
+    if not cleaned:
+        cleaned = list(NATIONAL_URLS)
+    return cleaned
+
+LAW_STEPS_PROMPT = """You are an Indian legal expert producing ONE verified, structured analysis of a citizen's situation. Assert legal provisions (BNS/BNSS/act sections) ONLY if they appear in the CONTEXT below. You may mention a clearly relevant section that is missing from the CONTEXT, but you MUST then mark its verification status as "unverified". Never invent section numbers.
+
+Return ONLY valid JSON (no text before or after) in EXACTLY this shape:
+{{
+  "situation_and_law": "Markdown. First restate the person's situation in 2-3 plain sentences. Then give the applicable law with specific BNS/BNSS/act section numbers and what each does.",
+  "verification": [
+    {{"claim": "one legal statement you made above", "supported_by": "which CONTEXT source or section supports it, or 'No retrieved source'", "status": "verified"}}
+  ],
+  "sources": [
+    {{"title": "Bharatiya Nyaya Sanhita, 2023 — Section X", "url": "https://www.indiacode.nic.in"}}
+  ],
+  "stress_test": {{
+    "for": ["arguments that support the person's position"],
+    "against": ["arguments the opposing side will make against them"],
+    "weaknesses": ["honest weak points in the person's own position"]
+  }},
+  "rights_card": {{
+    "title": "short shareable title",
+    "rights": [{{"text": "one right in plain language", "source": "BNS Section X / Act name"}}]
+  }},
+  "explain_simply": "A short jargon-free paragraph the person can read aloud to family."
+}}
+
+RULES:
+- Every section number used in situation_and_law MUST also appear as a "verification" entry with a "status" of "verified" (supported by CONTEXT) or "unverified" (not in CONTEXT).
+- For "sources" urls use https://www.indiacode.nic.in for any act/section, https://nalsa.gov.in for legal aid, or an official URL copied exactly from the CONTEXT. Never invent a deep link — if unsure of the page, give the domain root.
+- Keep each list to 2-5 concise items. Every rights_card right MUST carry a "source".
+
+{language_instruction}
+
+CONTEXT FROM KNOWLEDGE BASE:
+{rag_context}
+"""
+
+@app.route('/api/law-and-steps', methods=['POST'])
+def law_and_steps():
+    """Single verified 'Law & Next Steps' analysis with six panels."""
+    try:
+        data = request.get_json(silent=True) or {}
+        situation = data.get('situation', '').strip()
+        language = data.get('language', 'en')
+        session_id = data.get('session_id', '')
+
+        if not situation:
+            return jsonify({"error": "No situation provided"}), 400
+
+        # Retrieve grounding context from all three collections + in-memory boosters
+        search_query = preprocess_query_for_rag(situation, language)
+        rag_context = ""
+        if ipc_bns_collection:
+            rag_context += retrieve_context(search_query, ipc_bns_collection, n_results=3)
+        if rights_collection:
+            rag_context += "\n" + retrieve_context(search_query, rights_collection, n_results=3)
+        if legal_aid_collection:
+            rag_context += "\n" + retrieve_context(search_query, legal_aid_collection, n_results=2)
+
+        extra_bns = check_section_keywords(situation)
+        if extra_bns:
+            rag_context += "\n" + extra_bns
+        extra_rights = check_case_type_keywords(situation)
+        if extra_rights and extra_rights[:100] not in rag_context:
+            rag_context += "\n" + extra_rights
+
+        system_prompt = LAW_STEPS_PROMPT.format(
+            language_instruction=get_language_instruction(language),
+            rag_context=rag_context or "(no matching sources retrieved)"
+        )
+
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": f"Situation:\n{situation}\n\nProduce the verified JSON analysis."}
+        ]
+
+        # Six panels of JSON do not fit in the 2048 default alongside this prompt —
+        # the model gets cut off mid-array and every panel silently comes back empty.
+        response_text = call_gemma(messages, temperature=0.3, num_ctx=8192)
+
+        # Parse JSON (handle markdown code fences, same approach as rights-card)
+        json_text = response_text
+        if '```json' in json_text:
+            json_text = json_text.split('```json')[1].split('```')[0]
+        elif '```' in json_text:
+            json_text = json_text.split('```')[1].split('```')[0]
+
+        try:
+            result = json.loads(json_text.strip())
+        except json.JSONDecodeError:
+            # Fail soft: at least show the model's prose in panel (a)
+            result = {
+                "situation_and_law": response_text,
+                "verification": [],
+                "sources": [],
+                "stress_test": {"for": [], "against": [], "weaknesses": []},
+                "rights_card": {"title": "Your Rights", "rights": []},
+                "explain_simply": ""
+            }
+
+        # No citation reaches the user without passing the deterministic guard.
+        result["sources"] = _sanitize_sources(result.get("sources"), rag_context)
+
+        return jsonify({"result": result, "session_id": session_id})
+
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
@@ -1175,6 +1572,84 @@ def courtroom():
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+
+
+# ══════════════════════════════════════════════════════════════
+# Offline Multilingual TTS (Facebook MMS-TTS via transformers)
+# ══════════════════════════════════════════════════════════════
+# Browser Web Speech API only speaks languages the OS has voices for, so
+# non-English voices are silent on most Windows machines. MMS-TTS runs the
+# synthesis server-side (CPU-only OK) and covers every app language.
+#
+# Models download once from Hugging Face, then run fully offline. To
+# pre-download them (e.g. before going offline), run:
+#   python -c "from transformers import VitsModel, AutoTokenizer; \\
+#     [ (VitsModel.from_pretrained(m), AutoTokenizer.from_pretrained(m)) \\
+#       for m in set(__import__('app').MMS_TTS_MODELS.values()) ]"
+
+MMS_TTS_MODELS = {
+    'en': 'facebook/mms-tts-eng',
+    'hi': 'facebook/mms-tts-hin',
+    'hinglish': 'facebook/mms-tts-hin',
+    'ta': 'facebook/mms-tts-tam',
+    'te': 'facebook/mms-tts-tel',
+    'bn': 'facebook/mms-tts-ben',
+    'mr': 'facebook/mms-tts-mar',
+    'gu': 'facebook/mms-tts-guj',
+    'kn': 'facebook/mms-tts-kan',
+    'ml': 'facebook/mms-tts-mal',
+    'pa': 'facebook/mms-tts-pan',
+}
+
+TTS_MAX_CHARS = 800  # ponytail: naive truncation; chunk+concat if long answers get cut off
+
+# Lazily loaded + cached VitsModel/tokenizer, keyed by HF model id
+_tts_models = {}
+
+def get_tts_model(language):
+    """Load (and cache) the MMS-TTS model for an app language code. Lazy — never at startup."""
+    model_id = MMS_TTS_MODELS.get(language, MMS_TTS_MODELS['en'])
+    if model_id not in _tts_models:
+        from transformers import VitsModel, AutoTokenizer
+        print(f"⏳ Loading TTS model {model_id} (first use — may download)...")
+        model = VitsModel.from_pretrained(model_id)
+        model.eval()
+        tokenizer = AutoTokenizer.from_pretrained(model_id)
+        _tts_models[model_id] = (model, tokenizer)
+        print(f"✅ TTS model {model_id} ready")
+    return _tts_models[model_id]
+
+@app.route('/api/tts', methods=['POST'])
+def tts():
+    """Synthesize speech offline with MMS-TTS. Returns raw WAV (audio/wav) or JSON error."""
+    try:
+        data = request.get_json(silent=True) or {}
+        text = (data.get('text') or '').strip()[:TTS_MAX_CHARS]
+        language = data.get('language', 'en')
+        if not text:
+            return jsonify({"error": "No text provided"}), 400
+
+        import io
+        import numpy as np
+        import torch
+        from scipy.io.wavfile import write as wav_write
+
+        model, tokenizer = get_tts_model(language)
+        inputs = tokenizer(text, return_tensors="pt")
+        with torch.no_grad():
+            waveform = model(**inputs).waveform.squeeze().cpu().numpy()
+
+        # float32 [-1,1] -> int16 PCM for broad browser <audio> compatibility
+        pcm16 = (np.clip(waveform, -1.0, 1.0) * 32767).astype(np.int16)
+        buf = io.BytesIO()
+        wav_write(buf, model.config.sampling_rate, pcm16)
+        from flask import Response
+        return Response(buf.getvalue(), mimetype='audio/wav')
+
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
 
 
 # ══════════════════════════════════════════════════════════════

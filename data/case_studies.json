@@ -1,0 +1,181 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "cs_unpaid_wages",
+      "category": "Labour",
+      "scenario": "A worker's employer has not paid three months of salary and keeps making excuses.",
+      "question": "My employer has not paid my salary for 3 months. What can I do?",
+      "answer": "Withholding earned wages is illegal. First send a written demand to your employer keeping a copy. If unpaid, file a claim before the Labour Commissioner / Authority under the Payment of Wages Act, 1936 (now part of the Code on Wages, 2019) within 12 months — there is no court fee. Even WhatsApp chats, UPI records, or an ID card help prove employment. You can also call the labour grievance helpline (155214 in many states). Recovery of the unpaid amount plus compensation can be ordered.",
+      "keywords": ["salary", "wages", "vetan", "unpaid", "employer", "malik", "naukri", "labour commissioner"]
+    },
+    {
+      "id": "cs_security_deposit",
+      "category": "Tenancy",
+      "scenario": "A tenant vacated a flat but the landlord refuses to return the security deposit.",
+      "question": "My landlord is not returning my security deposit after I moved out. What are my options?",
+      "answer": "A refundable deposit must be returned after you hand over the premises in reasonable condition with dues cleared. Send a written notice (ideally by registered post) demanding refund within 15 days and citing the deposit clause of your rent agreement. If ignored, approach the Rent Authority under your state's Rent/Model Tenancy Act, or file in the small-causes/civil court, or a consumer complaint if it is a service arrangement. Keep photos of the handed-over flat and the agreement as proof.",
+      "keywords": ["deposit", "security", "landlord", "makan malik", "kiraya", "refund", "tenant", "kirayedar"]
+    },
+    {
+      "id": "cs_domestic_violence",
+      "category": "Family",
+      "scenario": "A woman is being physically and emotionally abused by her husband.",
+      "question": "My husband beats me and threatens me. What protection does the law give me?",
+      "answer": "You are protected under the Protection of Women from Domestic Violence Act, 2005, which covers physical, emotional, sexual, verbal and economic abuse. You can seek a Protection Order (to stop the violence), a Residence Order (to stay in the shared household), monetary relief and custody of children — through a Protection Officer or the Magistrate. Cruelty by a husband or his relatives is also a criminal offence under BNS Section 85/86. Call Women Helpline 181 for immediate help, keep medical records and messages as evidence, and free legal aid is available (NALSA 15100).",
+      "keywords": ["domestic violence", "husband", "pati", "beats", "cruelty", "dowry", "hinsa", "498A", "BNS 85"]
+    },
+    {
+      "id": "cs_fir_refusal",
+      "category": "Criminal",
+      "scenario": "The police refuse to register an FIR for a theft the person wants to report.",
+      "question": "The police are refusing to file my FIR. What can I do?",
+      "answer": "For a cognizable offence the police must register an FIR under BNSS Section 173 — refusal is illegal. First, you can file a Zero FIR at any police station regardless of jurisdiction. If they still refuse, send your written complaint by registered post to the Superintendent of Police under BNSS 173(4). If that fails, apply to the Judicial Magistrate under BNSS 175(3), who can direct the police to register and investigate. Keep copies and postal receipts of everything.",
+      "keywords": ["FIR", "police", "thana", "refuse", "zero fir", "BNSS 173", "complaint", "SHO"]
+    },
+    {
+      "id": "cs_defective_product",
+      "category": "Consumer",
+      "scenario": "A newly bought appliance is defective and the seller refuses a refund or replacement.",
+      "question": "I bought a defective product and the shop won't refund or replace it. What are my rights?",
+      "answer": "Under the Consumer Protection Act, 2019 you can claim a refund, replacement, or repair plus compensation for a defective product or deficient service. First send a written complaint to the seller/company. If unresolved, file before the District Consumer Commission (for claims up to Rs 50 lakh) — you can do it online via the e-Daakhil portal within 2 years of the problem. Keep the bill, warranty card and all messages. No court fee is charged for claims up to Rs 5 lakh.",
+      "keywords": ["consumer", "defective", "refund", "replacement", "product", "warranty", "e-daakhil", "CPA 2019"]
+    },
+    {
+      "id": "cs_upi_fraud",
+      "category": "Cybercrime",
+      "scenario": "Someone tricked a person into a UPI transfer and took money from their account.",
+      "question": "Someone cheated me on UPI and took money from my account. What should I do immediately?",
+      "answer": "Act fast — report within the 'golden hour'. Call the cybercrime helpline 1930 immediately and file a complaint at cybercrime.gov.in; quick reporting can freeze the fraudster's account and reverse the transfer. Also inform your bank at once to block the account and raise a dispute — RBI's rules give limited liability if you report promptly. File a police complaint / FIR for cheating under BNS Section 318. Keep the transaction ID, screenshots and any messages or numbers used.",
+      "keywords": ["upi", "online fraud", "cyber crime", "1930", "scam", "cheated", "netbanking", "BNS 318", "otp"]
+    },
+    {
+      "id": "cs_illegal_eviction",
+      "category": "Tenancy",
+      "scenario": "A landlord is trying to force a tenant out without any court order.",
+      "question": "My landlord is trying to throw me out and cut my electricity. Is that legal?",
+      "answer": "No. A tenant cannot be evicted except by due process of law under the applicable Rent/Model Tenancy Act. Forcible eviction, locking you out, or cutting off water and electricity is illegal and can amount to criminal intimidation and mischief under the BNS, 2023. Keep paying rent — if the landlord refuses it, deposit it with the Rent Authority. Send a written reply asserting your tenancy, document any utility cut-off, and complain to the police or Rent Authority if harassment continues.",
+      "keywords": ["eviction", "landlord", "forcible", "electricity", "makan malik", "tenant rights", "rent authority"]
+    },
+    {
+      "id": "cs_workplace_harassment",
+      "category": "Employment",
+      "scenario": "A woman is being sexually harassed by a senior at her office.",
+      "question": "My boss is sexually harassing me at work. How do I file a complaint?",
+      "answer": "Under the POSH Act, 2013 every workplace with 10 or more employees must have an Internal Committee (IC). File a written complaint with the IC within 3 months of the incident (extendable by another 3). You can ask for interim relief such as a transfer, leave, or a stop-contact order during the inquiry. If there is no IC or the employer is the harasser, approach the district's Local Committee. Retaliation for complaining is itself prohibited, and free legal aid is available.",
+      "keywords": ["sexual harassment", "workplace", "POSH", "boss", "internal committee", "ICC", "office", "molest"]
+    },
+    {
+      "id": "cs_dowry_harassment",
+      "category": "Family",
+      "scenario": "A married woman is harassed by her in-laws for more dowry.",
+      "question": "My in-laws are harassing me for dowry. What laws protect me?",
+      "answer": "Demanding dowry is an offence under the Dowry Prohibition Act, 1961. Cruelty by a husband or in-laws — including for dowry — is punishable under BNS Section 85 (and 86 defines cruelty). You can also seek civil protection under the Domestic Violence Act, 2005 (protection, residence and monetary orders). Report to the police / Women's Cell, call Women Helpline 181, and preserve messages, call records and witnesses. Free legal aid is available (NALSA 15100).",
+      "keywords": ["dowry", "dahej", "in-laws", "cruelty", "harassment", "BNS 85", "498A", "sasural"]
+    },
+    {
+      "id": "cs_cheque_bounce",
+      "category": "Financial",
+      "scenario": "A cheque a person received bounced due to insufficient funds.",
+      "question": "A cheque given to me bounced. How do I recover my money?",
+      "answer": "A bounced cheque is an offence under Section 138 of the Negotiable Instruments Act, 1881. You must send a demand notice to the person who issued the cheque within 30 days of the bank's return memo, giving them 15 days to pay. If they still don't pay, file a complaint before the Magistrate within the next 1 month. Keep the returned cheque and the bank's dishonour memo safely — they are your key evidence. You can also file a civil suit to recover the amount.",
+      "keywords": ["cheque bounce", "138", "NI Act", "dishonour", "demand notice", "insufficient funds", "return memo"]
+    },
+    {
+      "id": "cs_property_dispute",
+      "category": "Property",
+      "scenario": "A person's relative has illegally occupied land that belongs to them.",
+      "question": "Someone has illegally occupied my land. How do I get it back?",
+      "answer": "For unlawful dispossession you can sue to recover possession under Section 6 of the Specific Relief Act, 1963 within 6 months of being dispossessed — here the court looks only at possession, not title. For a full ownership claim, file a title/declaration suit (limitation is generally 12 years). Illegal entry can also be criminal trespass under the BNS, 2023, so a police complaint may lie. Gather your title deed, mutation records, tax receipts and any survey documents.",
+      "keywords": ["property", "land", "possession", "trespass", "encroachment", "title", "specific relief", "zameen"]
+    },
+    {
+      "id": "cs_motor_accident",
+      "category": "Accident",
+      "scenario": "A person was injured by a rash driver and wants compensation.",
+      "question": "I was injured in a road accident by another vehicle. Can I claim compensation?",
+      "answer": "Yes. You can claim compensation before the Motor Accident Claims Tribunal (MACT) under the Motor Vehicles Act, 1988. File the claim promptly (the 2019 amendment prescribes 6 months, though tribunals may condone delay for good reason). Get the FIR, the accident/injury medical records, and the offending vehicle's number and insurance details. Rash or negligent driving causing hurt or death is also a criminal offence under the BNS, 2023. There is a cashless-treatment and interim-compensation scheme for accident victims.",
+      "keywords": ["accident", "motor", "MACT", "compensation", "vehicle", "injury", "insurance", "rash driving"]
+    },
+    {
+      "id": "cs_medical_negligence",
+      "category": "Consumer",
+      "scenario": "A patient was harmed by a doctor's careless treatment.",
+      "question": "A doctor's negligence harmed me during treatment. What can I do?",
+      "answer": "Medical negligence is treated as a deficiency in service. You can file before the Consumer Commission under the Consumer Protection Act, 2019 (within 2 years) for compensation, and separately complain to the State Medical Council against the doctor's registration. In serious cases, negligence causing death or grievous hurt can be a criminal offence. Obtain your complete medical records, prescriptions, bills and, if possible, an independent medical opinion. Keep all documents dated and intact.",
+      "keywords": ["medical negligence", "doctor", "hospital", "treatment", "consumer commission", "deficiency", "medical council"]
+    },
+    {
+      "id": "cs_cyber_blackmail",
+      "category": "Cybercrime",
+      "scenario": "Someone is threatening to leak a person's private photos online unless paid.",
+      "question": "Someone is blackmailing me online with my private photos. What should I do?",
+      "answer": "This is a serious offence — extortion and criminal intimidation under the BNS, 2023, along with offences under the Information Technology Act, 2000 (including publishing obscene or private material). Do not pay. Report immediately at cybercrime.gov.in and call helpline 1930; there is a dedicated route for reporting non-consensual intimate images. Preserve the messages, profile links and payment demands as evidence — do not delete them. You can request takedown of the content and file an FIR. Your identity is kept confidential.",
+      "keywords": ["blackmail", "cyber", "extortion", "photos", "sextortion", "1930", "IT Act", "threats", "BNS"]
+    },
+    {
+      "id": "cs_wrongful_termination",
+      "category": "Employment",
+      "scenario": "An employee was fired suddenly without notice or due process.",
+      "question": "I was fired from my job without notice or reason. Is that allowed?",
+      "answer": "It depends on your terms and status. A 'workman' under the Industrial Disputes Act, 1947 generally cannot be removed without notice, notice pay, and due process; unfair dismissal can be challenged before the Labour Court/Tribunal (broadly within about 3 years, and s.2A disputes have specific timelines). For others, your contract and appointment letter govern notice and dues. Insist on your full and final settlement, gratuity and PF. Keep your appointment letter, salary slips and termination communication.",
+      "keywords": ["termination", "fired", "job", "dismissal", "notice", "industrial disputes", "labour court", "wrongful"]
+    },
+    {
+      "id": "cs_police_misconduct",
+      "category": "Criminal",
+      "scenario": "A person was detained and beaten by police without cause.",
+      "question": "The police detained and beat me without any reason. Where do I complain?",
+      "answer": "Custodial violence and illegal detention violate your fundamental rights. You must be produced before a Magistrate within 24 hours of arrest (BNSS 58) and told the grounds of arrest (BNSS 47). Complain to the Superintendent of Police, the State Police Complaints Authority, and the National/State Human Rights Commission (hrcnet.nic.in), which can order inquiry and compensation. Note officer names, badge numbers, date, time and any medical evidence of injuries. Free legal aid is available (NALSA 15100).",
+      "keywords": ["police misconduct", "custody", "detention", "custodial violence", "NHRC", "BNSS 58", "human rights"]
+    },
+    {
+      "id": "cs_rti_no_reply",
+      "category": "Administrative",
+      "scenario": "A government office did not reply to a person's RTI application.",
+      "question": "I filed an RTI but got no reply in 30 days. What next?",
+      "answer": "Under the RTI Act, 2005 the Public Information Officer must respond within 30 days. If there is no reply or you are unsatisfied, file a First Appeal to the First Appellate Authority of the same department within 30 days — no fee. If that also fails, file a Second Appeal to the Information Commission (State or Central) within 90 days, which can impose a penalty on the PIO and order disclosure. Keep proof of your original application and its date.",
+      "keywords": ["RTI", "information", "no reply", "first appeal", "PIO", "information commission", "second appeal"]
+    },
+    {
+      "id": "cs_maintenance",
+      "category": "Family",
+      "scenario": "A separated wife with no income needs financial support from her husband.",
+      "question": "My husband has left me with no income. Can I claim maintenance?",
+      "answer": "Yes. A wife, child, or parent unable to maintain themselves can claim a monthly allowance under BNSS Section 144 (the successor to CrPC 125) from a person with sufficient means who neglects them. File before the Magistrate where you reside; interim maintenance can be granted while the case is pending. This is quicker and cheaper than a civil suit. Bring any proof of the husband's income. Free legal aid is available (NALSA 15100).",
+      "keywords": ["maintenance", "wife", "husband", "bharan poshan", "BNSS 144", "125 CrPC", "allowance", "support"]
+    },
+    {
+      "id": "cs_defamation",
+      "category": "Civil",
+      "scenario": "Someone spread false statements damaging a person's reputation.",
+      "question": "Someone is spreading lies about me and damaging my reputation. What can I do?",
+      "answer": "Defamation has both a criminal and a civil remedy. Criminally, it is an offence under BNS Section 356 (making or publishing an imputation intending to harm reputation). Civilly, you can sue for damages and an injunction to stop and remove the statements — the limitation for a civil defamation suit is generally 1 year. Preserve screenshots, links, dates and witnesses. A legal notice demanding an apology and takedown is often an effective first step.",
+      "keywords": ["defamation", "reputation", "false", "BNS 356", "slander", "libel", "injunction", "apology"]
+    },
+    {
+      "id": "cs_cyberstalking",
+      "category": "Cybercrime",
+      "scenario": "A woman is being repeatedly followed and messaged online against her wishes.",
+      "question": "A man keeps stalking and messaging me online despite my saying no. Is this a crime?",
+      "answer": "Yes. Stalking, including monitoring or repeatedly contacting a woman online against her wishes, is an offence under BNS Section 78. Related online harassment can also attract the Information Technology Act, 2000. Report at cybercrime.gov.in, call 1930, and you can file an FIR. Do not delete the messages — preserve screenshots, usernames and timestamps as evidence. Block the person and adjust privacy settings, and seek help from Women Helpline 181 if you feel unsafe.",
+      "keywords": ["stalking", "cyberstalking", "harassment", "BNS 78", "online", "messages", "1930", "women"]
+    },
+    {
+      "id": "cs_arrest_rights",
+      "category": "Criminal",
+      "scenario": "A person's family member has just been arrested by the police.",
+      "question": "My brother was just arrested. What are his rights?",
+      "answer": "An arrested person has clear rights under the BNSS, 2023: to be told the grounds of arrest and, in a bailable case, of the right to bail (BNSS 47); to have a family member or friend informed of the arrest; to be produced before a Magistrate within 24 hours (BNSS 58); to meet a lawyer during interrogation (BNSS 38); and to a medical examination (BNSS 53). For most offences punishable up to 7 years, arrest of a person over 60 or infirm needs senior officer approval. Free legal aid is available (NALSA 15100) and anticipatory or regular bail can be sought.",
+      "keywords": ["arrest", "rights", "bail", "24 hours", "BNSS 47", "BNSS 58", "custody", "lawyer", "giraftar"]
+    },
+    {
+      "id": "cs_free_legal_aid",
+      "category": "Access to Justice",
+      "scenario": "A person cannot afford a lawyer for their court case.",
+      "question": "I can't afford a lawyer. Can I get legal help for free?",
+      "answer": "Yes. Under the Legal Services Authorities Act, 1987, free legal aid — including a lawyer — is a right for women, children, SC/ST persons, victims of trafficking, disabled persons, industrial workmen, persons in custody, and anyone earning below the prescribed income limit. Approach your District Legal Services Authority (DLSA), usually located in the district court complex, or call NALSA on 15100. Tele-Law (14454) also gives free legal advice over video. Lok Adalats can settle many disputes free and quickly.",
+      "keywords": ["free legal aid", "lawyer", "DLSA", "NALSA", "15100", "tele-law", "14454", "legal services", "lok adalat"]
+    }
+  ]
+}
