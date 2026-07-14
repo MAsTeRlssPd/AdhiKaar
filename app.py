@@ -18,6 +18,7 @@ if _oh in ('', '0.0.0.0') or _oh.startswith('0.0.0.0:'):
 import ollama
 import chromadb
 from chromadb.utils import embedding_functions
+from lawsteps_pipeline import run_pipeline as run_law_steps
 import json
 import sys
 import uuid
@@ -97,6 +98,23 @@ BNSS_CRPC_DATA = load_json('bnss_crpc_mapping.json', [])
 LEGAL_AID_DATA = load_json('legal_aid_directory.json', {'helplines': [], 'states': []})
 RIGHTS_DATA = load_json('rights_knowledge.json', {})
 EVIDENCE_CHECKLISTS = load_json('evidence_checklists.json', {'templates': []}).get('templates', [])
+DOCUMENT_TEMPLATES = load_json('document_templates.json', {'templates': []}).get('templates', [])
+
+
+def _template_instruction(template_id):
+    """Build a drafting instruction from a document template so /api/draft-document
+    can produce any of the ~45 templates, not just the hardcoded handful."""
+    tpl = next((t for t in DOCUMENT_TEMPLATES if t['id'] == template_id), None)
+    if not tpl:
+        return None
+    structure = "; ".join(tpl.get('structure', []))
+    return (
+        f"Draft a {tpl['title']}. Purpose: {tpl.get('when_to_use', '')} "
+        f"Follow this structure: {structure}. "
+        f"Base it on this standard format, filling in the user's details and using "
+        f"[PLACEHOLDERS] for anything missing:\n{tpl.get('sample_text', '')}\n"
+        f"After the document, note where to submit it: {tpl.get('where_to_submit', '')}"
+    )
 
 
 def match_checklist(situation):
@@ -179,6 +197,7 @@ def load_collection(name):
 ipc_bns_collection = load_collection("ipc_bns")
 rights_collection = load_collection("rights_knowledge")
 legal_aid_collection = load_collection("legal_aid")
+official_law_collection = load_collection("official_law")
 
 # ══════════════════════════════════════════════════════════════
 # RAG Helper
@@ -202,6 +221,39 @@ def retrieve_context(query, collection, n_results=3, max_chars=1200, threshold=1
     except Exception as e:
         print(f"RAG retrieval error: {e}")
         return ""
+
+
+def retrieve_chunks(query, collection, n_results=4):
+    """Like retrieve_context, but keeps each chunk's metadata (act, section, URL).
+
+    The verified law-and-steps pipeline needs the source URL of each statute
+    excerpt — retrieve_context throws that away, which is why sources used to
+    collapse to a bare domain."""
+    if collection is None:
+        return []
+    try:
+        res = collection.query(
+            query_texts=[query], n_results=n_results,
+            include=['documents', 'metadatas'],
+        )
+        docs = res.get('documents', [[]])[0]
+        metas = res.get('metadatas', [[]])[0]
+        ids = res.get('ids', [[]])[0]
+        out = []
+        for i, doc in enumerate(docs):
+            m = metas[i] or {}
+            out.append({
+                "chunk_id": ids[i] if i < len(ids) else f"chunk_{i}",
+                "text": doc or "",
+                "act": m.get('act') or m.get('case_type_name') or m.get('title') or "",
+                "section": m.get('section_id') or m.get('heading') or "",
+                "official_url": m.get('official_url') or m.get('official_landing_url') or "",
+            })
+        return out
+    except Exception as e:
+        print(f"RAG chunk retrieval error: {e}")
+        return []
+
 
 # ── Per-session uploaded document (chat RAG) ──
 UPLOADS_DIR = os.path.join(DATA_DIR, 'uploads')
@@ -442,6 +494,14 @@ LANGUAGE_INSTRUCTIONS = {
     "default": "Automatically detect the language of the user's latest query and respond entirely in that language without any emojis."
 }
 
+# Language of the actual document body. Hinglish keeps English structure with
+# Hindi/Hinglish phrasing where natural.
+LANGUAGE_NAMES = {
+    "en": "English", "hi": "Hindi", "ta": "Tamil", "te": "Telugu",
+    "bn": "Bengali", "mr": "Marathi", "gu": "Gujarati", "kn": "Kannada",
+    "ml": "Malayalam", "pa": "Punjabi", "hinglish": "Hinglish (Hindi-English mix in Roman script)",
+}
+
 MAIN_SYSTEM_PROMPT = """You are an extremely knowledgeable human legal expert with an encyclopedic understanding of Indian law. Your purpose is to provide clear, concise, and direct legal advice to citizens.
 
 CRITICAL RESPONSE RULES:
@@ -599,7 +659,7 @@ def get_language_instruction(lang):
     """Get language-specific instruction."""
     return LANGUAGE_INSTRUCTIONS.get(lang, LANGUAGE_INSTRUCTIONS['en'])
 
-def call_gemma(messages, temperature=0.7, fallback_cpu=False, num_ctx=2048):
+def call_gemma(messages, temperature=0.7, fallback_cpu=False, num_ctx=2048, response_format=None):
     """Call the working LLM model via Ollama (auto-detected at first call).
 
     num_ctx is shared between the prompt AND the generation. The 2048 default keeps
@@ -607,6 +667,9 @@ def call_gemma(messages, temperature=0.7, fallback_cpu=False, num_ctx=2048):
     for a large structured answer will silently run out of room and return
     truncated (unparseable) output — callers that need a big JSON back should raise
     this. GPU crashes still fall back to CPU below.
+
+    response_format: pass 'json' (or a JSON schema dict) to grammar-constrain the
+    output via Ollama's format= — the reliable fix for JSON that won't parse.
     """
     model = get_working_model()
     total_chars = sum(len(m["content"]) for m in messages)
@@ -619,11 +682,10 @@ def call_gemma(messages, temperature=0.7, fallback_cpu=False, num_ctx=2048):
         if fallback_cpu:
             options['num_gpu'] = 0
 
-        response = ollama.chat(
-            model=model,
-            messages=messages,
-            options=options
-        )
+        kwargs = {'model': model, 'messages': messages, 'options': options}
+        if response_format is not None:
+            kwargs['format'] = response_format
+        response = ollama.chat(**kwargs)
         return response['message']['content']
     except Exception as e:
         error_msg = str(e)
@@ -683,24 +745,6 @@ def detect_power_imbalance(text):
 def index():
     return send_from_directory('static', 'index.html')
 
-@app.route('/api/languages', methods=['GET'])
-def get_languages():
-    """Return supported languages."""
-    languages = [
-        {"code": "en", "name": "English", "native": "English", "speech_code": "en-IN"},
-        {"code": "hi", "name": "Hindi", "native": "हिन्दी", "speech_code": "hi-IN"},
-        {"code": "ta", "name": "Tamil", "native": "தமிழ்", "speech_code": "ta-IN"},
-        {"code": "te", "name": "Telugu", "native": "తెలుగు", "speech_code": "te-IN"},
-        {"code": "bn", "name": "Bengali", "native": "বাংলা", "speech_code": "bn-IN"},
-        {"code": "mr", "name": "Marathi", "native": "मराठी", "speech_code": "mr-IN"},
-        {"code": "gu", "name": "Gujarati", "native": "ગુજરાતી", "speech_code": "gu-IN"},
-        {"code": "kn", "name": "Kannada", "native": "ಕನ್ನಡ", "speech_code": "kn-IN"},
-        {"code": "ml", "name": "Malayalam", "native": "മലയാളം", "speech_code": "ml-IN"},
-        {"code": "pa", "name": "Punjabi", "native": "ਪੰਜਾਬੀ", "speech_code": "pa-IN"},
-        {"code": "hinglish", "name": "Hinglish", "native": "Hinglish", "speech_code": "hi-IN"}
-    ]
-    return jsonify({"languages": languages})
-
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
@@ -710,9 +754,21 @@ def chat():
         message = data.get('message', '')
         language = data.get('language', 'en')
         session_id = data.get('session_id', str(uuid.uuid4()))
-        
+
         session = get_session(session_id)
-        
+
+        # Rehydrate context after a server restart: the client stores each case's
+        # transcript in localStorage and replays recent turns here. Only seed when
+        # the server-side history is empty, so we never duplicate live turns.
+        if not session['history'] and isinstance(data.get('history'), list):
+            seeded = []
+            for h in data['history'][-MAX_HISTORY:]:
+                role = h.get('role')
+                content = (h.get('content') or '')[:2000]
+                if role in ('user', 'assistant') and content:
+                    seeded.append({"role": role, "content": content})
+            session['history'] = seeded
+
         # Preprocess and expand search query for ChromaDB (handles translation and keywords)
         search_query = preprocess_query_for_rag(message, language)
         
@@ -830,6 +886,27 @@ def devil_advocate():
         return jsonify({"error": str(e)}), 500
 
 
+def _norm_section(value):
+    """Normalise a section token for matching: lowercase, drop subsection suffix
+    and spaces so '318(4)', '318 (4)' and '318' all compare equal."""
+    v = (value or '').lower().strip()
+    v = re.split(r'[\s(]', v, 1)[0]  # '318(4)' / '318 (4)' -> '318'
+    return v
+
+
+def _match_entries(data, query, section_field, name_fields):
+    """Match converter entries. Number-like queries match the section (subsection
+    insensitive); anything else does a case-insensitive substring search over the
+    offence/title fields — so 'cheating' or 'murder' work, as the UI promises."""
+    q = query.lower().strip()
+    is_numeric = bool(re.match(r'^\d', q))  # '379', '318(4)', '354a'
+    if is_numeric:
+        qn = _norm_section(q)
+        return [e for e in data if _norm_section(e.get(section_field, '')) == qn]
+    return [e for e in data
+            if any(q in (e.get(f, '') or '').lower() for f in name_fields)]
+
+
 @app.route('/api/bns-convert', methods=['POST'])
 def bns_convert():
     """IPC ↔ BNS section converter."""
@@ -837,28 +914,16 @@ def bns_convert():
         data = request.get_json(silent=True) or {}
         query = data.get('query', '').strip()
         direction = data.get('direction', 'ipc_to_bns')  # or 'bns_to_ipc'
-        
+
         if not query:
             return jsonify({"results": [], "ai_explanation": ""})
-        
-        # Search in static data strictly
-        results = []
-        query_lower = query.lower()
-        
-        for entry in IPC_BNS_DATA:
-            match = False
-            if direction == 'ipc_to_bns':
-                # Strictly convert typed value
-                if query_lower == entry.get('ipc_section', '').lower():
-                    match = True
-            else:
-                # Strictly convert typed value
-                if query_lower == entry.get('bns_section', '').lower():
-                    match = True
-            
-            if match:
-                results.append(entry)
-        
+
+        section_field = 'ipc_section' if direction == 'ipc_to_bns' else 'bns_section'
+        results = _match_entries(
+            IPC_BNS_DATA, query, section_field,
+            ['offence', 'ipc_title', 'bns_title', 'description'],
+        )
+
         # Get AI explanation if results found, no RAG to keep it strict
         ai_explanation = ""
         if results:
@@ -889,10 +954,11 @@ def crpc_convert():
         if not query:
             return jsonify({"results": [], "ai_explanation": ""})
 
-        src = 'crpc_section' if direction == 'crpc_to_bnss' else 'bnss_section'
-        query_lower = query.lower()
-
-        results = [e for e in BNSS_CRPC_DATA if query_lower == e.get(src, '').lower()]
+        section_field = 'crpc_section' if direction == 'crpc_to_bnss' else 'bnss_section'
+        results = _match_entries(
+            BNSS_CRPC_DATA, query, section_field,
+            ['offence', 'crpc_title', 'bnss_title', 'description'],
+        )
 
         ai_explanation = ""
         if results:
@@ -1164,6 +1230,15 @@ def evidence_checklists():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route('/api/document-templates', methods=['GET'])
+def document_templates():
+    """List the document-format templates (id, title, category) for the draft picker."""
+    return jsonify({"templates": [
+        {k: t.get(k, '') for k in ('id', 'title', 'title_hi', 'category', 'when_to_use')}
+        for t in DOCUMENT_TEMPLATES
+    ]})
+
+
 @app.route('/api/consequence-simulator', methods=['POST'])
 def consequence_simulator():
     """Simulate consequences of inaction."""
@@ -1344,59 +1419,58 @@ def law_and_steps():
         if not situation:
             return jsonify({"error": "No situation provided"}), 400
 
-        # Retrieve grounding context from all three collections + in-memory boosters
+        # Retrieve statute chunks WITH their source URLs (official law first, then
+        # curated rights knowledge for plain-language grounding).
         search_query = preprocess_query_for_rag(situation, language)
-        rag_context = ""
-        if ipc_bns_collection:
-            rag_context += retrieve_context(search_query, ipc_bns_collection, n_results=3)
-        if rights_collection:
-            rag_context += "\n" + retrieve_context(search_query, rights_collection, n_results=3)
-        if legal_aid_collection:
-            rag_context += "\n" + retrieve_context(search_query, legal_aid_collection, n_results=2)
+        chunks = []
+        chunks += retrieve_chunks(search_query, official_law_collection, n_results=4)
+        chunks += retrieve_chunks(search_query, rights_collection, n_results=2)
 
-        extra_bns = check_section_keywords(situation)
-        if extra_bns:
-            rag_context += "\n" + extra_bns
-        extra_rights = check_case_type_keywords(situation)
-        if extra_rights and extra_rights[:100] not in rag_context:
-            rag_context += "\n" + extra_rights
+        language_name = LANGUAGE_NAMES.get(language, 'English')
 
-        system_prompt = LAW_STEPS_PROMPT.format(
-            language_instruction=get_language_instruction(language),
-            rag_context=rag_context or "(no matching sources retrieved)"
-        )
+        def call_llm(messages, temperature=0.2, num_ctx=8192, response_format=None):
+            return call_gemma(messages, temperature=temperature, num_ctx=num_ctx,
+                              response_format=response_format)
 
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": f"Situation:\n{situation}\n\nProduce the verified JSON analysis."}
-        ]
+        pipe = run_law_steps(situation, chunks, language_name, call_llm)
 
-        # Six panels of JSON do not fit in the 2048 default alongside this prompt —
-        # the model gets cut off mid-array and every panel silently comes back empty.
-        response_text = call_gemma(messages, temperature=0.3, num_ctx=8192)
+        # Assemble the six-panel response the frontend expects, from verified artifacts.
+        next_steps = pipe.get('next_steps') or []
+        situation_md = pipe.get('situation_and_law', '')
+        if next_steps:
+            situation_md += "\n\n**What to do next:**\n" + "\n".join(f"- {s}" for s in next_steps)
 
-        # Parse JSON (handle markdown code fences, same approach as rights-card)
-        json_text = response_text
-        if '```json' in json_text:
-            json_text = json_text.split('```json')[1].split('```')[0]
-        elif '```' in json_text:
-            json_text = json_text.split('```')[1].split('```')[0]
+        verification = []
+        for v in pipe.get('verification', []):
+            supported = v['status'] == 'supported'
+            cited = ', '.join(v.get('cited_chunk_ids') or []) or 'No retrieved source'
+            verification.append({
+                "claim": v['claim'],
+                "supported_by": cited if supported else "Not supported by a retrieved source",
+                "status": "verified" if supported else "unverified",
+            })
 
-        try:
-            result = json.loads(json_text.strip())
-        except json.JSONDecodeError:
-            # Fail soft: at least show the model's prose in panel (a)
-            result = {
-                "situation_and_law": response_text,
-                "verification": [],
-                "sources": [],
-                "stress_test": {"for": [], "against": [], "weaknesses": []},
-                "rights_card": {"title": "Your Rights", "rights": []},
-                "explain_simply": ""
-            }
+        # Sources already carry only supported-claim URLs; fold act+section into title.
+        sources = []
+        for s in pipe.get('sources', []):
+            title = s.get('act') or s.get('title') or 'Official source'
+            if s.get('section'):
+                title = f"{title} — {s['section']}"
+            sources.append({"title": title, "url": s.get('url', '')})
+        rag_urls = " ".join(c.get('official_url', '') for c in chunks)
+        sources = _sanitize_sources(sources, rag_urls)
 
-        # No citation reaches the user without passing the deterministic guard.
-        result["sources"] = _sanitize_sources(result.get("sources"), rag_context)
+        result = {
+            "situation_and_law": situation_md,
+            "verification": verification,
+            "sources": sources,
+            "stress_test": pipe.get('stress_test', {"for": [], "against": [], "weaknesses": []}),
+            "rights_card": {
+                "title": "Your Rights",
+                "rights": pipe.get('rights', []),
+            },
+            "explain_simply": pipe.get('explain_simply', ''),
+        }
 
         return jsonify({"result": result, "session_id": session_id})
 
@@ -1464,8 +1538,12 @@ def draft_document():
         situation = data.get('situation', '')
         language = data.get('language', 'en')
 
-        doc_instruction = DRAFTING_PROMPTS.get(doc_type, DRAFTING_PROMPTS['legal_notice'])
-        doc_language = 'Hindi' if language == 'hi' else 'English'
+        # Hardcoded prompt first; otherwise synthesise an instruction from a
+        # matching document template (the ~45 in document_templates.json).
+        doc_instruction = DRAFTING_PROMPTS.get(doc_type)
+        if not doc_instruction:
+            doc_instruction = _template_instruction(doc_type) or DRAFTING_PROMPTS['legal_notice']
+        doc_language = LANGUAGE_NAMES.get(language, 'English')
 
         system_prompt = DRAFT_SYSTEM_PROMPT.format(
             doc_instruction=doc_instruction,

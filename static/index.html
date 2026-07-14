@@ -11,6 +11,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
   <!-- Tesseract.js for OCR -->
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js" defer></script>
+  <!-- pdf.js for extracting text from uploaded PDFs (text layer, OCR fallback) -->
+  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js" defer></script>
   <!-- Marked.js for Markdown rendering -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
   <!-- Lucide SVG icons -->
@@ -428,6 +430,18 @@
         </div>
 
         <div class="contact-cards" id="legal-aid-results"></div>
+
+        <div class="checklists-section" id="checklists-section">
+          <h3>📋 Evidence & Document Checklists</h3>
+          <p class="checklists-intro">Pick your situation to see exactly which documents to gather, the steps to take, and the deadlines that matter.</p>
+          <div class="dropdown-group">
+            <label for="checklist-select">Choose a situation</label>
+            <select id="checklist-select" onchange="onChecklistSelect()">
+              <option value="">-- Select a situation --</option>
+            </select>
+          </div>
+          <div id="checklist-detail"></div>
+        </div>
       </section>
 
       <!-- ════ DOCUMENT TRANSLATOR VIEW ════ -->
@@ -533,6 +547,13 @@
               </ul>
               <span class="draft-fact"><i data-lucide="info"></i> Filing an FIR is always free</span>
             </button>
+          </div>
+
+          <div class="draft-more">
+            <label for="draft-template-select">Need another document? Pick from 40+ ready formats</label>
+            <select id="draft-template-select" onchange="onDraftTemplateSelect()">
+              <option value="">-- More document types (bail, deeds, notices, appeals…) --</option>
+            </select>
           </div>
 
           <div class="draft-steps">
