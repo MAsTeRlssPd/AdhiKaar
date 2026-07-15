@@ -517,14 +517,14 @@ LANGUAGE_INSTRUCTIONS = {
     "ml": "ഉപയോക്താവിന് മനസ്സിലാക്കാൻ ലളിതമായ മലയാളത്തിൽ നിയമോപദേശം നൽകുക. Respond in simple Malayalam.",
     "pa": "ਵਰਤੋਂਕਾਰ ਨੂੰ ਸਮਝਣ ਵਿੱਚ ਆਸਾਨੀ ਹੋਵੇ ਇਸਲਈ ਸਰਲ ਪੰਜਾਬੀ ਵਿੱਚ ਕਾਨੂੰਨੀ ਸਲਾਹ ਦਿਓ। Respond in simple Punjabi.",
     "hinglish": "Respond in Hinglish (mix of Hindi and English, like how people normally talk). Use Roman script. Koi bhi legal term ko simple language mein samjhao.",
-    "tanglish": "Respond in Tanglish (mix of Tamil and English, the way people casually text). Use only Roman (Latin) script — never Tamil script. Explain legal terms in simple words.",
-    "tenglish": "Respond in Tenglish (mix of Telugu and English, the way people casually text). Use only Roman (Latin) script — never Telugu script. Explain legal terms in simple words.",
-    "benglish": "Respond in Benglish (mix of Bengali and English, the way people casually text). Use only Roman (Latin) script — never Bengali script. Explain legal terms in simple words.",
-    "marlish": "Respond in Marathi-English mix, the way people casually text. Use only Roman (Latin) script — never Devanagari script. Explain legal terms in simple words.",
-    "gujlish": "Respond in Gujlish (mix of Gujarati and English, the way people casually text). Use only Roman (Latin) script — never Gujarati script. Explain legal terms in simple words.",
-    "kanglish": "Respond in Kanglish (mix of Kannada and English, the way people casually text). Use only Roman (Latin) script — never Kannada script. Explain legal terms in simple words.",
-    "manglish": "Respond in Manglish (mix of Malayalam and English, the way people casually text). Use only Roman (Latin) script — never Malayalam script. Explain legal terms in simple words.",
-    "punglish": "Respond in Punglish (mix of Punjabi and English, the way people casually text). Use only Roman (Latin) script — never Gurmukhi script. Explain legal terms in simple words.",
+    "tanglish": "Respond in Tanglish (mix of Tamil and English, the way people casually text). Use only Roman script Yenna panreenga? Romba thanks!  — never Tamil script. Explain legal terms in simple words.",
+    "tenglish": "Respond in Tenglish (mix of Telugu and English, the way people casually text). Use only Roman script Ela unnavu ? Lunch aypoyinda?  — never Telugu script. Explain legal terms in simple words.",
+    "benglish": "Respond in Benglish (mix of Bengali and English, the way people casually text). Use only Roman script Kemon acho? Ekta help korbe?  — never Bengali script. Explain legal terms in simple words.",
+    "marlish": "Respond in Marathi-English mix, the way people casually text. Use only Roman script Tu kasa ahes? Udya bhetuya.  — never Devanagari Explain legal terms in simple words.",
+    "gujlish": "Respond in Gujlish (mix of Gujarati and English, the way people casually text). Use only Roman script Kem cho? Tame shu karo cho?  — never Gujarati script. Explain legal terms in simple words.",
+    "kanglish": "Respond in Kanglish (mix of Kannada and English, the way people casually text). Use only Roman script Hegiddira? Nange ondu help beku.  — never Kannada script. Explain legal terms in simple words.",
+    "manglish": "Respond in Manglish (mix of Malayalam and English, the way people casually text). Use only Roman script Sugamano? Nian pinne vilikkam.  — never Malayalam script. Explain legal terms in simple words.",
+    "punglish": "Respond in Punglish (mix of Punjabi and English, the way people casually text). Use only Roman script Ki haal hai? Mainu daso — never Gurmukhi script. Explain legal terms in simple words.",
     "default": "Automatically detect the language of the user's latest query and respond entirely in that language without any emojis."
 }
 
@@ -600,15 +600,15 @@ SITUATION CONTEXT:
 {rag_context}
 """
 
-CONSEQUENCE_PROMPT = """Based on the user's legal situation, model what happens if they take NO ACTION at all. Present as a realistic timeline with specific legal consequences. Do not use any emojis. Convey the timeline in simple paragraphs.
+CONSEQUENCE_PROMPT = """Based on the user's legal situation, model what happens if they take NO ACTION at all. Present it as specific legal consequences. Do not use any emojis. Convey the given points in 1-2 lines each only with precise and correct answers.
 
 Timeline of Inaction:
-Immediate (0-7 days): [What happens right away if nothing is done]
-Short term (1-4 weeks): [Legal implications, missed opportunities]
-Medium term (1-6 months): [Escalation, potential consequences]
-Long term (6+ months): [Worst-case scenarios, rights that expire]
-Worst Case Scenario: [The absolute worst outcome]
-Most Urgent Action: [The single most important thing to do RIGHT NOW]
+1. [What happens right away if nothing is done]
+2. [Legal implications, missed opportunities]
+3. [Escalation, potential consequences]
+4. [Worst-case scenarios, rights that expire]
+5. [The absolute worst outcome]
+6. [The single most important thing to do RIGHT NOW]
 
 Be specific about Indian law — mention actual deadlines, limitation periods, and legal consequences. Don't be alarmist but be honest about real risks. Write in clear, concise human paragraphs.
 
@@ -632,7 +632,7 @@ RULES:
 - Make clear what ACTION needs to be taken and by whom
 
 COMMUNITY GUIDANCE (very important):
-- If the issue is a village or community matter (land or boundary disputes, family disputes, unpaid wages from a local employer, water or common-land problems, caste or dowry issues), explicitly advise approaching the Gram Panchayat sarpanch or mukhiya, local NGOs or free legal-aid clinics, and ASHA or anganwadi workers where relevant.
+- Only If the issue is a village or community matter (land or boundary disputes, water or common-land problems, caste issues), explicitly advise approaching the Gram Panchayat sarpanch or mukhiya, local NGOs or free legal-aid clinics, and ASHA or anganwadi workers where relevant.
 - Name the specific District Legal Services Authority (DLSA) contact and helpline numbers from the CONTEXT when available (for example NALSA 15100).
 - Guide the person on exactly what their NEXT step should be for their specific problem.
 - End with 2-3 short, reassuring sentences: the person has clear rights, free help exists, and this problem can be solved step by step so they should not feel afraid or alone.
@@ -2106,6 +2106,93 @@ def draft_document():
                 print(f"draft repair error: {e}")
 
         return jsonify({"response": response_text})
+
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
+# ══════════════════════════════════════════════════════════════
+# Virtual Courtroom
+# ══════════════════════════════════════════════════════════════
+
+COURTROOM_PROMPT = """You are simulating an Indian courtroom hearing (moot court) focusing on legal arguments.
+
+ROLES:
+1. YOUR_LAWYER: Human-like advocate arguing FOR the citizen. Highly knowledgeable in law, IPC, BNS, BNSS, articles, and rights. Argues fiercely with the opposing lawyer.
+2. OPPOSING_LAWYER: Human-like advocate arguing AGAINST the citizen. Equally knowledgeable and fiercely opposes YOUR_LAWYER.
+3. NEXT_STEPS: Practical, concise advice on what the citizen should do next before actual legal proceedings.
+
+RULES FOR THE HEARING:
+- This is a continuous debate. The lawyers must exchange arguments back-and-forth for about 5-6 total lines of argument.
+- Keep each response concise.
+- At the end, provide clear next steps for the user.
+- Use the exact markers below for each speaker.
+
+OUTPUT FORMAT (strict):
+[YOUR_LAWYER]
+(concise argument)
+[OPPOSING_LAWYER]
+(concise rebuttal)
+[YOUR_LAWYER]
+(concise counter-argument)
+[OPPOSING_LAWYER]
+(concise counter-rebuttal)
+[NEXT_STEPS]
+(concise next steps)
+
+IMPORTANT LANGUAGE INSTRUCTION:
+{language_instruction}
+ALL dialogue from YOUR_LAWYER, OPPOSING_LAWYER, and NEXT_STEPS must strictly be in this requested language. Do NOT use English if another language is requested.
+
+CASE CONTEXT:
+{rag_context}
+"""
+
+@app.route('/api/courtroom', methods=['POST'])
+def courtroom():
+    """Virtual courtroom simulation — three AI roles per round."""
+    try:
+        data = request.get_json(silent=True) or {}
+        situation = data.get('situation', '')
+        language = data.get('language', 'en')
+
+        rag_context = ""
+        if rights_collection:
+            rag_context = retrieve_context(situation, rights_collection, n_results=3)
+
+        system_prompt = COURTROOM_PROMPT.format(
+            language_instruction=get_language_instruction(language),
+            rag_context=rag_context
+        )
+
+        user_content = f"The citizen's case:\n{situation}"
+
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_content}
+        ]
+
+        # Bump temperature slightly for more variety
+        response_text = call_gemma_lang(messages, language, temperature=0.9)
+
+        # Parse the sequence of messages from the marked response
+        import re
+        pattern = r"\[(YOUR_LAWYER|OPPOSING_LAWYER|NEXT_STEPS)\]\s*(.*?)(?=\[(?:YOUR_LAWYER|OPPOSING_LAWYER|NEXT_STEPS)\]|$)"
+        matches = re.finditer(pattern, response_text, re.DOTALL)
+        
+        messages_list = []
+        for m in matches:
+            role = m.group(1)
+            text = m.group(2).strip()
+            if text:
+                messages_list.append({"role": role, "text": text})
+        
+        # Fallback if parsing failed
+        if not messages_list:
+            messages_list.append({"role": "NEXT_STEPS", "text": response_text})
+
+        return jsonify({"messages": messages_list, "raw": response_text})
 
     except Exception as e:
         traceback.print_exc()
