@@ -247,19 +247,46 @@ python app.py
 
 ```
 AdhiKaar/
-├── app.py                  # Flask backend + all REST endpoints
-├── rag_setup.py            # builds the ChromaDB collections
-├── lawsteps_pipeline.py    # verified draft->guard->verify->repair pipeline
-├── requirements.txt
-├── data/                   # curated datasets + corpus + legal-aid directory
-│   ├── ipc_bns_mapping.json, bnss_crpc_mapping.json
-│   ├── document_templates.json, evidence_checklists.json, case_studies.json
-│   ├── legal_aid_directory.json, rights_knowledge.json
-│   └── corpus/             # 6,845-chunk official-law JSONL
-├── static/                 # SPA (index.html, app.js, style.css) + vendored assets + fonts
-├── scripts/                # rti_to_jsonl.py, gen_documentation.py
-├── docs/                   # AdhiKaar_Documentation.docx (full technical writeup)
-└── test_*.py               # test suites
+├── app.py                          # Flask backend: all REST API endpoints, RAG, prompts, OCR/voice
+├── rag_setup.py                    # builds the four ChromaDB collections (--only <name> to rebuild one)
+├── lawsteps_pipeline.py            # verified draft -> guard -> verify -> repair pipeline
+├── requirements.txt                # all Python dependencies
+│
+├── data/                           # legal knowledge base (source of the RAG index)
+│   ├── ipc_bns_mapping.json        # IPC <-> BNS section mappings (216)
+│   ├── bnss_crpc_mapping.json      # CrPC <-> BNSS section mappings (80)
+│   ├── document_templates.json     # 45+ ready-to-file document formats
+│   ├── evidence_checklists.json    # 20 situation checklists
+│   ├── case_studies.json           # case-study Q&A pairs
+│   ├── legal_aid_directory.json    # PAN-India legal-aid contacts + helplines
+│   ├── rights_knowledge.json       # rights, steps, deadlines by case type
+│   ├── corpus/                     # 27 JSONL files, 6,845 official-law chunks (BNS/BNSS/BSA/...)
+│   ├── raw/                        # optional source drops (rti_act_2005.pdf, indic_legal_qa.json)
+│   └── uploads/                    # per-session uploaded docs (git-ignored, transient)
+│
+├── static/                         # frontend single-page app (zero build step)
+│   ├── index.html                  # app shell + all views
+│   ├── app.js                      # all client logic (chat, voice, OCR, views, i18n)
+│   ├── style.css                   # design system + motion
+│   ├── vendor/                     # pinned offline libs (lucide, marked, pdf.js, tesseract)
+│   └── fonts/                      # bundled Noto fonts (Latin + Devanagari)
+│
+├── scripts/
+│   ├── rti_to_jsonl.py             # convert the RTI Act PDF into a corpus JSONL file
+│   └── gen_documentation.py        # regenerate docs/AdhiKaar_Documentation.docx
+│
+├── docs/
+│   └── AdhiKaar_Documentation.docx # full technical + product documentation
+│
+├── test_convert_match.py           # section-converter matching
+├── test_corpus_ingest.py           # corpus ingest (counts, metadata, URLs)
+├── test_checklist_match.py         # evidence-checklist matcher
+├── test_lawsteps_verify.py         # verified-answer pipeline (hallucination guard)
+├── test_lawsteps.py                # law-and-steps endpoint
+├── test_doc_rag.py                 # document upload -> grounded chat
+│
+├── chroma_db/                      # built vector store (git-ignored, created by rag_setup.py)
+└── .venv/                          # virtual environment (git-ignored)
 ```
 
 ---
