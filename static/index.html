@@ -446,8 +446,9 @@
           <div class="upload-icon">📷</div>
           <h3>Tap to upload document photo</h3>
           <p>Take a photo or select from gallery. Supports JPG, PNG, PDF.</p>
-          <input type="file" id="file-input" accept="image/*,.pdf" onchange="handleFileUpload(event)">
+          <input type="file" id="file-input" accept="image/*,.pdf,.txt" onchange="handleFileUpload(event)">
         </div>
+        <p class="draft-privacy" data-i18n="doc_privacy" style="text-align:center">The document is processed only on this computer.</p>
 
         <div class="text-input-area">
           <p style="text-align:center; color: var(--text-tertiary); margin-bottom: var(--space-md);">— OR paste the document text below —</p>
@@ -469,6 +470,13 @@
           <div class="translation-result">
             <h4>📖 Document Explanation</h4>
             <div class="markdown-body" id="translation-result"></div>
+          </div>
+          <div class="doc-followup">
+            <label for="doc-followup-input" data-i18n="doc_followup_title">Ask about this document</label>
+            <div class="doc-followup-row">
+              <input type="text" id="doc-followup-input" data-i18n-ph="doc_followup_ph" placeholder="Ask a question about this document…">
+              <button class="btn btn-primary btn-sm" onclick="askDocFollowup()"><i data-lucide="send"></i></button>
+            </div>
           </div>
         </div>
       </section>
@@ -493,78 +501,40 @@
         </div>
 
         <div class="draft-content">
-          <div class="draft-type-grid">
-            <button class="draft-type-card" data-doctype="legal_notice" onclick="selectDraftType('legal_notice')">
-              <i data-lucide="mail-warning"></i>
-              <h3>Legal Notice</h3>
-              <p>Formal demand before going to court</p>
-              <ul class="draft-examples">
-                <li>Unpaid salary or dues</li>
-                <li>Security deposit recovery</li>
-                <li>Breach of agreement</li>
-              </ul>
-              <span class="draft-fact"><i data-lucide="clock"></i> Reply window: 15–30 days</span>
-            </button>
-            <button class="draft-type-card" data-doctype="consumer_complaint" onclick="selectDraftType('consumer_complaint')">
-              <i data-lucide="shopping-cart"></i>
-              <h3>Consumer Complaint</h3>
-              <p>For the Consumer Commission</p>
-              <ul class="draft-examples">
-                <li>Defective product</li>
-                <li>Refund refused</li>
-                <li>Poor service / overcharging</li>
-              </ul>
-              <span class="draft-fact"><i data-lucide="clock"></i> File within 2 years</span>
-            </button>
-            <button class="draft-type-card" data-doctype="rti_application" onclick="selectDraftType('rti_application')">
-              <i data-lucide="file-search"></i>
-              <h3>RTI Application</h3>
-              <p>Get information from government</p>
-              <ul class="draft-examples">
-                <li>Delayed pension or scheme money</li>
-                <li>Status of your application</li>
-                <li>Public works spending</li>
-              </ul>
-              <span class="draft-fact"><i data-lucide="badge-indian-rupee"></i> Fee ₹10 · Reply in 30 days</span>
-            </button>
-            <button class="draft-type-card" data-doctype="police_complaint" onclick="selectDraftType('police_complaint')">
-              <i data-lucide="shield-alert"></i>
-              <h3>Police Complaint</h3>
-              <p>Written complaint for FIR</p>
-              <ul class="draft-examples">
-                <li>Theft or cheating</li>
-                <li>Online fraud</li>
-                <li>Threats or harassment</li>
-              </ul>
-              <span class="draft-fact"><i data-lucide="info"></i> Filing an FIR is always free</span>
-            </button>
+          <!-- Step 1: describe the case -->
+          <div class="draft-describe" id="draft-step-describe">
+            <h3 data-i18n="draft_step1_title">Describe your case</h3>
+            <p class="draft-privacy" data-i18n="draft_step1_desc">Tell us what happened in your own words. Everything is generated on this device by a local AI — your details never leave this computer.</p>
+            <textarea id="draft-situation" rows="4" data-i18n-ph="draft_step1_ph" placeholder="Describe your legal situation here…"></textarea>
+            <div class="input-actions">
+              <button class="btn btn-primary" id="draft-find-btn" onclick="findDraftDocuments()">
+                <i data-lucide="search"></i> <span data-i18n="draft_find">Find the right documents</span>
+              </button>
+            </div>
           </div>
 
-          <div class="draft-more">
-            <label for="draft-template-select">Need another document? Pick from 40+ ready formats</label>
-            <select id="draft-template-select" onchange="onDraftTemplateSelect()">
-              <option value="">-- More document types (bail, deeds, notices, appeals…) --</option>
-            </select>
-          </div>
+          <!-- Step 2: suggested documents -->
+          <div class="draft-suggest" id="draft-step-suggest" style="display:none">
+            <h3 data-i18n="draft_step2_title">Suggested documents</h3>
+            <p data-i18n="draft_step2_desc">Based on your case, these documents may help. Pick one to prepare.</p>
+            <div class="draft-suggestions" id="draft-suggestions"></div>
 
-          <div class="draft-steps">
-            <div class="draft-step"><span class="step-num">01</span> Choose a document type above</div>
-            <div class="draft-step"><span class="step-num">02</span> Fill in your details in the short form</div>
-            <div class="draft-step"><span class="step-num">03</span> Download, print, and submit</div>
-          </div>
-
-          <div class="draft-tip">
-            <i data-lucide="lightbulb"></i>
-            <p><strong>Tip:</strong> Chat with the Legal Helper about your situation first — the document generator uses that conversation to fill in legal context automatically. Every document cites current law (BNS/BNSS) and comes with simple instructions on where to submit it.</p>
+            <div class="draft-more">
+              <label for="draft-template-select" data-i18n="draft_manual">Or choose a document format yourself</label>
+              <select id="draft-template-select" onchange="onDraftTemplateSelect()">
+                <option value="">-- More document types (bail, deeds, notices, appeals…) --</option>
+              </select>
+            </div>
           </div>
         </div>
 
         <div class="draft-form-container" id="draft-form-container" style="display:none">
           <h3 id="draft-form-title"></h3>
+          <p class="draft-privacy" data-i18n="draft_step3_desc">Answer these so the document is complete and ready to submit. Nothing is stored.</p>
           <div class="draft-form" id="draft-form"></div>
           <div class="input-actions">
             <button class="btn btn-primary" id="draft-generate-btn" onclick="generateDraft()">
-              <i data-lucide="sparkles"></i> Generate Document
+              <i data-lucide="sparkles"></i> <span data-i18n="draft_generate">Generate final document</span>
             </button>
           </div>
         </div>

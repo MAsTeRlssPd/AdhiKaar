@@ -222,18 +222,22 @@ def build_legal_aid(client, ef):
         slsa = state['slsa']
         documents.append(
             f"State: {state['name']} ({state['name_hi']}). State Legal Services Authority: {slsa['name']}. "
-            f"Phone: {slsa.get('phone', '')}. Website: {slsa.get('website', '')}. Address: {slsa.get('address', '')}."
+            f"Phone: {slsa.get('phone', '')}. Email: {slsa.get('email', '')}. "
+            f"Website: {slsa.get('website', '')}. Address: {slsa.get('address', '')}."
         )
-        metadatas.append({"type": "state", "state": state['name'], "phone": slsa.get('phone', '')})
+        metadatas.append({"type": "state", "state": state['name'], "phone": slsa.get('phone', ''),
+                          "email": slsa.get('email', '')})
         ids.append(f"legal_aid_{doc_count}")
         doc_count += 1
-        for district in state['districts']:
+        for district in state.get('districts', []):
             documents.append(
                 f"District Legal Services Authority: {district['name']} ({district.get('name_hi', '')}) "
-                f"in {state['name']}. Address: {district.get('dlsa_address', '')}. Phone: {district.get('phone', '')}."
+                f"in {state['name']}. Address: {district.get('dlsa_address', '')}. "
+                f"Phone: {district.get('phone', '')}. Email: {district.get('email', '')}."
             )
             metadatas.append({"type": "district", "state": state['name'],
-                              "district": district['name'], "phone": district.get('phone', '')})
+                              "district": district['name'], "phone": district.get('phone', ''),
+                              "email": district.get('email', '')})
             ids.append(f"legal_aid_{doc_count}")
             doc_count += 1
 
