@@ -3201,21 +3201,7 @@ svg.inline-icon, .inline-icon { width: 16px; height: 16px; vertical-align: -2px;
 .hero-cta      { animation-delay: 0.34s; }
 .trust-strip   { animation-delay: 0.44s; }
 
-/* Ambient glow behind the hero (decorative, slow drift) */
 .hero-section { position: relative; overflow: hidden; }
-.hero-section::before {
-  content: "";
-  position: absolute;
-  inset: -25% -10% auto auto;
-  width: 520px; height: 520px;
-  background:
-    radial-gradient(circle at 30% 30%, rgba(99,102,241,0.20), transparent 60%),
-    radial-gradient(circle at 70% 70%, rgba(245,158,11,0.14), transparent 60%);
-  filter: blur(8px);
-  z-index: 0;
-  pointer-events: none;
-  animation: glowDrift 16s ease-in-out infinite;
-}
 /* Subtle dotted SVG texture in the hero corner */
 .hero-section::after {
   content: "";
