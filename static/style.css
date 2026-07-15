@@ -3142,3 +3142,14 @@ svg.inline-icon, .inline-icon { width: 16px; height: 16px; vertical-align: -2px;
   font-family: var(--font);
   font-size: var(--font-size-sm);
 }
+
+/* Inline "Ask about this document" answers (Translate page) */
+.doc-followup-answers { margin-top: var(--space-md); display: flex; flex-direction: column; gap: var(--space-md); }
+.doc-qa {
+  background: var(--bg-input);
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+}
+.doc-qa-q { font-weight: 600; margin-bottom: var(--space-sm); }
+.doc-qa-a { color: var(--text); }
+.doc-qa-err { color: var(--danger); }

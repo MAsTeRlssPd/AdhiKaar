@@ -474,9 +474,10 @@
           <div class="doc-followup">
             <label for="doc-followup-input" data-i18n="doc_followup_title">Ask about this document</label>
             <div class="doc-followup-row">
-              <input type="text" id="doc-followup-input" data-i18n-ph="doc_followup_ph" placeholder="Ask a question about this document…">
+              <input type="text" id="doc-followup-input" data-i18n-ph="doc_followup_ph" placeholder="Ask a question about this document…" onkeydown="if(event.key==='Enter')askDocFollowup()">
               <button class="btn btn-primary btn-sm" onclick="askDocFollowup()"><i data-lucide="send"></i></button>
             </div>
+            <div id="doc-followup-answers" class="doc-followup-answers"></div>
           </div>
         </div>
       </section>

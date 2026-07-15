@@ -1521,6 +1521,15 @@ async function tesseractFallback(file, uploadArea) {
     $('ocr-text').textContent = text;
     $('ocr-result-section').style.display = 'block';
     resetUploadArea(uploadArea);
+    // Index the extracted text into this session so "Ask about this document"
+    // is grounded — the client fallback would otherwise leave the doc un-indexed.
+    try {
+      await apiCall('/api/upload-document', {
+        method: 'POST',
+        body: JSON.stringify({ text, filename: file.name, language: state.language, session_id: state.sessionId }),
+      });
+      state.attachedDoc = file.name;
+    } catch (e) { console.error('Doc index (fallback) failed:', e); }
   } catch (error) {
     uploadArea.innerHTML = `
       <div class="upload-icon">⚠️</div>
@@ -1534,15 +1543,37 @@ async function tesseractFallback(file, uploadArea) {
 
 // Follow-up: the uploaded doc is already indexed into this session, so a normal
 // chat message is grounded in it.
-function askDocFollowup() {
+// Answer a question about the uploaded document INLINE on this page. Rerouting to
+// the chat view landed the user in an unrelated case whose session had no
+// document attached, so answers weren't grounded. Here we hit /api/chat with the
+// same session_id the document was indexed under, so the doc RAG kicks in.
+async function askDocFollowup() {
   const input = $('doc-followup-input');
   const q = (input.value || '').trim();
   if (!q) return;
   input.value = '';
-  navigateTo('chat');
-  const chatInput = $('chat-input');
-  if (chatInput) chatInput.value = q;
-  sendMessage();
+
+  const box = $('doc-followup-answers');
+  const item = document.createElement('div');
+  item.className = 'doc-qa';
+  item.innerHTML = `
+    <div class="doc-qa-q">${escapeHtml(q)}</div>
+    <div class="doc-qa-a"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
+  box.appendChild(item);
+  item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  try {
+    const data = await apiCall('/api/chat', {
+      method: 'POST',
+      body: JSON.stringify({ message: q, language: state.language, session_id: state.sessionId }),
+    });
+    item.querySelector('.doc-qa-a').innerHTML =
+      `<div class="markdown-body">${renderMarkdown(data.response || '')}</div>`;
+    refreshIcons();
+  } catch (e) {
+    item.querySelector('.doc-qa-a').innerHTML =
+      `<span class="doc-qa-err">⚠️ Could not get an answer. Is the server running?</span>`;
+  }
 }
 
 async function translateOcrText() {
