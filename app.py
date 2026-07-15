@@ -1372,27 +1372,47 @@ def clear_document():
 # offline. Coverage is uneven for a few Indic scripts, so unsupported ones fall
 # back to a Devanagari or Latin pass.
 
+# Belt-and-suspenders for the same oneDNN crash: also disable it via the runtime
+# flag, in case a code path builds a predictor without the kwarg.
+os.environ.setdefault('FLAGS_use_mkldnn', '0')
+
+# OCR is chosen for the DOCUMENT's script, not the UI language: Indian legal
+# papers (FIRs, notices) are routinely Hindi + English on the same page, so we
+# default to the Devanagari recogniser ('hi'), which reads Devanagari AND Latin —
+# even when the app is set to English. PaddleOCR then auto-selects the best model
+# version per language: PP-OCRv6 where it has one (e.g. English/Latin), PP-OCRv5
+# for Devanagari (PP-OCRv6 has no Devanagari model yet). Other Indic scripts pass
+# their own code and each reads the Latin mixed in too.
 PADDLE_LANG_MAP = {
-    'en': 'en', 'hi': 'devanagari', 'mr': 'devanagari',
+    'en': 'hi', 'hi': 'hi', 'mr': 'hi',
     'ta': 'ta', 'te': 'te', 'kn': 'ka', 'ml': 'ml',
-    # bn/gu/pa lack good classic PaddleOCR packs — fall back to Latin.
-    'bn': 'en', 'gu': 'en', 'pa': 'en',
+    'bn': 'hi', 'gu': 'hi', 'pa': 'hi',
 }
 
 _ocr_engines = {}
 
 def get_ocr_engine(language):
-    """Load (and cache) a PaddleOCR engine for the app language. Lazy — never at startup."""
-    paddle_lang = PADDLE_LANG_MAP.get(base_lang(language), 'en')
+    """Load (and cache) a PaddleOCR engine for the document's script. Prefers
+    PP-OCRv6, auto-falling back to the best available version for scripts it does
+    not cover (Devanagari). Lazy — models download once then run offline."""
+    paddle_lang = PADDLE_LANG_MAP.get(base_lang(language), 'hi')
     if paddle_lang not in _ocr_engines:
         from paddleocr import PaddleOCR
         print(f"⏳ Loading PaddleOCR ({paddle_lang}) — first use may download models...")
+        # Doc-orientation/unwarping off (slow, rarely needed for clean uploads);
+        # textline-orientation on to handle rotated scan lines. enable_mkldnn=False
+        # avoids a PaddlePaddle 3.3 oneDNN crash on this CPU
+        # (ConvertPirAttribute2RuntimeAttribute NotImplementedError).
+        opts = dict(use_doc_orientation_classify=False, use_doc_unwarping=False,
+                    use_textline_orientation=True, enable_mkldnn=False, lang=paddle_lang)
         try:
-            _ocr_engines[paddle_lang] = PaddleOCR(use_angle_cls=True, lang=paddle_lang, show_log=False)
-        except TypeError:
-            # Newer PaddleOCR (3.x) dropped some of these kwargs.
-            _ocr_engines[paddle_lang] = PaddleOCR(lang=paddle_lang)
-        print("✅ PaddleOCR ready")
+            _ocr_engines[paddle_lang] = PaddleOCR(ocr_version='PP-OCRv6', **opts)
+            print("✅ PaddleOCR PP-OCRv6 ready")
+        except Exception:
+            # PP-OCRv6 has no model for this script — let PaddleOCR pick the best
+            # version (PP-OCRv5 for Devanagari, etc.).
+            _ocr_engines[paddle_lang] = PaddleOCR(**opts)
+            print("✅ PaddleOCR ready (auto-selected model version)")
     return _ocr_engines[paddle_lang]
 
 
@@ -1427,9 +1447,9 @@ def _ocr_bytes_image(engine, image_bytes):
     if arr is None:
         return ""
     try:
-        result = engine.ocr(arr)
+        result = engine.predict(arr)          # PaddleOCR 3.x / PP-OCRv6
     except Exception:
-        result = engine.predict(arr)
+        result = engine.ocr(arr)              # older API fallback
     return "\n".join(_paddle_texts(result))
 
 
@@ -1460,9 +1480,9 @@ def _extract_pdf(pdf_bytes, engine, max_ocr_pages=5):
             bitmap = pdf[i].render(scale=200 / 72)  # ~200 dpi
             arr = bitmap.to_numpy()
             try:
-                result = engine.ocr(arr)
+                result = engine.predict(arr)      # PaddleOCR 3.x / PP-OCRv6
             except Exception:
-                result = engine.predict(arr)
+                result = engine.ocr(arr)          # older API fallback
             ocr_text.append("\n".join(_paddle_texts(result)))
         return "\n".join(ocr_text).strip(), pages, "paddleocr"
     except Exception as e:
