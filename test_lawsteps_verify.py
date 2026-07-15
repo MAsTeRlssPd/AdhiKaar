@@ -2,7 +2,7 @@
 
 The point of the pipeline is that a WRONG legal claim never reaches the user as
 'verified'. The deterministic guard must catch a claim that names a section its
-cited source does not contain — before any model is trusted.
+cited source does not contain - before any model is trusted.
 
 Run: python test_lawsteps_verify.py
 """
@@ -43,7 +43,7 @@ def make_stub():
                      "cited_chunk_ids": ["bnss_2023_en:section-173"]},
                 ],
             })
-        # VERIFY — support whatever survived the guard
+        # VERIFY - support whatever survived the guard
         return json.dumps({"results": [{"claim_id": "c0", "supported": True}]})
 
     return call_llm, calls

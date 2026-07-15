@@ -14,7 +14,7 @@ The person operating AdhiKaar is usually not the person whose rights are at stak
 
 Context of use is genuinely mixed and no single scene dominates: a budget Android in bright sunlight on a patchy connection, a shared kiosk in a panchayat office with people watching, and a desktop at an aid office with a keyboard and a long session are all real. The interface has to hold up across all three without being optimized for any one of them.
 
-The job: take a messy, half-told situation and turn it into a legal position the helper understands well enough to explain back — to the citizen, to an elder, to a room.
+The job: take a messy, half-told situation and turn it into a legal position the helper understands well enough to explain back - to the citizen, to an elder, to a room.
 
 ## Product Purpose
 
@@ -24,11 +24,11 @@ Success is **comprehension**. A session is worth it when the person can explain 
 
 ## Positioning
 
-Legal help that never leaves the device. Local inference, in-browser OCR, cases on disk — the only legal AI a person can use for a domestic violence case, a police matter, or a dispute with their employer without the situation touching anyone's server.
+Legal help that never leaves the device. Local inference, in-browser OCR, cases on disk - the only legal AI a person can use for a domestic violence case, a police matter, or a dispute with their employer without the situation touching anyone's server.
 
 ## Brand Personality
 
-Calm, plain-spoken, steady. The voice of someone who has seen this exact situation a hundred times and isn't rattled by it. It never alarms and never postures. Legalese gets translated, not flattened into baby talk — the user is an adult in trouble, not a child. Because a helper is frequently reading screens aloud to a distressed person, the writing has to survive being spoken: short sentences, no nested clauses, no jargon that needs a second explanation.
+Calm, plain-spoken, steady. The voice of someone who has seen this exact situation a hundred times and isn't rattled by it. It never alarms and never postures. Legalese gets translated, not flattened into baby talk - the user is an adult in trouble, not a child. Because a helper is frequently reading screens aloud to a distressed person, the writing has to survive being spoken: short sentences, no nested clauses, no jargon that needs a second explanation.
 
 ## Anti-references
 
@@ -40,7 +40,7 @@ Three families are ruled out:
 
 ## Design Principles
 
-**Privacy you can point at.** The positioning is only real if it's visible at the moment it matters — when a photo of an FIR is uploaded, when a domestic violence situation is typed out. Local-by-architecture is worthless as a claim in a footer.
+**Privacy you can point at.** The positioning is only real if it's visible at the moment it matters - when a photo of an FIR is uploaded, when a domestic violence situation is typed out. Local-by-architecture is worthless as a claim in a footer.
 
 **Explainable out loud.** The primary user reads the screen to someone else. Every output is a script for a conversation, not a document to be skimmed. If it can't be spoken, it doesn't ship.
 
@@ -52,4 +52,4 @@ Three families are ruled out:
 
 ## Accessibility & Inclusion
 
-No formal WCAG level is committed. Accessibility here is practical and judged case by case: an 18px+ base size, large touch targets, voice-first input and TTS output via the Web Speech API, and 11 languages with Devanagari and regional scripts treated as first-class rather than fallback. The governing constraint is users who may read slowly, or not at all, in any script — which is why voice and iconography carry real load rather than decorating a text UI.
+No formal WCAG level is committed. Accessibility here is practical and judged case by case: an 18px+ base size, large touch targets, voice-first input and TTS output via the Web Speech API, and 11 languages with Devanagari and regional scripts treated as first-class rather than fallback. The governing constraint is users who may read slowly, or not at all, in any script - which is why voice and iconography carry real load rather than decorating a text UI.

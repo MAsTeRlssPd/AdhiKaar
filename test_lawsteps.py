@@ -1,6 +1,6 @@
 """Self-check for /api/law-and-steps.
 
-Runs offline: the LLM is stubbed, so this exercises only the branchy parts —
+Runs offline: the LLM is stubbed, so this exercises only the branchy parts -
 pulling JSON out of the model's reply (fenced or bare), failing soft into a
 six-panel shape when the model returns prose, and the deterministic citation
 guard that stops a fabricated deep link ever reaching the user.
@@ -43,7 +43,7 @@ def main():
     original = app.call_gemma
 
     try:
-        # 1. Fenced JSON — the common Gemma reply shape — must parse, not fall back.
+        # 1. Fenced JSON - the common Gemma reply shape - must parse, not fall back.
         app.call_gemma = lambda *a, **k: "```json\n" + json.dumps(GOOD) + "\n```"
         assert post(client) == GOOD, "fenced JSON was not extracted cleanly"
 
@@ -53,7 +53,7 @@ def main():
         assert got["explain_simply"] == GOOD["explain_simply"]
         assert all(k in got for k in PANELS), sorted(got)
 
-        # 3. Prose instead of JSON must NOT 500 — it fails soft into all six panels,
+        # 3. Prose instead of JSON must NOT 500 - it fails soft into all six panels,
         #    keeping the model's text in panel (a) and real official sources in (c).
         app.call_gemma = lambda *a, **k: "Sorry, I cannot do that."
         got = post(client)

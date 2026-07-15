@@ -15,7 +15,7 @@ CORPUS_DIR = os.path.join(os.path.dirname(__file__), 'data', 'corpus')
 
 def main():
     col = app.official_law_collection
-    assert col is not None, "official_law collection not built — run rag_setup.py --only official_law"
+    assert col is not None, "official_law collection not built - run rag_setup.py --only official_law"
 
     # count == non-empty JSONL lines (proves id uniqueness, no drops)
     non_empty = 0

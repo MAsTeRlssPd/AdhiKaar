@@ -1,4 +1,4 @@
-"""Verified 'Law & Next Steps' pipeline — draft -> guard -> verify -> repair.
+"""Verified 'Law & Next Steps' pipeline - draft -> guard -> verify -> repair.
 
 Re-implemented (not imported) from Nyaya Navigator's agent pipeline, adapted to a
 plain injected LLM callable so it runs on AdhiKaar's Ollama call_gemma and is
@@ -50,7 +50,7 @@ def _uncited_section_references(claim_text, cited_excerpts):
 
 
 def _parse_json(text):
-    """Tolerant JSON extraction — strips code fences, finds the outermost object."""
+    """Tolerant JSON extraction - strips code fences, finds the outermost object."""
     if not text:
         return None
     t = text.strip()

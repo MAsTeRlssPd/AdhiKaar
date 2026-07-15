@@ -1,4 +1,4 @@
-# अधिKaar (AdhiKaar) AI Legal Assistant — Technical Walkthrough & Architecture Guide
+# अधिKaar (AdhiKaar) AI Legal Assistant - Technical Walkthrough & Architecture Guide
 
 Welcome to the technical walkthrough of **अधिKaar (AdhiKaar)**. This guide provides a comprehensive overview of how the application is structured, how the data flows between the user, the frontend, the Flask backend, ChromaDB RAG, and the local Ollama LLM, and the specific roles of all code and data files.
 
@@ -11,7 +11,7 @@ The diagram below illustrates the communication flow within **AdhiKaar**:
 ```mermaid
 graph TD
     User([User / Citizen]) <-->|Interacts via Voice or Text| Frontend[Frontend SPA: index.html, app.js, style.css]
-    
+
     subgraph Client-Side Web Browsers
         Frontend <-->|Manages Cases & Deadlines| LocalStorage[(Browser LocalStorage)]
         Frontend -->|Extracts Text offline| OCR[Tesseract.js OCR Engine]
@@ -24,7 +24,7 @@ graph TD
         Backend <-->|Sends Query & Retrieves Matches| VectorDB[(ChromaDB: chroma_db)]
         Backend <-->|Requests Inference / Stream| LLM[Ollama: Gemma 4 / gemma3:4b]
     end
-    
+
     subgraph Database Prep one-time setup
         IngestScript[rag_setup.py] -->|Reads & Embeds| JSONData[JSON Datasets: data/]
         JSONData -->|1. IPC-BNS mapping<br/>2. Legal aid directory<br/>3. Case type rights| IngestScript
@@ -66,7 +66,7 @@ The website functions as a **Single Page Application (SPA)** that swaps views dy
 ### B. Legal Helper Chat (Main AI Engine)
 *   **RAG Context Augmentation**: When the user describes their issue (e.g., *"My landlord is refusing to return my security deposit"*), the backend queries the `rights_knowledge` and `ipc_bns` collections in ChromaDB to retrieve relevant legal articles, sections, and steps.
 *   **Confirmation Loop**: To prevent hallucination and align the AI, the assistant **first** restates the user's situation in plain language and asks: *"Is this correct?"* The AI will not give advice until the user confirms.
-*   **Power-Imbalance Detection**: The system analyzes keywords to identify imbalances (e.g., Employer vs Worker, Landlord vs Tenant, Police vs Citizen). If a match is found, the AI automatically displays a custom **⚠️ PROTECTIVE ADVISORY** instructing the citizen on critical safety rules (e.g., *"Do not sign documents on the spot," "Do not surrender original paperwork"*).
+*   **Power-Imbalance Detection**: The system analyzes keywords to identify imbalances (e.g., Employer vs Worker, Landlord vs Tenant, Police vs Citizen). If a match is found, the AI automatically displays a custom ** PROTECTIVE ADVISORY** instructing the citizen on critical safety rules (e.g., *"Do not sign documents on the spot," "Do not surrender original paperwork"*).
 *   **Actionable Chat Modules**:
     *   **What If I Do Nothing? (Consequence Simulator)**: Models a realistic legal timeline showing the progression of inaction (0-7 days, 1-4 weeks, 1-6 months, 6+ months), the worst-case scenario, and the single most urgent action.
     *   **Explain to Elder (Panchayat Bridge)**: Rewrites complex legal counsel into an simplified, highly respectful community format suitable for village leaders, elders, or ASHA/NGO workers.

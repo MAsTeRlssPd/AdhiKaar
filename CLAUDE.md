@@ -4,11 +4,11 @@
 
 Read [PRODUCT.md](PRODUCT.md) before changing anything user-facing, and [DESIGN.md](DESIGN.md) before touching `static/style.css` or `static/index.html`.
 
-**Register:** product — design serves the task, not the pitch.
-**Platform:** web — vanilla SPA in `static/`, served by Flask at `localhost:5000`. No build step.
+**Register:** product - design serves the task, not the pitch.
+**Platform:** web - vanilla SPA in `static/`, served by Flask at `localhost:5000`. No build step.
 **Positioning:** Legal help that never leaves the device. Local Ollama inference, in-browser OCR, cases in localStorage.
 
-The primary user is an **intermediary** (NGO worker, paralegal, panchayat elder) operating the tool for a citizen sitting beside them, reading the screen out loud. Success is comprehension — the person being helped can restate their own legal position — not task completion.
+The primary user is an **intermediary** (NGO worker, paralegal, panchayat elder) operating the tool for a citizen sitting beside them, reading the screen out loud. Success is comprehension - the person being helped can restate their own legal position - not task completion.
 
 Five principles, expanded in PRODUCT.md: privacy you can point at · explainable out loud · comprehension is the deliverable · calm under duress · legible at both ends.
 

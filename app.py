@@ -1,5 +1,5 @@
 """
-अधिKaar — AI Legal Assistant for Every Indian Citizen
+अधिKaar - AI Legal Assistant for Every Indian Citizen
 Flask Backend with Gemma 4 via Ollama + ChromaDB RAG
 """
 
@@ -9,7 +9,7 @@ import os
 
 # The ollama Python client reads OLLAMA_HOST to decide where to CONNECT, and
 # builds its default client at import time. A server may bind 0.0.0.0, but
-# 0.0.0.0 is not a valid *connect* target on Windows — normalise it (and
+# 0.0.0.0 is not a valid *connect* target on Windows - normalise it (and
 # blanks) to loopback BEFORE importing ollama so the client can reach it.
 _oh = os.environ.get('OLLAMA_HOST', '').strip()
 if _oh in ('', '0.0.0.0') or _oh.startswith('0.0.0.0:'):
@@ -38,7 +38,7 @@ if hasattr(sys.stderr, 'reconfigure'):
 
 app = Flask(__name__, static_folder='static', static_url_path='')
 CORS(app)
-# Never let the browser cache static files during development —
+# Never let the browser cache static files during development -
 # stale cached JS/CSS causes "ghost" bugs after edits
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
@@ -62,18 +62,18 @@ def get_working_model():
                 messages=[{'role': 'user', 'content': 'hi'}],
                 options={'temperature': 0, 'num_ctx': 512}
             )
-            print(f"✅ Model verified and selected: {model}")
+            print(f" Model verified and selected: {model}")
             _resolved_model = model
             return model
         except Exception as e:
             err = str(e)
             if any(k in err for k in ('GGML_ASSERT', 'stack-based buffer', 'process has terminated')):
-                print(f"⚠️  {model} crashes on this hardware — trying next model")
+                print(f"  {model} crashes on this hardware - trying next model")
             elif 'not found' in err.lower() or 'pull' in err.lower():
-                print(f"⚠️  {model} not available locally — trying next model")
+                print(f"  {model} not available locally - trying next model")
             else:
-                print(f"⚠️  {model} error: {err[:150]} — trying next model")
-    print("❌ No working model found. Please run: ollama pull gemma3:4b")
+                print(f"  {model} error: {err[:150]} - trying next model")
+    print(" No working model found. Please run: ollama pull gemma3:4b")
     _resolved_model = GEMMA_MODEL_PREFERRED
     return _resolved_model
 
@@ -90,7 +90,7 @@ def load_json(filename, fallback):
         with open(path, 'r', encoding='utf-8') as f:
             return json.load(f)
     except (FileNotFoundError, json.JSONDecodeError) as e:
-        print(f"⚠️ Could not load {filename}: {e} — using empty fallback")
+        print(f" Could not load {filename}: {e} - using empty fallback")
         return fallback
 
 IPC_BNS_DATA = load_json('ipc_bns_mapping.json', [])
@@ -107,7 +107,7 @@ def _get_template(template_id):
 
 def _template_placeholders(template_id):
     """Extract the ordered, de-duplicated list of [PLACEHOLDER] tokens from a
-    template's sample_text — the fields a user must supply for a complete document."""
+    template's sample_text - the fields a user must supply for a complete document."""
     tpl = _get_template(template_id)
     if not tpl:
         return []
@@ -133,7 +133,7 @@ def _template_instruction(template_id):
         f"Draft a {tpl['title']}. Purpose: {tpl.get('when_to_use', '')} "
         f"Follow this structure: {structure}. "
         f"Use this standard format, and substitute EVERY [PLACEHOLDER] with the exact "
-        f"value the user provided — this is a final document, so it must contain no "
+        f"value the user provided - this is a final document, so it must contain no "
         f"square-bracket placeholders:\n{tpl.get('sample_text', '')}\n"
         f"After the document, note where to submit it: {tpl.get('where_to_submit', '')}"
     )
@@ -142,7 +142,7 @@ def _template_instruction(template_id):
 def match_checklist(situation):
     """Pick the evidence-checklist template that best fits a situation.
 
-    Deterministic keyword scoring — the documents and statutory deadlines in the
+    Deterministic keyword scoring - the documents and statutory deadlines in the
     templates are human-reviewed, so grounding the model in a real template beats
     letting it invent a document list.
     """
@@ -159,7 +159,7 @@ def match_checklist(situation):
             # Prefix match so "refusal" catches "refused", "eviction" catches "evicted".
             return term in text or (len(term) >= 5 and term[:5] in text)
 
-        # The id names the case type — weight it double so "police refused to file
+        # The id names the case type - weight it double so "police refused to file
         # my FIR" lands on fir_refusal, not the merely police-flavoured template.
         id_terms = [t for t in tpl['id'].split('_') if len(t) >= 3]
         other = set(tpl.get('category', '').lower().split()) | set(tpl.get('title', '').lower().split())
@@ -168,7 +168,7 @@ def match_checklist(situation):
 
     # Rank on the expanded text (so Hinglish/synonyms match), but tie-break on the
     # user's raw words. Expansion is deliberately broad and can drag in a sibling
-    # case type — e.g. expanding "police" injects "FIR", which ties a custodial
+    # case type - e.g. expanding "police" injects "FIR", which ties a custodial
     # complaint with fir_refusal. The raw text settles it.
     ranked = sorted(
         ((score_against(expanded, t), score_against(raw, t), t) for t in EVIDENCE_CHECKLISTS),
@@ -186,13 +186,13 @@ def match_checklist(situation):
 
 def checklist_to_text(tpl):
     """Flatten a checklist template into prompt/RAG-friendly text."""
-    lines = [f"Checklist: {tpl['title']} — {tpl.get('description', '')}"]
+    lines = [f"Checklist: {tpl['title']} - {tpl.get('description', '')}"]
     for d in tpl.get('documents', []):
-        lines.append(f"Document: {d['name']} — {d.get('why', '')} How to get: {d.get('how_to_get', '')}")
+        lines.append(f"Document: {d['name']} - {d.get('why', '')} How to get: {d.get('how_to_get', '')}")
     for i, s in enumerate(tpl.get('steps', []), 1):
         lines.append(f"Step {i}: {s}")
     for dl in tpl.get('deadlines', []):
-        lines.append(f"Deadline: {dl.get('what', '')} — {dl.get('timeframe', '')}")
+        lines.append(f"Deadline: {dl.get('what', '')} - {dl.get('timeframe', '')}")
     for tip in tpl.get('tips', []):
         lines.append(f"Tip: {tip}")
     if tpl.get('helpline'):
@@ -210,10 +210,10 @@ def load_collection(name):
     """Load one ChromaDB collection; failure of one doesn't disable the others."""
     try:
         col = chroma_client.get_collection(name, embedding_function=ef)
-        print(f"✅ ChromaDB collection '{name}' loaded")
+        print(f" ChromaDB collection '{name}' loaded")
         return col
     except Exception as e:
-        print(f"⚠️ ChromaDB collection '{name}' not available. Run rag_setup.py. Error: {e}")
+        print(f" ChromaDB collection '{name}' not available. Run rag_setup.py. Error: {e}")
         return None
 
 ipc_bns_collection = load_collection("ipc_bns")
@@ -233,12 +233,12 @@ def retrieve_context(query, collection, n_results=3, max_chars=1200, threshold=1
         results = collection.query(query_texts=[query], n_results=n_results)
         docs = results.get('documents', [[]])[0]
         distances = results.get('distances', [[]])[0]
-        
+
         filtered_docs = []
         for doc, dist in zip(docs, distances):
             if dist <= threshold:
                 filtered_docs.append(doc)
-        
+
         return "\n".join(filtered_docs)[:max_chars]
     except Exception as e:
         print(f"RAG retrieval error: {e}")
@@ -249,7 +249,7 @@ def retrieve_chunks(query, collection, n_results=4):
     """Like retrieve_context, but keeps each chunk's metadata (act, section, URL).
 
     The verified law-and-steps pipeline needs the source URL of each statute
-    excerpt — retrieve_context throws that away, which is why sources used to
+    excerpt - retrieve_context throws that away, which is why sources used to
     collapse to a bare domain."""
     if collection is None:
         return []
@@ -306,7 +306,7 @@ KEYWORD_MAPPINGS = {
     "naukri": "salary wages labor employment pay unpaid contract job PF ESI work seth malik office",
     "malik": "salary wages labor employment pay unpaid contract job PF ESI work seth malik office",
     "fired": "salary wages labor employment pay unpaid contract job PF ESI work seth malik office wrongful termination notice",
-    
+
     # Tenancy
     "rent": "landlord tenant rent deposit security lease agreement makan malik kiraya kirayedar",
     "landlord": "landlord tenant rent deposit security lease agreement makan malik kiraya kirayedar",
@@ -317,7 +317,7 @@ KEYWORD_MAPPINGS = {
     "makaan": "landlord tenant rent deposit security lease agreement makan malik kiraya kirayedar",
     "deposit": "landlord tenant rent deposit security lease agreement makan malik kiraya kirayedar",
     "security": "landlord tenant rent deposit security lease agreement makan malik kiraya kirayedar",
-    
+
     # Domestic Violence
     "violence": "domestic violence abuse husband wife cruelty dowry beating maar torture pati patni hinsa",
     "domestic": "domestic violence abuse husband wife cruelty dowry beating maar torture pati patni hinsa",
@@ -349,7 +349,7 @@ KEYWORD_MAPPINGS = {
     "abuse": "domestic violence abuse husband wife cruelty dowry beating maar torture pati patni hinsa",
     "dahej": "domestic violence abuse husband wife cruelty dowry beating maar torture pati patni hinsa",
     "dowry": "domestic violence abuse husband wife cruelty dowry beating maar torture pati patni hinsa",
-    
+
     # Cyber Crime
     "cyber": "cyber crime online fraud hacking netbanking otp upi bank net banking cheated scam blackmail",
     "fraud": "cyber crime online fraud hacking netbanking otp upi bank net banking cheated scam blackmail",
@@ -359,7 +359,7 @@ KEYWORD_MAPPINGS = {
     "upi": "cyber crime online fraud hacking netbanking otp upi bank net banking cheated scam blackmail",
     "bank": "cyber crime online fraud hacking netbanking otp upi bank net banking cheated scam blackmail",
     "cheated": "cyber crime online fraud hacking netbanking otp upi bank net banking cheated scam blackmail",
-    
+
     # Consumer
     "consumer": "consumer complaint defective product refund warranty service cheated fraud online shop bill",
     "product": "consumer complaint defective product refund warranty service cheated fraud online shop bill",
@@ -368,11 +368,11 @@ KEYWORD_MAPPINGS = {
     "refund": "consumer complaint defective product refund warranty service cheated fraud online shop bill",
     "warranty": "consumer complaint defective product refund warranty service cheated fraud online shop bill",
     "bill": "consumer complaint defective product refund warranty service cheated fraud online shop bill",
-    
+
     # Cheque Bounce
     "cheque": "cheque bounce dishonour NI Act Section 138 payment return memo",
     "bounce": "cheque bounce dishonour NI Act Section 138 payment return memo",
-    
+
     # Police
     "police": "police FIR arrest bail custody complaint thana daroga SHO zero FIR",
     "fir": "police FIR arrest bail custody complaint thana daroga SHO zero FIR",
@@ -380,7 +380,7 @@ KEYWORD_MAPPINGS = {
     "bail": "police FIR arrest bail custody complaint thana daroga SHO zero FIR",
     "thana": "police FIR arrest bail custody complaint thana daroga SHO zero FIR",
     "daroga": "police FIR arrest bail custody complaint thana daroga SHO zero FIR",
-    
+
     # Property
     "property": "property land inheritance partition encroachment registration title batwara zameen kabza",
     "land": "property land inheritance partition encroachment registration title batwara zameen kabza",
@@ -395,18 +395,18 @@ def expand_query_multilingual(query):
     query_lower = query.lower()
     words = query_lower.split()
     matched_expansions = []
-    
+
     for word in words:
         clean_word = "".join(c for c in word if c.isalnum())
         if clean_word in KEYWORD_MAPPINGS:
             matched_expansions.append(KEYWORD_MAPPINGS[clean_word])
-            
+
     if matched_expansions:
         unique_expansions = list(set(matched_expansions))
         expanded_query = query + " " + " ".join(unique_expansions)
-        print(f"🔑 Multilingual RAG Expansion: '{query}' -> '{expanded_query}'")
+        print(f" Multilingual RAG Expansion: '{query}' -> '{expanded_query}'")
         return expanded_query
-        
+
     return query
 
 def get_english_keywords_from_llm(query, language):
@@ -424,7 +424,7 @@ def get_english_keywords_from_llm(query, language):
             options={'temperature': 0, 'num_ctx': 256}
         )
         result = response['message']['content'].strip()
-        print(f"🤖 LLM translated query to English keywords: '{result}'")
+        print(f" LLM translated query to English keywords: '{result}'")
         return result
     except Exception as e:
         print(f"LLM translation error: {e}")
@@ -442,7 +442,7 @@ def preprocess_query_for_rag(query, language):
         llm_keywords = get_english_keywords_from_llm(query, language)
         if llm_keywords:
             query_expanded = query + " " + llm_keywords
-            
+
     return query_expanded
 
 def extract_section_numbers(query):
@@ -452,7 +452,7 @@ def check_section_keywords(query):
     """Scan query for section numbers and pull BNS/IPC info from static memory."""
     sections = extract_section_numbers(query)
     extra_contexts = []
-    
+
     for num in sections:
         for entry in IPC_BNS_DATA:
             if entry.get('ipc_section') == num or entry.get('bns_section') == num:
@@ -464,21 +464,21 @@ def check_section_keywords(query):
                     f"Key Changes: {entry['key_changes']}."
                 )
                 extra_contexts.append(doc)
-                
+
     return "\n".join(extra_contexts)
 
 def check_case_type_keywords(query):
     """Scan query for case type keywords and pull details from rights JSON in memory."""
     query_lower = query.lower()
     extra_contexts = []
-    
+
     case_types = RIGHTS_DATA.get('case_types', [])
     for ct in case_types:
         match_count = 0
         for kw in ct.get('keywords', []):
             if kw.lower() in query_lower:
                 match_count += 1
-                
+
         if match_count >= 2 or ct['name'].lower() in query_lower or ct.get('name_hi', '') in query_lower:
             scenarios = ". ".join(ct['common_scenarios'])
             rights = ". ".join(ct['rights'])
@@ -486,7 +486,7 @@ def check_case_type_keywords(query):
             docs = ", ".join(ct['documents_needed'])
             bns = ", ".join(ct.get('relevant_sections', {}).get('bns', []))
             other = ", ".join(ct.get('relevant_sections', {}).get('other_laws', []))
-            
+
             doc = (
                 f"Case Type: {ct['name']}. "
                 f"Common Scenarios: {scenarios}. "
@@ -498,7 +498,7 @@ def check_case_type_keywords(query):
             )
             extra_contexts.append(doc)
             break
-            
+
     return "\n".join(extra_contexts)
 
 # ══════════════════════════════════════════════════════════════
@@ -506,7 +506,7 @@ def check_case_type_keywords(query):
 # ══════════════════════════════════════════════════════════════
 
 LANGUAGE_INSTRUCTIONS = {
-    "en": "Respond in clear, simple English. Avoid legal jargon — explain any technical terms in everyday words.",
+    "en": "Respond in clear, simple English. Avoid legal jargon - explain any technical terms in everyday words.",
     "hi": "उपयोगकर्ता को समझने में आसानी हो इसलिए सरल हिंदी का प्रयोग करें। Respond in simple Hindi.",
     "ta": "சட்ட ஆலோசனையை எளிமையான தமிழில் வழங்கவும். Respond in simple Tamil.",
     "te": "చట్టపరమైన సలహాను సాధారణ తెలుగులో అందించండి. Respond in simple Telugu.",
@@ -517,14 +517,14 @@ LANGUAGE_INSTRUCTIONS = {
     "ml": "ഉപയോക്താവിന് മനസ്സിലാക്കാൻ ലളിതമായ മലയാളത്തിൽ നിയമോപദേശം നൽകുക. Respond in simple Malayalam.",
     "pa": "ਵਰਤੋਂਕਾਰ ਨੂੰ ਸਮਝਣ ਵਿੱਚ ਆਸਾਨੀ ਹੋਵੇ ਇਸਲਈ ਸਰਲ ਪੰਜਾਬੀ ਵਿੱਚ ਕਾਨੂੰਨੀ ਸਲਾਹ ਦਿਓ। Respond in simple Punjabi.",
     "hinglish": "Respond in Hinglish (mix of Hindi and English, like how people normally talk). Use Roman script. Koi bhi legal term ko simple language mein samjhao.",
-    "tanglish": "Respond in Tanglish (mix of Tamil and English, the way people casually text). Use only Roman script Yenna panreenga? Romba thanks!  — never Tamil script. Explain legal terms in simple words.",
-    "tenglish": "Respond in Tenglish (mix of Telugu and English, the way people casually text). Use only Roman script Ela unnavu ? Lunch aypoyinda?  — never Telugu script. Explain legal terms in simple words.",
-    "benglish": "Respond in Benglish (mix of Bengali and English, the way people casually text). Use only Roman script Kemon acho? Ekta help korbe?  — never Bengali script. Explain legal terms in simple words.",
-    "marlish": "Respond in Marathi-English mix, the way people casually text. Use only Roman script Tu kasa ahes? Udya bhetuya.  — never Devanagari Explain legal terms in simple words.",
-    "gujlish": "Respond in Gujlish (mix of Gujarati and English, the way people casually text). Use only Roman script Kem cho? Tame shu karo cho?  — never Gujarati script. Explain legal terms in simple words.",
-    "kanglish": "Respond in Kanglish (mix of Kannada and English, the way people casually text). Use only Roman script Hegiddira? Nange ondu help beku.  — never Kannada script. Explain legal terms in simple words.",
-    "manglish": "Respond in Manglish (mix of Malayalam and English, the way people casually text). Use only Roman script Sugamano? Nian pinne vilikkam.  — never Malayalam script. Explain legal terms in simple words.",
-    "punglish": "Respond in Punglish (mix of Punjabi and English, the way people casually text). Use only Roman script Ki haal hai? Mainu daso — never Gurmukhi script. Explain legal terms in simple words.",
+    "tanglish": "Respond in Tanglish (mix of Tamil and English, the way people casually text). Use only Roman script Yenna panreenga? Romba thanks!  - never Tamil script. Explain legal terms in simple words.",
+    "tenglish": "Respond in Tenglish (mix of Telugu and English, the way people casually text). Use only Roman script Ela unnavu ? Lunch aypoyinda?  - never Telugu script. Explain legal terms in simple words.",
+    "benglish": "Respond in Benglish (mix of Bengali and English, the way people casually text). Use only Roman script Kemon acho? Ekta help korbe?  - never Bengali script. Explain legal terms in simple words.",
+    "marlish": "Respond in Marathi-English mix, the way people casually text. Use only Roman script Tu kasa ahes? Udya bhetuya.  - never Devanagari Explain legal terms in simple words.",
+    "gujlish": "Respond in Gujlish (mix of Gujarati and English, the way people casually text). Use only Roman script Kem cho? Tame shu karo cho?  - never Gujarati script. Explain legal terms in simple words.",
+    "kanglish": "Respond in Kanglish (mix of Kannada and English, the way people casually text). Use only Roman script Hegiddira? Nange ondu help beku.  - never Kannada script. Explain legal terms in simple words.",
+    "manglish": "Respond in Manglish (mix of Malayalam and English, the way people casually text). Use only Roman script Sugamano? Nian pinne vilikkam.  - never Malayalam script. Explain legal terms in simple words.",
+    "punglish": "Respond in Punglish (mix of Punjabi and English, the way people casually text). Use only Roman script Ki haal hai? Mainu daso - never Gurmukhi script. Explain legal terms in simple words.",
     "default": "Automatically detect the language of the user's latest query and respond entirely in that language without any emojis."
 }
 
@@ -565,7 +565,7 @@ CRITICAL RESPONSE RULES:
 2. **DYNAMIC RESPONSE LENGTH & DEPTH**:
    - Assess the complexity and intent of the user's input.
    - For simple greetings, affirmations, or thank-yous (e.g., "hi", "yes", "thanks"): Respond briefly in 2-3 lines.
-   - For a new legal situation/first turn description: Summarize your understanding of their situation (e.g., "📋 Understanding: ...") and give brief, high-level legal advice in 4-6 lines. Do not list detailed step-by-step actions, section definitions, or list of mistakes immediately.
+   - For a new legal situation/first turn description: Summarize your understanding of their situation (e.g., " Understanding: ...") and give brief, high-level legal advice in 4-6 lines. Do not list detailed step-by-step actions, section definitions, or list of mistakes immediately.
    - For detailed questions: If the user asks for sections, legal steps, mistakes, or documents, do NOT limit the answer. Provide comprehensive, extensive, and highly detailed answers with every single legal fact, citation, and explanation.
 
 3. **INTENT-BASED DETAILS**:
@@ -574,7 +574,7 @@ CRITICAL RESPONSE RULES:
    - **Mistakes to Avoid**: If asked what mistakes to avoid or what not to do, provide a clear list of protective warnings.
    - **Required Documents**: If asked what documents are needed or how to make their case strong, list all the relevant papers, records, files, or messages to compile as evidence.
 
-4. **POWER-IMBALANCE DETECTION**: If the situation involves a power imbalance (e.g., Landlord/Tenant, Employer/Worker, Police/Citizen, Domestic Violence), always include a strong ⚠️ PROTECTIVE ADVISORY.
+4. **POWER-IMBALANCE DETECTION**: If the situation involves a power imbalance (e.g., Landlord/Tenant, Employer/Worker, Police/Citizen, Domestic Violence), always include a strong  PROTECTIVE ADVISORY.
 
 5. **LEGAL REFERENCES**: Always cite specific law sections using BNS numbers. If old IPC sections apply, explain the conversion.
 
@@ -610,7 +610,7 @@ Timeline of Inaction:
 5. [The absolute worst outcome]
 6. [The single most important thing to do RIGHT NOW]
 
-Be specific about Indian law — mention actual deadlines, limitation periods, and legal consequences. Don't be alarmist but be honest about real risks. Write in clear, concise human paragraphs.
+Be specific about Indian law - mention actual deadlines, limitation periods, and legal consequences. Don't be alarmist but be honest about real risks. Write in clear, concise human paragraphs.
 
 GROUNDING: Base every legal claim (section numbers, deadlines, authority names) on the CONTEXT below. If the CONTEXT does not support a specific claim, describe the step generally without inventing a section number. Formal, respectful tone. No emojis, no decorative symbols.
 
@@ -642,7 +642,7 @@ FORMAT (No emojis, simple text):
 Community Helper Summary
 
 Person's Situation: [1-2 sentences]
-Who Can Help Locally: [Sarpanch/mukhiya, NGOs, legal-aid clinic, ASHA worker — as relevant]
+Who Can Help Locally: [Sarpanch/mukhiya, NGOs, legal-aid clinic, ASHA worker - as relevant]
 Legal Sections: [Relevant BNS sections]
 Reassurance: [2-3 calming, supportive sentences]
 
@@ -662,7 +662,7 @@ YOUR TASKS:
 2. Translate/explain the document in plain, simple language
 3. Highlight key information (Important dates and deadlines, Who is involved, What legal sections are mentioned, What action is required, By when must they respond/appear)
 4. List every law and section mentioned in the document (IPC/CrPC/BNS/BNSS or any other Act). For any old IPC or CrPC section, state the current BNS or BNSS equivalent using the CONTEXT below.
-5. What should the reader do next — clear, actionable steps
+5. What should the reader do next - clear, actionable steps
 
 IMPORTANT: Many legal documents are in English or formal Hindi/Urdu legal language. Translate into the user's preferred language using simple, everyday words. DO NOT use any emojis. Present the explanation in natural paragraphs. Do not invent section numbers that are not in the document or the CONTEXT.
 
@@ -759,13 +759,13 @@ def call_gemma(messages, temperature=0.7, fallback_cpu=False, num_ctx=8192, resp
 
     num_ctx is the total token budget shared by the prompt AND the generation; the
     8192 default leaves plenty of room so long, detailed answers are not squeezed.
-    num_predict is the hard cap on generated tokens — a fixed cap (900/2048) was
+    num_predict is the hard cap on generated tokens - a fixed cap (900/2048) was
     chopping detailed replies mid-sentence, so the default is -1 (no cap): the model
     writes until it naturally finishes, bounded only by num_ctx. GPU crashes still
     fall back to CPU below.
 
     response_format: pass 'json' (or a JSON schema dict) to grammar-constrain the
-    output via Ollama's format= — the reliable fix for JSON that won't parse.
+    output via Ollama's format= - the reliable fix for JSON that won't parse.
     """
     model = get_working_model()
     total_chars = sum(len(m["content"]) for m in messages)
@@ -788,7 +788,7 @@ def call_gemma(messages, temperature=0.7, fallback_cpu=False, num_ctx=8192, resp
         error_msg = str(e)
         # If it's a CUDA crash or buffer overrun, try again forcing CPU mode
         if not fallback_cpu and ("CUDA error" in error_msg or "exit status" in error_msg or "0xc0000409" in error_msg):
-            print(f"⚠️ GPU crash detected ({error_msg}). Retrying in CPU mode...")
+            print(f" GPU crash detected ({error_msg}). Retrying in CPU mode...")
             return call_gemma(messages, temperature, fallback_cpu=True, num_ctx=num_ctx)
 
         print(f"Gemma error: {e}")
@@ -824,14 +824,14 @@ def detect_power_imbalance(text):
             'description': 'Company-Consumer power imbalance detected'
         }
     }
-    
+
     text_lower = text.lower()
     detected = []
     for pattern_id, pattern in patterns.items():
         matches = sum(1 for kw in pattern['keywords'] if kw.lower() in text_lower)
         if matches >= 2:
             detected.append(pattern)
-    
+
     return detected
 
 # ══════════════════════════════════════════════════════════════
@@ -868,19 +868,19 @@ def chat():
 
         # Preprocess and expand search query for ChromaDB (handles translation and keywords)
         search_query = preprocess_query_for_rag(message, language)
-        
+
         # Retrieve relevant context from RAG
         rag_context = ""
         if rights_collection:
             rag_context += retrieve_context(search_query, rights_collection, n_results=2)
         if ipc_bns_collection:
             rag_context += "\n" + retrieve_context(search_query, ipc_bns_collection, n_results=2)
-        
+
         # Inject in-memory hybrid booster matches if any
         extra_bns = check_section_keywords(message)
         if extra_bns:
             rag_context += "\n" + extra_bns
-            
+
         extra_rights = check_case_type_keywords(message)
         if extra_rights and extra_rights[:100] not in rag_context:
             rag_context += "\n" + extra_rights
@@ -892,43 +892,43 @@ def chat():
             doc_context = retrieve_context(search_query, doc_col, n_results=4, max_chars=1600, threshold=999)
             if doc_context:
                 rag_context += "\n\nFrom the user's uploaded document:\n" + doc_context
-        
+
         # Detect power imbalance
         power_imbalances = detect_power_imbalance(message)
-        
+
         # Build system prompt
         system_prompt = MAIN_SYSTEM_PROMPT.format(
             language_instruction=get_language_instruction(language),
             rag_context=rag_context
         )
-        
+
         # Add power imbalance context to system prompt
         if power_imbalances:
-            pi_text = "\n\n🚨 POWER IMBALANCE DETECTED: "
+            pi_text = "\n\n POWER IMBALANCE DETECTED: "
             for pi in power_imbalances:
                 pi_text += f"\n- {pi['description']}. The user is likely the {pi['vulnerable_party']}."
             pi_text += "\nProvide STRONG protective advisories."
             system_prompt += pi_text
-        
+
         # Build message history
         messages = [{"role": "system", "content": system_prompt}]
-        
+
         # Add conversation history
         for h in session['history'][-10:]:  # Keep last 10 messages for context
             messages.append(h)
-        
+
         # Add current message
         messages.append({"role": "user", "content": message})
 
         # Call Gemma
         response_text = call_gemma_lang(messages, language, temperature=0.7)
-        
+
         # Update session history
         session['history'].append({"role": "user", "content": message})
         session['history'].append({"role": "assistant", "content": response_text})
         session['history'] = session['history'][-MAX_HISTORY:]  # bound stored history
         session['situation_summary'] = message if not session['situation_summary'] else session['situation_summary']
-        
+
         return jsonify({
             "response": response_text,
             "session_id": session_id,
@@ -937,7 +937,7 @@ def chat():
                 "details": [pi['description'] for pi in power_imbalances]
             }
         })
-    
+
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
@@ -945,30 +945,30 @@ def chat():
 
 @app.route('/api/devil-advocate', methods=['POST'])
 def devil_advocate():
-    """Lawyer in opposition mode — argue against the user's position."""
+    """Lawyer in opposition mode - argue against the user's position."""
     try:
         data = request.get_json(silent=True) or {}
         situation = data.get('situation', '')
         language = data.get('language', 'en')
         session_id = data.get('session_id', '')
-        
+
         # Get conversation context
         session = get_session(session_id) if session_id else {'history': []}
-        
+
         rag_context = ""
         if rights_collection:
             rag_context += retrieve_context(situation, rights_collection, n_results=3)
-        
+
         system_prompt = LAWYER_IN_OPPOSITION_PROMPT.format(
             language_instruction=get_language_instruction(language),
             rag_context=rag_context
         )
-        
+
         # Build context from conversation history
         history_text = ""
         for h in session.get('history', [])[-6:]:
             history_text += f"\n{h['role'].upper()}: {h['content']}"
-        
+
         messages = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": f"Here is the person's legal situation:\n{situation}\n\nConversation history:{history_text}\n\nNow argue against their position and then help them prepare."}
@@ -977,7 +977,7 @@ def devil_advocate():
         response_text = call_gemma_lang(messages, language, temperature=0.8)
 
         return jsonify({"response": response_text})
-    
+
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
@@ -1057,7 +1057,7 @@ def _norm_section(value):
 def _match_entries(data, query, section_field, name_fields):
     """Match converter entries. Number-like queries match the section (subsection
     insensitive); anything else does a case-insensitive substring search over the
-    offence/title fields — so 'cheating' or 'murder' work, as the UI promises."""
+    offence/title fields - so 'cheating' or 'murder' work, as the UI promises."""
     q = query.lower().strip()
     is_numeric = bool(re.match(r'^\d', q))  # '379', '318(4)', '354a'
     if is_numeric:
@@ -1092,7 +1092,7 @@ def bns_convert():
             "results": results[:10],
             "ai_explanation": ai_explanation
         })
-    
+
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
@@ -1131,7 +1131,7 @@ def legal_aid():
     try:
         state_query = request.args.get('state', '').strip().lower()
         district_query = request.args.get('district', '').strip().lower()
-        
+
         # Always return helplines
         result = {
             "helplines": LEGAL_AID_DATA.get('helplines', []),
@@ -1167,9 +1167,9 @@ def legal_aid():
                 else:
                     result['districts'] = state.get('districts', [])
                 break
-        
+
         return jsonify(result)
-    
+
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
@@ -1182,7 +1182,7 @@ def translate_document():
         data = request.get_json(silent=True) or {}
         document_text = data.get('text', '')
         language = data.get('language', 'en')
-        
+
         if not document_text.strip():
             return jsonify({"error": "No document text provided"}), 400
 
@@ -1210,7 +1210,7 @@ def translate_document():
         response_text = call_gemma_lang(messages, language, temperature=0.5, num_ctx=8192)
 
         return jsonify({"response": response_text})
-    
+
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
@@ -1261,7 +1261,7 @@ def index_session_document(session_id, text, filename, language):
 def ask_document():
     """Answer a question strictly from the user's uploaded document.
 
-    A focused, grounded path — unlike /api/chat it skips keyword expansion,
+    A focused, grounded path - unlike /api/chat it skips keyword expansion,
     power-imbalance detection, IPC/BNS retrieval and history, which on top of a
     long, OCR-garbled document could crowd out the answer. Retries once if the
     (thinking) model returns empty content."""
@@ -1296,7 +1296,7 @@ def ask_document():
         context = context[:16000]  # fits num_ctx 8192 alongside the question + answer
         system = (
             "You are a legal assistant. Answer the user's question using ONLY the document text below. "
-            "The text comes from imperfect OCR of a scanned document, so it has typos and stray characters — "
+            "The text comes from imperfect OCR of a scanned document, so it has typos and stray characters - "
             "read through them and extract the actual facts (names, numbers, sections, dates). Quote the specific "
             "value from the document when asked for one. If the answer is genuinely not in the document, say so.\n\n"
             "DOCUMENT:\n" + context
@@ -1306,7 +1306,7 @@ def ask_document():
             {"role": "user", "content": question},
         ]
         answer = (call_gemma_lang(messages, language, temperature=0.3, num_ctx=8192) or "").strip()
-        if not answer:  # thinking model occasionally returns empty content — one retry
+        if not answer:  # thinking model occasionally returns empty content - one retry
             answer = (call_gemma_lang(messages, language, temperature=0.5, num_ctx=8192) or "").strip()
 
         return jsonify({"answer": answer})
@@ -1378,7 +1378,7 @@ os.environ.setdefault('FLAGS_use_mkldnn', '0')
 
 # OCR is chosen for the DOCUMENT's script, not the UI language: Indian legal
 # papers (FIRs, notices) are routinely Hindi + English on the same page, so we
-# default to the Devanagari recogniser ('hi'), which reads Devanagari AND Latin —
+# default to the Devanagari recogniser ('hi'), which reads Devanagari AND Latin -
 # even when the app is set to English. PaddleOCR then auto-selects the best model
 # version per language: PP-OCRv6 where it has one (e.g. English/Latin), PP-OCRv5
 # for Devanagari (PP-OCRv6 has no Devanagari model yet). Other Indic scripts pass
@@ -1394,11 +1394,11 @@ _ocr_engines = {}
 def get_ocr_engine(language):
     """Load (and cache) a PaddleOCR engine for the document's script. Prefers
     PP-OCRv6, auto-falling back to the best available version for scripts it does
-    not cover (Devanagari). Lazy — models download once then run offline."""
+    not cover (Devanagari). Lazy - models download once then run offline."""
     paddle_lang = PADDLE_LANG_MAP.get(base_lang(language), 'hi')
     if paddle_lang not in _ocr_engines:
         from paddleocr import PaddleOCR
-        print(f"⏳ Loading PaddleOCR ({paddle_lang}) — first use may download models...")
+        print(f" Loading PaddleOCR ({paddle_lang}) - first use may download models...")
         # Doc-orientation/unwarping off (slow, rarely needed for clean uploads);
         # textline-orientation on to handle rotated scan lines. enable_mkldnn=False
         # avoids a PaddlePaddle 3.3 oneDNN crash on this CPU
@@ -1407,12 +1407,12 @@ def get_ocr_engine(language):
                     use_textline_orientation=True, enable_mkldnn=False, lang=paddle_lang)
         try:
             _ocr_engines[paddle_lang] = PaddleOCR(ocr_version='PP-OCRv6', **opts)
-            print("✅ PaddleOCR PP-OCRv6 ready")
+            print(" PaddleOCR PP-OCRv6 ready")
         except Exception:
-            # PP-OCRv6 has no model for this script — let PaddleOCR pick the best
+            # PP-OCRv6 has no model for this script - let PaddleOCR pick the best
             # version (PP-OCRv5 for Devanagari, etc.).
             _ocr_engines[paddle_lang] = PaddleOCR(**opts)
-            print("✅ PaddleOCR ready (auto-selected model version)")
+            print(" PaddleOCR ready (auto-selected model version)")
     return _ocr_engines[paddle_lang]
 
 
@@ -1575,7 +1575,7 @@ def panchayat_bridge():
         response_text = call_gemma_lang(messages, language, temperature=0.5)
 
         return jsonify({"response": response_text})
-    
+
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
@@ -1588,7 +1588,7 @@ def rights_checklist():
         data = request.get_json(silent=True) or {}
         situation = data.get('situation', '')
         language = data.get('language', 'en')
-        
+
         search_query = preprocess_query_for_rag(situation, language)
         rag_context = ""
         if rights_collection:
@@ -1615,7 +1615,7 @@ def rights_checklist():
         response_text = call_gemma_lang(messages, language, temperature=0.5)
 
         return jsonify({"response": response_text, "template": template})
-    
+
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
@@ -1657,7 +1657,7 @@ def consequence_simulator():
         data = request.get_json(silent=True) or {}
         situation = data.get('situation', '')
         language = data.get('language', 'en')
-        
+
         search_query = preprocess_query_for_rag(situation, language)
         rag_context = ""
         if rights_collection:
@@ -1678,7 +1678,7 @@ def consequence_simulator():
         response_text = call_gemma_lang(messages, language, temperature=0.7)
 
         return jsonify({"response": response_text})
-    
+
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
@@ -1692,7 +1692,7 @@ def rights_card():
         situation = data.get('situation', '')
         advice = data.get('advice', '')
         language = data.get('language', 'en')
-        
+
         messages = [
             {"role": "system", "content": f"""Generate a concise "Know Your Rights" card content based on the situation. Return ONLY valid JSON in this exact format:
 {{
@@ -1709,7 +1709,7 @@ def rights_card():
         ]
 
         response_text = call_gemma_lang(messages, language, temperature=0.3)
-        
+
         # Try to parse JSON from response
         try:
             # Extract JSON from response (handle markdown code blocks)
@@ -1718,7 +1718,7 @@ def rights_card():
                 json_text = json_text.split('```json')[1].split('```')[0]
             elif '```' in json_text:
                 json_text = json_text.split('```')[1].split('```')[0]
-            
+
             card_data = json.loads(json_text.strip())
             return jsonify({"card": card_data})
         except json.JSONDecodeError:
@@ -1731,20 +1731,20 @@ def rights_card():
                 "urgent_action": "Contact a lawyer or call NALSA helpline 15100",
                 "helplines": ["NALSA: 15100", "Tele-Law: 14454", "Police: 112", "Women: 181"]
             }})
-    
+
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 
 # ══════════════════════════════════════════════════════════════
-# Law & Next Steps — single verified structured analysis
+# Law & Next Steps - single verified structured analysis
 # ══════════════════════════════════════════════════════════════
 
 NATIONAL_URLS = [
-    {"title": "India Code — Bharatiya Nyaya Sanhita / BNSS and all central acts",
+    {"title": "India Code - Bharatiya Nyaya Sanhita / BNSS and all central acts",
      "url": "https://www.indiacode.nic.in"},
-    {"title": "NALSA — free legal aid and helpline 15100",
+    {"title": "NALSA - free legal aid and helpline 15100",
      "url": "https://nalsa.gov.in"},
 ]
 
@@ -1778,7 +1778,7 @@ def _sanitize_sources(sources, rag_context):
         title = str(src.get('title') or '').strip() or 'Official source'
         url = str(src.get('url') or '').strip()
         if url not in known:
-            # Not something we retrieved — keep the domain if it is official, drop the path.
+            # Not something we retrieved - keep the domain if it is official, drop the path.
             url = roots.get(urlparse(url).netloc.lower(), NATIONAL_URLS[0]["url"])
         cleaned.append({"title": title, "url": url})
 
@@ -1796,7 +1796,7 @@ Return ONLY valid JSON (no text before or after) in EXACTLY this shape:
     {{"claim": "one legal statement you made above", "supported_by": "which CONTEXT source or section supports it, or 'No retrieved source'", "status": "verified"}}
   ],
   "sources": [
-    {{"title": "Bharatiya Nyaya Sanhita, 2023 — Section X", "url": "https://www.indiacode.nic.in"}}
+    {{"title": "Bharatiya Nyaya Sanhita, 2023 - Section X", "url": "https://www.indiacode.nic.in"}}
   ],
   "stress_test": {{
     "for": ["arguments that support the person's position"],
@@ -1812,7 +1812,7 @@ Return ONLY valid JSON (no text before or after) in EXACTLY this shape:
 
 RULES:
 - Every section number used in situation_and_law MUST also appear as a "verification" entry with a "status" of "verified" (supported by CONTEXT) or "unverified" (not in CONTEXT).
-- For "sources" urls use https://www.indiacode.nic.in for any act/section, https://nalsa.gov.in for legal aid, or an official URL copied exactly from the CONTEXT. Never invent a deep link — if unsure of the page, give the domain root.
+- For "sources" urls use https://www.indiacode.nic.in for any act/section, https://nalsa.gov.in for legal aid, or an official URL copied exactly from the CONTEXT. Never invent a deep link - if unsure of the page, give the domain root.
 - Keep each list to 2-5 concise items. Every rights_card right MUST carry a "source".
 
 {language_instruction}
@@ -1869,7 +1869,7 @@ def law_and_steps():
         for s in pipe.get('sources', []):
             title = s.get('act') or s.get('title') or 'Official source'
             if s.get('section'):
-                title = f"{title} — {s['section']}"
+                title = f"{title} - {s['section']}"
             sources.append({"title": title, "url": s.get('url', '')})
         rag_urls = " ".join(c.get('official_url', '') for c in chunks)
         sources = _sanitize_sources(sources, rag_urls)
@@ -1926,7 +1926,7 @@ DRAFTING_PROMPTS = {
 DRAFT_SYSTEM_PROMPT = """You are an expert Indian legal drafter. {doc_instruction}
 
 RULES:
-- This is the FINAL, submission-ready document. Every detail is provided below — use the exact values given by the user.
+- This is the FINAL, submission-ready document. Every detail is provided below - use the exact values given by the user.
 - Your output MUST NOT contain any square-bracket placeholders like [NAME] or [ADDRESS]. If a detail is genuinely not provided and cannot be inferred, omit that clause naturally rather than leaving a placeholder.
 - Write the document itself in formal {doc_language} (standard for Indian legal documents).
 - Cite current laws: BNS (not IPC), BNSS (not CrPC), Consumer Protection Act 2019, etc.
@@ -2229,7 +2229,7 @@ CASE CONTEXT:
 
 @app.route('/api/courtroom', methods=['POST'])
 def courtroom():
-    """Virtual courtroom simulation — three AI roles per round."""
+    """Virtual courtroom simulation - three AI roles per round."""
     try:
         data = request.get_json(silent=True) or {}
         situation = data.get('situation', '')
@@ -2258,14 +2258,14 @@ def courtroom():
         import re
         pattern = r"\[(YOUR_LAWYER|OPPOSING_LAWYER|NEXT_STEPS)\]\s*(.*?)(?=\[(?:YOUR_LAWYER|OPPOSING_LAWYER|NEXT_STEPS)\]|$)"
         matches = re.finditer(pattern, response_text, re.DOTALL)
-        
+
         messages_list = []
         for m in matches:
             role = m.group(1)
             text = m.group(2).strip()
             if text:
                 messages_list.append({"role": role, "text": text})
-        
+
         # Fallback if parsing failed
         if not messages_list:
             messages_list.append({"role": "NEXT_STEPS", "text": response_text})
@@ -2310,19 +2310,19 @@ TTS_MAX_CHARS = 800  # ponytail: naive truncation; chunk+concat if long answers 
 _tts_models = {}
 
 def get_tts_model(language):
-    """Load (and cache) the MMS-TTS model for an app language code. Lazy — never at startup.
+    """Load (and cache) the MMS-TTS model for an app language code. Lazy - never at startup.
 
     Romanized variants (hinglish, tanglish, ...) fall back to their base language's
-    voice — MMS tokenizers uroman-normalize Roman input, so this works well."""
+    voice - MMS tokenizers uroman-normalize Roman input, so this works well."""
     model_id = MMS_TTS_MODELS.get(language) or MMS_TTS_MODELS.get(base_lang(language), MMS_TTS_MODELS['en'])
     if model_id not in _tts_models:
         from transformers import VitsModel, AutoTokenizer
-        print(f"⏳ Loading TTS model {model_id} (first use — may download)...")
+        print(f" Loading TTS model {model_id} (first use - may download)...")
         model = VitsModel.from_pretrained(model_id)
         model.eval()
         tokenizer = AutoTokenizer.from_pretrained(model_id)
         _tts_models[model_id] = (model, tokenizer)
-        print(f"✅ TTS model {model_id} ready")
+        print(f" TTS model {model_id} ready")
     return _tts_models[model_id]
 
 @app.route('/api/tts', methods=['POST'])
@@ -2373,13 +2373,13 @@ app.config['MAX_CONTENT_LENGTH'] = 25 * 1024 * 1024  # 25 MB
 _whisper_model = None
 
 def get_whisper_model():
-    """Load (and cache) the faster-whisper model. Lazy — never at startup."""
+    """Load (and cache) the faster-whisper model. Lazy - never at startup."""
     global _whisper_model
     if _whisper_model is None:
         from faster_whisper import WhisperModel
-        print("⏳ Loading faster-whisper 'small' model (first use — may download)...")
+        print(" Loading faster-whisper 'small' model (first use - may download)...")
         _whisper_model = WhisperModel("small", device="cpu", compute_type="int8")
-        print("✅ Whisper model ready")
+        print(" Whisper model ready")
     return _whisper_model
 
 
@@ -2415,7 +2415,7 @@ def transcribe():
             no_speech_threshold=0.6,
             log_prob_threshold=-1.0,
         )
-        # Drop segments the model itself flags as probably-silence — that is what
+        # Drop segments the model itself flags as probably-silence - that is what
         # produces the phantom "Thank you"/"Thanks for watching" on a quiet or too-
         # short clip. Then reject a lone known-hallucination phrase outright.
         kept = [
@@ -2448,7 +2448,7 @@ def transcribe():
 if __name__ == '__main__':
     print("""
     ╔══════════════════════════════════════════════╗
-    ║         अधिKaar — AI Legal Assistant         ║
+    ║         अधिKaar - AI Legal Assistant         ║
     ║      Empowering Every Citizen with Rights     ║
     ╚══════════════════════════════════════════════╝
     """)
@@ -2458,5 +2458,5 @@ if __name__ == '__main__':
     print(f"  Make sure Ollama is running: ollama serve")
     print(f"  Make sure model is pulled: ollama pull {GEMMA_MODEL_PREFERRED}")
     print()
-    
+
     app.run(debug=True, host='0.0.0.0', port=5000)

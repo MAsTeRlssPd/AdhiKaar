@@ -52,10 +52,10 @@
   {
     "crpc_section": "46",
     "bnss_section": "43",
-    "offence": "Arrest — How Made",
+    "offence": "Arrest - How Made",
     "crpc_title": "Arrest how made",
     "bnss_title": "Arrest how made",
-    "description": "Explains the manner of making an arrest — actual touch or confinement of the body unless the person submits to custody.",
+    "description": "Explains the manner of making an arrest - actual touch or confinement of the body unless the person submits to custody.",
     "key_changes": "NEW: Use of handcuffs now expressly permitted for habitual/repeat offenders and specified serious offences (BNSS 43(3)). Women can generally not be arrested after sunset and before sunrise.",
     "category": "Arrest"
   },
@@ -146,7 +146,7 @@
     "crpc_title": "No equivalent in CrPC",
     "bnss_title": "Recording of search and seizure through audio-video electronic means",
     "description": "Search and seizure, and the preparation of the list of seized items, must be recorded through audio-video electronic means, preferably a mobile phone, and forwarded to the magistrate.",
-    "key_changes": "BRAND NEW provision. There is no CrPC equivalent — introduces mandatory videography to prevent tampering and false planting of evidence.",
+    "key_changes": "BRAND NEW provision. There is no CrPC equivalent - introduces mandatory videography to prevent tampering and false planting of evidence.",
     "category": "Search & Seizure"
   },
   {
@@ -185,7 +185,7 @@
     "offence": "Urgent Orders in Cases of Nuisance / Danger",
     "crpc_title": "Power to issue order in urgent cases of nuisance or apprehended danger",
     "bnss_title": "Power to issue order in urgent cases of nuisance or apprehended danger",
-    "description": "A District/Executive Magistrate may issue orders to prevent obstruction, annoyance, injury, or a disturbance of public tranquillity — commonly used to prohibit assembly of persons.",
+    "description": "A District/Executive Magistrate may issue orders to prevent obstruction, annoyance, injury, or a disturbance of public tranquillity - commonly used to prohibit assembly of persons.",
     "key_changes": "The famous 'Section 144' is now Section 163 of BNSS. Powers substantively unchanged.",
     "category": "Public Order"
   },
@@ -235,7 +235,7 @@
     "offence": "Procedure for Investigation",
     "crpc_title": "Procedure for investigation",
     "bnss_title": "Procedure for investigation",
-    "description": "Sets out the steps the police take on receiving information of a cognizable offence — proceeding to the spot, investigating facts and taking measures for arrest.",
+    "description": "Sets out the steps the police take on receiving information of a cognizable offence - proceeding to the spot, investigating facts and taking measures for arrest.",
     "key_changes": "MAJOR CHANGE: Forensic investigation and videography of the crime scene are now mandatory for offences punishable with 7 years or more.",
     "category": "Investigation"
   },
@@ -416,7 +416,7 @@
     "crpc_title": "No equivalent in CrPC",
     "bnss_title": "Inquiry, trial or judgment in absentia of proclaimed offender",
     "description": "A proclaimed offender who has absconded to evade trial may be tried, and judgment pronounced, in their absence after specified safeguards and notice.",
-    "key_changes": "BRAND NEW provision. The CrPC had no full trial-in-absentia mechanism — this allows completion of trial against fugitives such as absconding economic offenders.",
+    "key_changes": "BRAND NEW provision. The CrPC had no full trial-in-absentia mechanism - this allows completion of trial against fugitives such as absconding economic offenders.",
     "category": "Trial Procedure"
   },
   {
@@ -535,7 +535,7 @@
     "offence": "Electronic Mode of Trial & Proceedings (NEW)",
     "crpc_title": "No equivalent in CrPC",
     "bnss_title": "Trials and proceedings to be held in electronic mode",
-    "description": "All trials, inquiries and proceedings — including issue of summons, examination of witnesses and recording of evidence — may be held in electronic mode.",
+    "description": "All trials, inquiries and proceedings - including issue of summons, examination of witnesses and recording of evidence - may be held in electronic mode.",
     "key_changes": "BRAND NEW provision enabling end-to-end digital criminal proceedings, with no direct CrPC counterpart.",
     "category": "Digital Procedure"
   },
@@ -695,14 +695,14 @@
     "offence": "Contents of Charge",
     "crpc_title": "Contents of charge",
     "bnss_title": "Contents of charge",
-    "description": "Sets out what a formal charge must state — the offence, the law, and enough particulars for the accused to know the accusation.",
+    "description": "Sets out what a formal charge must state - the offence, the law, and enough particulars for the accused to know the accusation.",
     "key_changes": "No substantive change. Renumbered.",
     "category": "Trial Procedure"
   },
   {
     "crpc_section": "300",
     "bnss_section": "337",
-    "offence": "Double Jeopardy — No Second Trial",
+    "offence": "Double Jeopardy - No Second Trial",
     "crpc_title": "Person once convicted or acquitted not to be tried for same offence",
     "bnss_title": "Person once convicted or acquitted not to be tried for same offence",
     "description": "A person once tried and convicted or acquitted cannot be tried again for the same offence on the same facts.",
@@ -772,7 +772,7 @@
   {
     "crpc_section": "397",
     "bnss_section": "438",
-    "offence": "Revision — Calling for Records",
+    "offence": "Revision - Calling for Records",
     "crpc_title": "Calling for records to exercise powers of revision",
     "bnss_title": "Calling for records to exercise powers of revision",
     "description": "The High Court or Sessions Court may call for and examine the record of a lower court's proceeding to satisfy itself as to correctness, legality or propriety.",
@@ -795,7 +795,7 @@
     "offence": "Inherent Powers of the High Court",
     "crpc_title": "Saving of inherent powers of High Court",
     "bnss_title": "Saving of inherent powers of High Court",
-    "description": "Preserves the High Court's inherent power to make orders to give effect to the Code, prevent abuse of process, or secure the ends of justice — the basis for quashing FIRs and proceedings.",
+    "description": "Preserves the High Court's inherent power to make orders to give effect to the Code, prevent abuse of process, or secure the ends of justice - the basis for quashing FIRs and proceedings.",
     "key_changes": "No substantive change. Renumbered from 482 to 528.",
     "category": "High Court Powers"
   }

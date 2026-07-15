@@ -1,4 +1,4 @@
-"""Generate AdhiKaar_Documentation.docx — full technical + product documentation."""
+"""Generate AdhiKaar_Documentation.docx - full technical + product documentation."""
 from docx import Document
 from docx.shared import Pt, RGBColor, Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
@@ -56,7 +56,7 @@ doc.add_page_break()
 # ── 1. Executive Summary ──
 h1('1. Executive Summary')
 body('अधिKaar ("Adhikaar", meaning "rights") is a legal-navigation assistant that helps ordinary Indian '
-     'citizens understand their legal rights, decode legal documents, and take concrete next steps — in 11 '
+     'citizens understand their legal rights, decode legal documents, and take concrete next steps - in 11 '
      'Indian languages, by voice or text, and entirely on their own device. Unlike cloud chatbots, every '
      'component runs locally: the language model, the legal knowledge base, speech recognition, speech synthesis '
      'and document OCR. Nothing a user types, says, or uploads ever leaves their computer.')
@@ -67,8 +67,8 @@ body('The system is powered by Google\'s Gemma model running locally through Oll
 # ── 2. Problem Statement ──
 h1('2. Problem Statement')
 h2('2.1 The Problem')
-body('Over a billion Indians face everyday legal situations — unpaid wages, withheld security deposits, FIRs, '
-     'domestic violence, consumer disputes — yet meaningful legal help remains out of reach. Lawyers are '
+body('Over a billion Indians face everyday legal situations - unpaid wages, withheld security deposits, FIRs, '
+     'domestic violence, consumer disputes - yet meaningful legal help remains out of reach. Lawyers are '
      'unaffordable for most; official information is English-first, scattered, and written in dense legalese; and '
      'the recent overhaul of India\'s criminal laws (IPC replaced by the Bharatiya Nyaya Sanhita, CrPC by the '
      'Bharatiya Nagarik Suraksha Sanhita, both effective 1 July 2024) has made even existing guidance outdated.')
@@ -78,7 +78,7 @@ bullet('Non-English speakers, served in 11 Indian languages by voice and text.')
 bullet('Low-literacy and elderly users, served through voice input, read-aloud output, and plain-language explanations.')
 bullet('Anyone handling a legal document (FIR, notice, summons) they cannot understand.')
 h2('2.3 Why It Matters')
-body('Not knowing your rights often means losing them — a missed limitation deadline, an unfiled complaint, an '
+body('Not knowing your rights often means losing them - a missed limitation deadline, an unfiled complaint, an '
      'unchallenged illegal eviction. And because legal matters are deeply personal, cloud-based AI raises real '
      'privacy fears. अधिKaar addresses both: it democratises legal knowledge and keeps it private by design.')
 
@@ -104,7 +104,7 @@ h1('4. Technical Architecture')
 h2('4.1 High-Level Design')
 body('The application follows a thin-client / local-service architecture. A zero-build vanilla-JavaScript '
      'single-page app runs in the browser; a Flask service on 127.0.0.1:5000 serves it and exposes a REST API. '
-     'All heavy computation — LLM inference, embedding, retrieval, OCR, speech — happens inside the local service '
+     'All heavy computation - LLM inference, embedding, retrieval, OCR, speech - happens inside the local service '
      'or, for OCR/voice-in-browser, on the client itself. No external API is called at runtime.')
 body('Data flow: user input → (optional) multilingual query expansion → RAG retrieval from ChromaDB → prompt '
      'assembly with retrieved official-law context → local Gemma generation via Ollama → (for verified answers) '
@@ -147,8 +147,8 @@ bullet('num_predict is uncapped (-1) so comprehensive answers finish naturally i
 bullet('Grammar-constrained JSON (Ollama format=) is used for structured outputs (verified analysis, rights card) to guarantee parseable results.')
 bullet('A GPU-crash guard automatically retries in CPU mode; MKLDNN is disabled for OCR to avoid a PaddlePaddle oneDNN crash on some CPUs.')
 h2('5.3 Value Gemma Brings')
-body('Gemma turns messy, real-world input — plain-language questions, code-mixed Hinglish, even garbled OCR of a '
-     'scanned FIR — into grounded, citizen-readable legal guidance. Critically, its small on-device footprint is '
+body('Gemma turns messy, real-world input - plain-language questions, code-mixed Hinglish, even garbled OCR of a '
+     'scanned FIR - into grounded, citizen-readable legal guidance. Critically, its small on-device footprint is '
      'exactly what makes the offline, private-by-design promise achievable: a capable model that fits on a '
      'citizen\'s own machine, so sensitive legal details never travel to a server.')
 
@@ -172,12 +172,12 @@ body('User queries in any of the 11 languages are expanded through a synonym map
 h1('7. Verified Answer Pipeline (Law & Next Steps)')
 body('The flagship "Law & Next Steps" feature does not simply trust the model. It runs a draft → guard → verify → '
      'repair pipeline adapted from claim-level verification research:')
-num('DRAFT — the model reads the retrieved statute excerpts and produces the six panels plus a list of claims, each citing the chunk IDs it relied on.')
-num('DETERMINISTIC GUARD — a regex hallucination check rejects any claim that names a section number absent from its cited excerpts, before any further model call.')
-num('VERIFY — surviving claims are batch-checked against only their cited excerpts; unsupported claims are flagged.')
-num('REPAIR — unsupported or unverified claims are excluded from the law, rights and sources panels; the "Sources" panel lists only the official URLs of chunks cited by verified claims.')
+num('DRAFT - the model reads the retrieved statute excerpts and produces the six panels plus a list of claims, each citing the chunk IDs it relied on.')
+num('DETERMINISTIC GUARD - a regex hallucination check rejects any claim that names a section number absent from its cited excerpts, before any further model call.')
+num('VERIFY - surviving claims are batch-checked against only their cited excerpts; unsupported claims are flagged.')
+num('REPAIR - unsupported or unverified claims are excluded from the law, rights and sources panels; the "Sources" panel lists only the official URLs of chunks cited by verified claims.')
 body('The result: every citation shown to the user is either backed by retrieved official law or explicitly marked '
-     'unverified — directly attacking AI hallucination in a domain where a wrong citation is dangerous.')
+     'unverified - directly attacking AI hallucination in a domain where a wrong citation is dangerous.')
 
 # ── 8. Voice, OCR & Accessibility ──
 h1('8. Voice, OCR & Accessibility')
@@ -188,25 +188,25 @@ bullet('Karaoke read-aloud: each word is highlighted as it is spoken, aiding low
 bullet('Voice requires a secure context (localhost or HTTPS); a free Cloudflare Tunnel provides HTTPS for remote demos while keeping inference local.')
 h2('8.2 Document OCR')
 body('Uploaded documents are read on-device. For scanned, often bilingual Indian legal papers, the OCR model is '
-     'chosen by the document\'s script rather than the UI language — defaulting to the Devanagari recogniser, '
+     'chosen by the document\'s script rather than the UI language - defaulting to the Devanagari recogniser, '
      'which reads Devanagari and Latin together, so English structured fields (FIR number, sections, names, '
      'vehicle numbers) extract cleanly. A pdf.js text-layer path and Tesseract.js provide in-browser fallbacks.')
 
 # ── 9. Privacy & Security ──
 h1('9. Privacy & Security by Design')
 bullet('100% on-device: the LLM, embeddings, RAG store, OCR and speech all run locally; the demo works with Wi-Fi disabled.')
-bullet('Loopback-only API (127.0.0.1) — the service is not exposed to the network by default.')
+bullet('Loopback-only API (127.0.0.1) - the service is not exposed to the network by default.')
 bullet('Uploaded documents and transcripts are processed per-session and are not persisted beyond the session by default.')
 bullet('Safety boundaries: official sources and effective dates outrank model memory; unsupported legal claims are removed or marked; the assistant provides legal information, not legal advice, and routes to NALSA (15100) for professional help.')
 
 # ── 10. Innovation & Uniqueness ──
 h1('10. Innovation & Uniqueness')
 body('Most legal tools pick one or two of the following; अधिKaar combines all of them in a single citizen-facing app:')
-bullet('Genuinely offline and private — no cloud dependency, so sensitive legal details never leave the device.')
-bullet('Claim-level verification — each statement checked against retrieved official law, unsupported claims dropped, real source links shown.')
-bullet('Current with the 2023–2024 legal transition — built-in IPC↔BNS and CrPC↔BNSS converters and a BNS/BNSS-first knowledge base.')
-bullet('Truly multilingual and multimodal — 11 languages, voice in and voice out, and on-device document OCR with plain-language explanation.')
-bullet('Action-oriented — not just answers, but ready-to-file documents, evidence checklists, and PAN-India legal-aid contacts.')
+bullet('Genuinely offline and private - no cloud dependency, so sensitive legal details never leave the device.')
+bullet('Claim-level verification - each statement checked against retrieved official law, unsupported claims dropped, real source links shown.')
+bullet('Current with the 2023-2024 legal transition - built-in IPC↔BNS and CrPC↔BNSS converters and a BNS/BNSS-first knowledge base.')
+bullet('Truly multilingual and multimodal - 11 languages, voice in and voice out, and on-device document OCR with plain-language explanation.')
+bullet('Action-oriented - not just answers, but ready-to-file documents, evidence checklists, and PAN-India legal-aid contacts.')
 
 # ── 11. Setup & Deployment ──
 h1('11. Setup & Deployment')
@@ -215,11 +215,11 @@ bullet('Python 3.11/3.12, Ollama, and the Gemma models (ollama pull gemma4:e4b).
 bullet('Python dependencies from requirements.txt (Flask, ChromaDB, transformers, torch, faster-whisper, paddleocr, etc.).')
 h2('11.2 Run')
 num('Build the RAG knowledge base once: python rag_setup.py (the official-law corpus build is the slow, one-time step; individual collections rebuild with --only).')
-num('Start the service: python app.py — the app is served at http://localhost:5000.')
+num('Start the service: python app.py - the app is served at http://localhost:5000.')
 num('First voice/OCR use downloads the respective models once, then runs fully offline.')
 h2('11.3 Distribution')
 body('Because the design is local-first, distribution means shipping the package so each user runs it on their own '
-     'machine — via a one-command installer or Docker Compose (app + Ollama). For live demos, a free Cloudflare '
+     'machine - via a one-command installer or Docker Compose (app + Ollama). For live demos, a free Cloudflare '
      'Tunnel exposes an HTTPS URL while all inference stays on the host machine.')
 
 # ── 12. Limitations & Future Work ──

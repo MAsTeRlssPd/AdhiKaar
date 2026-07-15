@@ -14,19 +14,19 @@ Built with **Gemma** · Runs **100% on-device** · **11 Indian languages** · No
 
 ## About the Project
 
-**अधिKaar** ("Adhikaar" — meaning *"rights"*) helps ordinary Indian citizens understand their legal rights, decode legal documents, and take concrete next steps — in 11 Indian languages, by voice or text, and **entirely on their own device**.
+**अधिKaar** ("Adhikaar" - meaning *"rights"*) helps ordinary Indian citizens understand their legal rights, decode legal documents, and take concrete next steps - in 11 Indian languages, by voice or text, and **entirely on their own device**.
 
-Unlike cloud chatbots, every component runs locally: the language model, the legal knowledge base, speech recognition, speech synthesis, and document OCR. A user's questions, documents, and transcripts **never leave their machine** — you can disable Wi-Fi and it still works.
+Unlike cloud chatbots, every component runs locally: the language model, the legal knowledge base, speech recognition, speech synthesis, and document OCR. A user's questions, documents, and transcripts **never leave their machine** - you can disable Wi-Fi and it still works.
 
 Answers are powered by Google's **Gemma** running locally through Ollama, **grounded** on 6,845 reviewed chunks of official Indian law (RAG), and **verified** claim-by-claim against real statute text so citations are backed by law rather than model memory.
 
-> ⚖️ अधिKaar provides **legal information, not legal advice**. For complex matters, consult a qualified lawyer or call NALSA on **15100**.
+>  अधिKaar provides **legal information, not legal advice**. For complex matters, consult a qualified lawyer or call NALSA on **15100**.
 
 ---
 
 ## Why It Matters
 
-- A billion+ Indians face everyday legal problems — unpaid wages, stuck deposits, FIRs, domestic violence, consumer disputes — but lawyers are unaffordable and official information is English-first and dense.
+- A billion+ Indians face everyday legal problems - unpaid wages, stuck deposits, FIRs, domestic violence, consumer disputes - but lawyers are unaffordable and official information is English-first and dense.
 - India's criminal laws were overhauled on **1 July 2024** (IPC → **BNS**, CrPC → **BNSS**), so even existing guidance is outdated.
 - Legal matters are deeply personal → cloud AI raises real privacy fears. अधिKaar is **private by design**.
 
@@ -52,8 +52,8 @@ Answers are powered by Google's **Gemma** running locally through Ollama, **grou
 
 | Layer | Technology |
 |---|---|
-| **Frontend** | Vanilla HTML/CSS/JavaScript SPA — **zero build step**. Vendored offline assets (Lucide, Marked, pdf.js, Tesseract.js, Noto fonts). |
-| **Backend** | Python 3 · Flask · Flask-CORS — loopback-only (127.0.0.1). |
+| **Frontend** | Vanilla HTML/CSS/JavaScript SPA - **zero build step**. Vendored offline assets (Lucide, Marked, pdf.js, Tesseract.js, Noto fonts). |
+| **Backend** | Python 3 · Flask · Flask-CORS - loopback-only (127.0.0.1). |
 | **LLM runtime** | **Ollama** serving **Gemma** locally (`gemma4:e4b` primary, `gemma3:4b` fallback). |
 | **RAG / Vector store** | **ChromaDB** (persistent) with sentence-transformers embeddings (all-MiniLM-L6-v2); **EmbeddingGemma** available. |
 | **Speech-to-text** | **faster-whisper** (small, int8, CPU) with VAD + hallucination guards. |
@@ -81,13 +81,13 @@ Browser (vanilla-JS SPA)  ──HTTP──►  Flask service (127.0.0.1:5000)
 
 ---
 
-## Setup — Step by Step (Fresh PC)
+## Setup - Step by Step (Fresh PC)
 
 Follow every step in order. Commands are shown for **Windows (PowerShell)** first; macOS/Linux equivalents are noted where they differ. You need an internet connection for the one-time setup (installing tools and downloading models); after that the app runs fully offline.
 
 > **Disk & memory:** budget ~20 GB free disk (Gemma models + Python deps + OCR/voice models) and ideally 16 GB RAM. It runs on CPU; a GPU is not required.
 
-### Step 1 — Install Git
+### Step 1 - Install Git
 
 - **Windows:** download and install from https://git-scm.com/download/win
 - **macOS:** `brew install git`  ·  **Linux:** `sudo apt install git`
@@ -97,7 +97,7 @@ Verify:
 git --version
 ```
 
-### Step 2 — Install Python 3.11 or 3.12
+### Step 2 - Install Python 3.11 or 3.12
 
 - **Windows:** download from https://www.python.org/downloads/ and **check "Add Python to PATH"** during install.
 - **macOS:** `brew install python@3.12`  ·  **Linux:** `sudo apt install python3.12 python3.12-venv`
@@ -107,7 +107,7 @@ Verify (must print 3.11.x or 3.12.x):
 python --version
 ```
 
-### Step 3 — Install Ollama (runs the local Gemma model)
+### Step 3 - Install Ollama (runs the local Gemma model)
 
 - Download and install from **https://ollama.com/download**.
 - After install, Ollama runs a local server automatically. Verify it responds:
@@ -116,7 +116,7 @@ curl http://127.0.0.1:11434/api/tags
 ```
 If it doesn't respond, start it manually and leave it running: `ollama serve`
 
-### Step 4 — Pull the Gemma models
+### Step 4 - Pull the Gemma models
 
 ```powershell
 ollama pull gemma4:e4b
@@ -127,14 +127,14 @@ Confirm both are present:
 ollama list
 ```
 
-### Step 5 — Clone the project
+### Step 5 - Clone the project
 
 ```powershell
 git clone https://github.com/MAsTeRlssPd/AdhiKaar.git
 cd AdhiKaar
 ```
 
-### Step 6 — Create and activate a virtual environment
+### Step 6 - Create and activate a virtual environment
 
 ```powershell
 python -m venv .venv
@@ -146,31 +146,31 @@ Your prompt should now start with `(.venv)`. **Run all remaining Python commands
 > If PowerShell blocks activation with an execution-policy error, run once:
 > `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` then re-activate.
 
-### Step 7 — Install all Python dependencies
+### Step 7 - Install all Python dependencies
 
 ```powershell
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 ```
-This installs everything: Flask, ChromaDB, Ollama client, sentence-transformers, transformers, torch, scipy, faster-whisper (voice input), paddlepaddle + paddleocr (document OCR), pypdf + pypdfium2 (PDF handling). It is a large download (~2–3 GB) and can take several minutes.
+This installs everything: Flask, ChromaDB, Ollama client, sentence-transformers, transformers, torch, scipy, faster-whisper (voice input), paddlepaddle + paddleocr (document OCR), pypdf + pypdfium2 (PDF handling). It is a large download (~2-3 GB) and can take several minutes.
 
-### Step 8 — Build the RAG knowledge base
+### Step 8 - Build the RAG knowledge base
 
 ```powershell
 python rag_setup.py
 ```
-This builds four ChromaDB collections, including the ~6,845-chunk official-law corpus. **This is the slow, one-time step** (roughly 10–40 minutes on CPU). Wait for it to print `RAG knowledge base setup complete!`.
+This builds four ChromaDB collections, including the ~6,845-chunk official-law corpus. **This is the slow, one-time step** (roughly 10-40 minutes on CPU). Wait for it to print `RAG knowledge base setup complete!`.
 
 To rebuild just one collection later (fast), use `python rag_setup.py --only rights` or `--only official_law`.
 
-### Step 9 — Start the app
+### Step 9 - Start the app
 
 ```powershell
 python app.py
 ```
 Leave this terminal running. Open **http://localhost:5000** in your browser. (Chrome/Edge recommended.)
 
-### Step 10 — Warm up the voice and OCR models (one-time downloads)
+### Step 10 - Warm up the voice and OCR models (one-time downloads)
 
 The first use of each downloads its model once, then works offline. Do each once now so the demo is instant later:
 
@@ -178,9 +178,9 @@ The first use of each downloads its model once, then works offline. Do each once
 - **Text-to-speech:** click **Listen** on any answer (downloads the MMS-TTS voice for your selected language).
 - **Document OCR:** open **Translate Legal Document** and upload any PDF/image (downloads the PaddleOCR models, ~100 MB).
 
-### Step 11 — Enable the microphone (HTTPS / secure context)
+### Step 11 - Enable the microphone (HTTPS / secure context)
 
-Browsers only allow microphone access on a **secure context** — `http://localhost` or **HTTPS**.
+Browsers only allow microphone access on a **secure context** - `http://localhost` or **HTTPS**.
 
 - **Using the app on this same PC:** open `http://localhost:5000` (not a `127.x`/LAN IP). The mic works. Allow the permission prompt.
 - **Accessing from another device / over the network:** you need HTTPS. Install Cloudflare Tunnel and expose an HTTPS URL while all processing stays on this machine:
@@ -189,9 +189,9 @@ winget install --id Cloudflare.cloudflared     # Windows (one-time)
 # macOS:  brew install cloudflared
 cloudflared tunnel --url http://localhost:5000
 ```
-Open the printed `https://….trycloudflare.com` URL on any device — the model and data never leave your PC; the tunnel only relays traffic. Keep both the `python app.py` and `cloudflared` terminals open.
+Open the printed `https://….trycloudflare.com` URL on any device - the model and data never leave your PC; the tunnel only relays traffic. Keep both the `python app.py` and `cloudflared` terminals open.
 
-### Step 12 — Add the RTI Act to the corpus
+### Step 12 - Add the RTI Act to the corpus
 
 ```powershell
 # Download the official RTI Act 2005 (English) PDF from https://rti.dopt.gov.in/rtiact.html
@@ -200,7 +200,7 @@ python scripts/rti_to_jsonl.py
 python rag_setup.py --only official_law
 ```
 
-### Step 13 — Add the IndicLegalQA dataset
+### Step 13 - Add the IndicLegalQA dataset
 
 ```powershell
 # Download from Kaggle: https://www.kaggle.com/datasets/kmldas/indiclegalqa-dataset
@@ -208,7 +208,7 @@ python rag_setup.py --only official_law
 python rag_setup.py --only rights
 ```
 
-### Step 14 — Verify the install
+### Step 14 - Verify the install
 
 ```powershell
 python test_convert_match.py
@@ -235,7 +235,7 @@ python app.py
 
 | Symptom | Fix |
 |---|---|
-| `ModuleNotFoundError: flask/chromadb` | The venv isn't activated — run `.\.venv\Scripts\Activate.ps1` (prompt must show `(.venv)`). |
+| `ModuleNotFoundError: flask/chromadb` | The venv isn't activated - run `.\.venv\Scripts\Activate.ps1` (prompt must show `(.venv)`). |
 | Chat 500s / "could not connect to Ollama" | Ollama isn't running, or the model isn't pulled. Start `ollama serve` and `ollama pull gemma4:e4b`. |
 | `/api/health` shows no corpus / empty answers | Re-run `python rag_setup.py`. |
 | Mic button does nothing / says "needs a secure connection" | Open `http://localhost:5000`, or use the Cloudflare Tunnel HTTPS URL (Step 11). |
@@ -266,8 +266,8 @@ AdhiKaar/
 
 ## Privacy & Safety
 
-- **100% on-device** — LLM, embeddings, RAG, OCR and speech all run locally; works offline.
-- **Loopback-only API** (127.0.0.1) — not exposed to the network by default.
+- **100% on-device** - LLM, embeddings, RAG, OCR and speech all run locally; works offline.
+- **Loopback-only API** (127.0.0.1) - not exposed to the network by default.
 - Uploaded documents and transcripts are processed **per-session** and not persisted by default.
 - Official sources and effective dates **outrank** model memory; unsupported legal claims are removed or marked **unverified**.
 
@@ -277,7 +277,7 @@ AdhiKaar/
 
 - OCR of handwritten / low-quality bilingual scans is imperfect; PP-OCRv6 has no Devanagari model yet, so Hindi text uses PP-OCRv5.
 - Corpus focuses on high-impact central acts; more acts/state laws can be added via the same ingestion pipeline.
-- Content is auto-generated from official sources and curated mappings — a **human legal-accuracy review is recommended** before production use.
+- Content is auto-generated from official sources and curated mappings - a **human legal-accuracy review is recommended** before production use.
 
 ---
 
@@ -289,7 +289,7 @@ Full technical & product documentation: **[`docs/AdhiKaar_Documentation.docx`](d
 
 <div align="center">
 
-**अधिKaar — Your Rights, Your Language.**
+**अधिKaar - Your Rights, Your Language.**
 Justice that fits in your pocket, and never leaves it.
 
 </div>

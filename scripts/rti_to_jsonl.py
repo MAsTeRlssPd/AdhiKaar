@@ -95,7 +95,7 @@ def main():
                 "text": body,
                 "metadata": {
                     "act": "The Right to Information Act, 2005",
-                    "title": f"RTI Act, 2005 — Section {sec}",
+                    "title": f"RTI Act, 2005 - Section {sec}",
                     "jurisdiction": "India",
                     "document_type": "act",
                     "language": "en",

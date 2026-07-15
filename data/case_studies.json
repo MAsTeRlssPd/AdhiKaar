@@ -6,7 +6,7 @@
       "category": "Labour",
       "scenario": "A worker's employer has not paid three months of salary and keeps making excuses.",
       "question": "My employer has not paid my salary for 3 months. What can I do?",
-      "answer": "Withholding earned wages is illegal. First send a written demand to your employer keeping a copy. If unpaid, file a claim before the Labour Commissioner / Authority under the Payment of Wages Act, 1936 (now part of the Code on Wages, 2019) within 12 months — there is no court fee. Even WhatsApp chats, UPI records, or an ID card help prove employment. You can also call the labour grievance helpline (155214 in many states). Recovery of the unpaid amount plus compensation can be ordered.",
+      "answer": "Withholding earned wages is illegal. First send a written demand to your employer keeping a copy. If unpaid, file a claim before the Labour Commissioner / Authority under the Payment of Wages Act, 1936 (now part of the Code on Wages, 2019) within 12 months - there is no court fee. Even WhatsApp chats, UPI records, or an ID card help prove employment. You can also call the labour grievance helpline (155214 in many states). Recovery of the unpaid amount plus compensation can be ordered.",
       "keywords": ["salary", "wages", "vetan", "unpaid", "employer", "malik", "naukri", "labour commissioner"]
     },
     {
@@ -22,7 +22,7 @@
       "category": "Family",
       "scenario": "A woman is being physically and emotionally abused by her husband.",
       "question": "My husband beats me and threatens me. What protection does the law give me?",
-      "answer": "You are protected under the Protection of Women from Domestic Violence Act, 2005, which covers physical, emotional, sexual, verbal and economic abuse. You can seek a Protection Order (to stop the violence), a Residence Order (to stay in the shared household), monetary relief and custody of children — through a Protection Officer or the Magistrate. Cruelty by a husband or his relatives is also a criminal offence under BNS Section 85/86. Call Women Helpline 181 for immediate help, keep medical records and messages as evidence, and free legal aid is available (NALSA 15100).",
+      "answer": "You are protected under the Protection of Women from Domestic Violence Act, 2005, which covers physical, emotional, sexual, verbal and economic abuse. You can seek a Protection Order (to stop the violence), a Residence Order (to stay in the shared household), monetary relief and custody of children - through a Protection Officer or the Magistrate. Cruelty by a husband or his relatives is also a criminal offence under BNS Section 85/86. Call Women Helpline 181 for immediate help, keep medical records and messages as evidence, and free legal aid is available (NALSA 15100).",
       "keywords": ["domestic violence", "husband", "pati", "beats", "cruelty", "dowry", "hinsa", "498A", "BNS 85"]
     },
     {
@@ -30,7 +30,7 @@
       "category": "Criminal",
       "scenario": "The police refuse to register an FIR for a theft the person wants to report.",
       "question": "The police are refusing to file my FIR. What can I do?",
-      "answer": "For a cognizable offence the police must register an FIR under BNSS Section 173 — refusal is illegal. First, you can file a Zero FIR at any police station regardless of jurisdiction. If they still refuse, send your written complaint by registered post to the Superintendent of Police under BNSS 173(4). If that fails, apply to the Judicial Magistrate under BNSS 175(3), who can direct the police to register and investigate. Keep copies and postal receipts of everything.",
+      "answer": "For a cognizable offence the police must register an FIR under BNSS Section 173 - refusal is illegal. First, you can file a Zero FIR at any police station regardless of jurisdiction. If they still refuse, send your written complaint by registered post to the Superintendent of Police under BNSS 173(4). If that fails, apply to the Judicial Magistrate under BNSS 175(3), who can direct the police to register and investigate. Keep copies and postal receipts of everything.",
       "keywords": ["FIR", "police", "thana", "refuse", "zero fir", "BNSS 173", "complaint", "SHO"]
     },
     {
@@ -38,7 +38,7 @@
       "category": "Consumer",
       "scenario": "A newly bought appliance is defective and the seller refuses a refund or replacement.",
       "question": "I bought a defective product and the shop won't refund or replace it. What are my rights?",
-      "answer": "Under the Consumer Protection Act, 2019 you can claim a refund, replacement, or repair plus compensation for a defective product or deficient service. First send a written complaint to the seller/company. If unresolved, file before the District Consumer Commission (for claims up to Rs 50 lakh) — you can do it online via the e-Daakhil portal within 2 years of the problem. Keep the bill, warranty card and all messages. No court fee is charged for claims up to Rs 5 lakh.",
+      "answer": "Under the Consumer Protection Act, 2019 you can claim a refund, replacement, or repair plus compensation for a defective product or deficient service. First send a written complaint to the seller/company. If unresolved, file before the District Consumer Commission (for claims up to Rs 50 lakh) - you can do it online via the e-Daakhil portal within 2 years of the problem. Keep the bill, warranty card and all messages. No court fee is charged for claims up to Rs 5 lakh.",
       "keywords": ["consumer", "defective", "refund", "replacement", "product", "warranty", "e-daakhil", "CPA 2019"]
     },
     {
@@ -46,7 +46,7 @@
       "category": "Cybercrime",
       "scenario": "Someone tricked a person into a UPI transfer and took money from their account.",
       "question": "Someone cheated me on UPI and took money from my account. What should I do immediately?",
-      "answer": "Act fast — report within the 'golden hour'. Call the cybercrime helpline 1930 immediately and file a complaint at cybercrime.gov.in; quick reporting can freeze the fraudster's account and reverse the transfer. Also inform your bank at once to block the account and raise a dispute — RBI's rules give limited liability if you report promptly. File a police complaint / FIR for cheating under BNS Section 318. Keep the transaction ID, screenshots and any messages or numbers used.",
+      "answer": "Act fast - report within the 'golden hour'. Call the cybercrime helpline 1930 immediately and file a complaint at cybercrime.gov.in; quick reporting can freeze the fraudster's account and reverse the transfer. Also inform your bank at once to block the account and raise a dispute - RBI's rules give limited liability if you report promptly. File a police complaint / FIR for cheating under BNS Section 318. Keep the transaction ID, screenshots and any messages or numbers used.",
       "keywords": ["upi", "online fraud", "cyber crime", "1930", "scam", "cheated", "netbanking", "BNS 318", "otp"]
     },
     {
@@ -54,7 +54,7 @@
       "category": "Tenancy",
       "scenario": "A landlord is trying to force a tenant out without any court order.",
       "question": "My landlord is trying to throw me out and cut my electricity. Is that legal?",
-      "answer": "No. A tenant cannot be evicted except by due process of law under the applicable Rent/Model Tenancy Act. Forcible eviction, locking you out, or cutting off water and electricity is illegal and can amount to criminal intimidation and mischief under the BNS, 2023. Keep paying rent — if the landlord refuses it, deposit it with the Rent Authority. Send a written reply asserting your tenancy, document any utility cut-off, and complain to the police or Rent Authority if harassment continues.",
+      "answer": "No. A tenant cannot be evicted except by due process of law under the applicable Rent/Model Tenancy Act. Forcible eviction, locking you out, or cutting off water and electricity is illegal and can amount to criminal intimidation and mischief under the BNS, 2023. Keep paying rent - if the landlord refuses it, deposit it with the Rent Authority. Send a written reply asserting your tenancy, document any utility cut-off, and complain to the police or Rent Authority if harassment continues.",
       "keywords": ["eviction", "landlord", "forcible", "electricity", "makan malik", "tenant rights", "rent authority"]
     },
     {
@@ -70,7 +70,7 @@
       "category": "Family",
       "scenario": "A married woman is harassed by her in-laws for more dowry.",
       "question": "My in-laws are harassing me for dowry. What laws protect me?",
-      "answer": "Demanding dowry is an offence under the Dowry Prohibition Act, 1961. Cruelty by a husband or in-laws — including for dowry — is punishable under BNS Section 85 (and 86 defines cruelty). You can also seek civil protection under the Domestic Violence Act, 2005 (protection, residence and monetary orders). Report to the police / Women's Cell, call Women Helpline 181, and preserve messages, call records and witnesses. Free legal aid is available (NALSA 15100).",
+      "answer": "Demanding dowry is an offence under the Dowry Prohibition Act, 1961. Cruelty by a husband or in-laws - including for dowry - is punishable under BNS Section 85 (and 86 defines cruelty). You can also seek civil protection under the Domestic Violence Act, 2005 (protection, residence and monetary orders). Report to the police / Women's Cell, call Women Helpline 181, and preserve messages, call records and witnesses. Free legal aid is available (NALSA 15100).",
       "keywords": ["dowry", "dahej", "in-laws", "cruelty", "harassment", "BNS 85", "498A", "sasural"]
     },
     {
@@ -78,7 +78,7 @@
       "category": "Financial",
       "scenario": "A cheque a person received bounced due to insufficient funds.",
       "question": "A cheque given to me bounced. How do I recover my money?",
-      "answer": "A bounced cheque is an offence under Section 138 of the Negotiable Instruments Act, 1881. You must send a demand notice to the person who issued the cheque within 30 days of the bank's return memo, giving them 15 days to pay. If they still don't pay, file a complaint before the Magistrate within the next 1 month. Keep the returned cheque and the bank's dishonour memo safely — they are your key evidence. You can also file a civil suit to recover the amount.",
+      "answer": "A bounced cheque is an offence under Section 138 of the Negotiable Instruments Act, 1881. You must send a demand notice to the person who issued the cheque within 30 days of the bank's return memo, giving them 15 days to pay. If they still don't pay, file a complaint before the Magistrate within the next 1 month. Keep the returned cheque and the bank's dishonour memo safely - they are your key evidence. You can also file a civil suit to recover the amount.",
       "keywords": ["cheque bounce", "138", "NI Act", "dishonour", "demand notice", "insufficient funds", "return memo"]
     },
     {
@@ -86,7 +86,7 @@
       "category": "Property",
       "scenario": "A person's relative has illegally occupied land that belongs to them.",
       "question": "Someone has illegally occupied my land. How do I get it back?",
-      "answer": "For unlawful dispossession you can sue to recover possession under Section 6 of the Specific Relief Act, 1963 within 6 months of being dispossessed — here the court looks only at possession, not title. For a full ownership claim, file a title/declaration suit (limitation is generally 12 years). Illegal entry can also be criminal trespass under the BNS, 2023, so a police complaint may lie. Gather your title deed, mutation records, tax receipts and any survey documents.",
+      "answer": "For unlawful dispossession you can sue to recover possession under Section 6 of the Specific Relief Act, 1963 within 6 months of being dispossessed - here the court looks only at possession, not title. For a full ownership claim, file a title/declaration suit (limitation is generally 12 years). Illegal entry can also be criminal trespass under the BNS, 2023, so a police complaint may lie. Gather your title deed, mutation records, tax receipts and any survey documents.",
       "keywords": ["property", "land", "possession", "trespass", "encroachment", "title", "specific relief", "zameen"]
     },
     {
@@ -110,7 +110,7 @@
       "category": "Cybercrime",
       "scenario": "Someone is threatening to leak a person's private photos online unless paid.",
       "question": "Someone is blackmailing me online with my private photos. What should I do?",
-      "answer": "This is a serious offence — extortion and criminal intimidation under the BNS, 2023, along with offences under the Information Technology Act, 2000 (including publishing obscene or private material). Do not pay. Report immediately at cybercrime.gov.in and call helpline 1930; there is a dedicated route for reporting non-consensual intimate images. Preserve the messages, profile links and payment demands as evidence — do not delete them. You can request takedown of the content and file an FIR. Your identity is kept confidential.",
+      "answer": "This is a serious offence - extortion and criminal intimidation under the BNS, 2023, along with offences under the Information Technology Act, 2000 (including publishing obscene or private material). Do not pay. Report immediately at cybercrime.gov.in and call helpline 1930; there is a dedicated route for reporting non-consensual intimate images. Preserve the messages, profile links and payment demands as evidence - do not delete them. You can request takedown of the content and file an FIR. Your identity is kept confidential.",
       "keywords": ["blackmail", "cyber", "extortion", "photos", "sextortion", "1930", "IT Act", "threats", "BNS"]
     },
     {
@@ -134,7 +134,7 @@
       "category": "Administrative",
       "scenario": "A government office did not reply to a person's RTI application.",
       "question": "I filed an RTI but got no reply in 30 days. What next?",
-      "answer": "Under the RTI Act, 2005 the Public Information Officer must respond within 30 days. If there is no reply or you are unsatisfied, file a First Appeal to the First Appellate Authority of the same department within 30 days — no fee. If that also fails, file a Second Appeal to the Information Commission (State or Central) within 90 days, which can impose a penalty on the PIO and order disclosure. Keep proof of your original application and its date.",
+      "answer": "Under the RTI Act, 2005 the Public Information Officer must respond within 30 days. If there is no reply or you are unsatisfied, file a First Appeal to the First Appellate Authority of the same department within 30 days - no fee. If that also fails, file a Second Appeal to the Information Commission (State or Central) within 90 days, which can impose a penalty on the PIO and order disclosure. Keep proof of your original application and its date.",
       "keywords": ["RTI", "information", "no reply", "first appeal", "PIO", "information commission", "second appeal"]
     },
     {
@@ -150,7 +150,7 @@
       "category": "Civil",
       "scenario": "Someone spread false statements damaging a person's reputation.",
       "question": "Someone is spreading lies about me and damaging my reputation. What can I do?",
-      "answer": "Defamation has both a criminal and a civil remedy. Criminally, it is an offence under BNS Section 356 (making or publishing an imputation intending to harm reputation). Civilly, you can sue for damages and an injunction to stop and remove the statements — the limitation for a civil defamation suit is generally 1 year. Preserve screenshots, links, dates and witnesses. A legal notice demanding an apology and takedown is often an effective first step.",
+      "answer": "Defamation has both a criminal and a civil remedy. Criminally, it is an offence under BNS Section 356 (making or publishing an imputation intending to harm reputation). Civilly, you can sue for damages and an injunction to stop and remove the statements - the limitation for a civil defamation suit is generally 1 year. Preserve screenshots, links, dates and witnesses. A legal notice demanding an apology and takedown is often an effective first step.",
       "keywords": ["defamation", "reputation", "false", "BNS 356", "slander", "libel", "injunction", "apology"]
     },
     {
@@ -158,7 +158,7 @@
       "category": "Cybercrime",
       "scenario": "A woman is being repeatedly followed and messaged online against her wishes.",
       "question": "A man keeps stalking and messaging me online despite my saying no. Is this a crime?",
-      "answer": "Yes. Stalking, including monitoring or repeatedly contacting a woman online against her wishes, is an offence under BNS Section 78. Related online harassment can also attract the Information Technology Act, 2000. Report at cybercrime.gov.in, call 1930, and you can file an FIR. Do not delete the messages — preserve screenshots, usernames and timestamps as evidence. Block the person and adjust privacy settings, and seek help from Women Helpline 181 if you feel unsafe.",
+      "answer": "Yes. Stalking, including monitoring or repeatedly contacting a woman online against her wishes, is an offence under BNS Section 78. Related online harassment can also attract the Information Technology Act, 2000. Report at cybercrime.gov.in, call 1930, and you can file an FIR. Do not delete the messages - preserve screenshots, usernames and timestamps as evidence. Block the person and adjust privacy settings, and seek help from Women Helpline 181 if you feel unsafe.",
       "keywords": ["stalking", "cyberstalking", "harassment", "BNS 78", "online", "messages", "1930", "women"]
     },
     {
@@ -174,7 +174,7 @@
       "category": "Access to Justice",
       "scenario": "A person cannot afford a lawyer for their court case.",
       "question": "I can't afford a lawyer. Can I get legal help for free?",
-      "answer": "Yes. Under the Legal Services Authorities Act, 1987, free legal aid — including a lawyer — is a right for women, children, SC/ST persons, victims of trafficking, disabled persons, industrial workmen, persons in custody, and anyone earning below the prescribed income limit. Approach your District Legal Services Authority (DLSA), usually located in the district court complex, or call NALSA on 15100. Tele-Law (14454) also gives free legal advice over video. Lok Adalats can settle many disputes free and quickly.",
+      "answer": "Yes. Under the Legal Services Authorities Act, 1987, free legal aid - including a lawyer - is a right for women, children, SC/ST persons, victims of trafficking, disabled persons, industrial workmen, persons in custody, and anyone earning below the prescribed income limit. Approach your District Legal Services Authority (DLSA), usually located in the district court complex, or call NALSA on 15100. Tele-Law (14454) also gives free legal advice over video. Lok Adalats can settle many disputes free and quickly.",
       "keywords": ["free legal aid", "lawyer", "DLSA", "NALSA", "15100", "tele-law", "14454", "legal services", "lok adalat"]
     }
   ]

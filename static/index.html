@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>अधिKaar — AI Legal Assistant | Know Your Rights</title>
+  <title>अधिKaar - AI Legal Assistant | Know Your Rights</title>
   <meta name="description" content="Free AI-powered legal assistant for Indian citizens. Understand your rights, get legal guidance in your language, and find legal aid near you.">
   <meta name="theme-color" content="#4338CA">
   <link rel="preload" href="fonts/noto-sans-latin-400.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="fonts/fonts.css?v=4">
-  <link rel="stylesheet" href="style.css?v=7">
+  <link rel="stylesheet" href="style.css?v=8">
 
   <!-- Every dependency is served from this machine. Nothing here reaches the
        network, which is what makes "runs on your device" and "works offline"
@@ -113,7 +113,7 @@
               Know Your Rights
             </h1>
             <p class="hero-subtitle">
-              Salary not paid? Deposit stuck? Got a legal notice? Ask in Hindi, English, or 9 other languages — free, offline, nothing leaves your computer.
+              Salary not paid? Deposit stuck? Got a legal notice? Ask in Hindi, English, or 9 other languages - free, offline, nothing leaves your computer.
             </p>
             <div class="hero-cta">
               <button class="btn btn-primary" onclick="navigateTo('chat')">
@@ -180,7 +180,7 @@
             <div class="step-card">
               <span class="step-num">02</span>
               <h3>Confirm the summary</h3>
-              <p>The AI restates your situation in simple words — you verify it understood correctly.</p>
+              <p>The AI restates your situation in simple words - you verify it understood correctly.</p>
             </div>
             <div class="step-card">
               <span class="step-num">03</span>
@@ -195,13 +195,13 @@
           <div class="feature-card" role="button" tabindex="0" onclick="navigateTo('chat')">
             <div class="card-icon teal"><i data-lucide="message-circle"></i></div>
             <h3>Talk to Legal Helper</h3>
-            <p>Describe your problem in any of 11 languages — get your rights, action steps, and deadlines.</p>
+            <p>Describe your problem in any of 11 languages - get your rights, action steps, and deadlines.</p>
             <span class="card-go">Open <i data-lucide="arrow-right"></i></span>
           </div>
           <div class="feature-card" role="button" tabindex="0" onclick="navigateTo('cases')">
             <div class="card-icon blue"><i data-lucide="folder-open"></i></div>
             <h3>My Cases</h3>
-            <p>Keep each legal matter organized — conversations, documents, and deadlines in one place, private on your device.</p>
+            <p>Keep each legal matter organized - conversations, documents, and deadlines in one place, private on your device.</p>
             <span class="card-go">Open <i data-lucide="arrow-right"></i></span>
           </div>
           <div class="feature-card" role="button" tabindex="0" onclick="navigateTo('draft')">
@@ -225,13 +225,13 @@
           <div class="feature-card" role="button" tabindex="0" onclick="navigateTo('document')">
             <div class="card-icon blue"><i data-lucide="file-text"></i></div>
             <h3>Translate Legal Documents</h3>
-            <p>Upload a legal notice, FIR, or court summons — get it explained in plain language.</p>
+            <p>Upload a legal notice, FIR, or court summons - get it explained in plain language.</p>
             <span class="card-go">Open <i data-lucide="arrow-right"></i></span>
           </div>
           <div class="feature-card" role="button" tabindex="0" onclick="enterKioskMode()">
             <div class="card-icon amber"><i data-lucide="accessibility"></i></div>
             <h3>Voice Mode</h3>
-            <p>No typing needed — speak your question and hear the answer aloud, in your language.</p>
+            <p>No typing needed - speak your question and hear the answer aloud, in your language.</p>
             <span class="card-go">Open <i data-lucide="arrow-right"></i></span>
           </div>
           <div class="feature-card" role="button" tabindex="0" onclick="openConverter('crpc_bnss')">
@@ -325,13 +325,13 @@
       <section class="view lawsteps-view" id="view-lawsteps">
         <div class="view-header">
           <h2><i data-lucide="clipboard-check" class="inline-icon"></i> Law &amp; Next Steps</h2>
-          <p>Describe your situation once and get a single verified answer — the law that applies, how each claim was checked, official sources, both sides stress-tested, a rights card, and a plain summary to share.</p>
+          <p>Describe your situation once and get a single verified answer - the law that applies, how each claim was checked, official sources, both sides stress-tested, a rights card, and a plain summary to share.</p>
         </div>
 
         <div class="ls-setup" id="ls-setup">
           <div class="court-setup-card">
             <label for="ls-situation"><i data-lucide="scroll-text"></i> Your situation</label>
-            <textarea id="ls-situation" placeholder="Describe what happened in your own words — or start a chat first and it will be filled automatically..."></textarea>
+            <textarea id="ls-situation" placeholder="Describe what happened in your own words - or start a chat first and it will be filled automatically..."></textarea>
             <div class="court-examples">
               <span>Try an example:</span>
               <button onclick="lsExample('My employer has not paid my salary for 3 months')">Unpaid salary</button>
@@ -350,7 +350,7 @@
       <!-- ════ SECTION CONVERTER VIEW (IPC↔BNS + CrPC↔BNSS) ════ -->
       <section class="view bns-view" id="view-bns">
         <div class="view-header">
-          <h2>🔄 Legal Section Converter</h2>
+          <h2> Legal Section Converter</h2>
           <p>India's criminal laws changed on 1 July 2024. Convert IPC↔BNS (offences) and CrPC↔BNSS (procedure).</p>
         </div>
 
@@ -368,7 +368,7 @@
           </div>
           <div class="search-box">
             <div class="search-input-wrapper">
-              <span class="search-icon">🔍</span>
+              <span class="search-icon"></span>
               <input type="text" id="bns-search" aria-label="Search by section number or offence name" placeholder="Search by section number or offence name (e.g., 420, theft, murder)" oninput="searchBns()">
             </div>
           </div>
@@ -384,7 +384,7 @@
           </div>
           <div class="search-box">
             <div class="search-input-wrapper">
-              <span class="search-icon">🔍</span>
+              <span class="search-icon"></span>
               <input type="text" id="crpc-search" aria-label="Search by section number" placeholder="Search by section number (e.g., 144, 154, 41, 438)" oninput="searchCrpc()">
             </div>
           </div>
@@ -396,12 +396,12 @@
       <!-- ════ LEGAL AID VIEW ════ -->
       <section class="view legal-aid-view" id="view-legal-aid">
         <div class="view-header">
-          <h2>📞 Find Legal Aid Near You</h2>
+          <h2> Find Legal Aid Near You</h2>
           <p>Free legal assistance is your right. Find DLSA offices, helplines, and Tele-Law services.</p>
         </div>
 
         <div class="helplines-section" id="helplines-section">
-          <h3>📱 Emergency Helplines</h3>
+          <h3> Emergency Helplines</h3>
           <div class="helpline-cards" id="helpline-cards"></div>
         </div>
 
@@ -423,7 +423,7 @@
         <div class="contact-cards" id="legal-aid-results"></div>
 
         <div class="checklists-section" id="checklists-section">
-          <h3>📋 Evidence & Document Checklists</h3>
+          <h3> Evidence & Document Checklists</h3>
           <p class="checklists-intro">Pick your situation to see exactly which documents to gather, the steps to take, and the deadlines that matter.</p>
           <div class="dropdown-group">
             <label for="checklist-select">Choose a situation</label>
@@ -438,12 +438,12 @@
       <!-- ════ DOCUMENT TRANSLATOR VIEW ════ -->
       <section class="view document-view" id="view-document">
         <div class="view-header">
-          <h2>📄 Translate Legal Document</h2>
-          <p>Upload a photo of your legal notice, FIR, or court summons — or paste the text below. We'll explain it in simple words.</p>
+          <h2> Translate Legal Document</h2>
+          <p>Upload a photo of your legal notice, FIR, or court summons - or paste the text below. We'll explain it in simple words.</p>
         </div>
 
         <div class="upload-area" id="upload-area" onclick="document.getElementById('file-input').click()">
-          <div class="upload-icon">📷</div>
+          <div class="upload-icon"></div>
           <h3>Tap to upload document photo</h3>
           <p>Take a photo or select from gallery. Supports JPG, PNG, PDF.</p>
           <input type="file" id="file-input" accept="image/*,.pdf,.txt" onchange="handleFileUpload(event)">
@@ -451,24 +451,24 @@
         <p class="draft-privacy" data-i18n="doc_privacy" style="text-align:center">The document is processed only on this computer.</p>
 
         <div class="text-input-area">
-          <p style="text-align:center; color: var(--text-tertiary); margin-bottom: var(--space-md);">— OR paste the document text below —</p>
+          <p style="text-align:center; color: var(--text-tertiary); margin-bottom: var(--space-md);">- OR paste the document text below -</p>
           <textarea id="doc-text-input" aria-label="Paste your legal document text" placeholder="Paste your legal document text here..."></textarea>
           <div class="input-actions">
-            <button class="btn btn-primary" onclick="translateDocument()">📄 Translate & Explain</button>
+            <button class="btn btn-primary" onclick="translateDocument()"> Translate & Explain</button>
           </div>
         </div>
 
         <div id="ocr-result-section" style="display:none">
           <div class="ocr-result">
-            <h4>📝 Extracted Text (OCR)</h4>
+            <h4> Extracted Text (OCR)</h4>
             <div class="ocr-text" id="ocr-text"></div>
-            <button class="btn btn-primary btn-sm" onclick="translateOcrText()">📄 Translate & Explain This</button>
+            <button class="btn btn-primary btn-sm" onclick="translateOcrText()"> Translate & Explain This</button>
           </div>
         </div>
 
         <div id="translation-result-section" style="display:none">
           <div class="translation-result">
-            <h4>📖 Document Explanation</h4>
+            <h4> Document Explanation</h4>
             <div class="markdown-body" id="translation-result"></div>
           </div>
           <div class="doc-followup">
@@ -486,7 +486,7 @@
       <section class="view cases-view" id="view-cases">
         <div class="view-header">
           <h2><i data-lucide="folder-open" class="inline-icon"></i> My Cases</h2>
-          <p>Each case keeps its own conversation, documents, and deadlines — saved privately on this device.</p>
+          <p>Each case keeps its own conversation, documents, and deadlines - saved privately on this device.</p>
         </div>
         <div class="cases-toolbar">
           <button class="btn btn-primary" onclick="createCase()"><i data-lucide="plus"></i> New Case</button>
@@ -505,7 +505,7 @@
           <!-- Step 1: describe the case -->
           <div class="draft-describe" id="draft-step-describe">
             <h3 data-i18n="draft_step1_title">Describe your case</h3>
-            <p class="draft-privacy" data-i18n="draft_step1_desc">Tell us what happened in your own words. Everything is generated on this device by a local AI — your details never leave this computer.</p>
+            <p class="draft-privacy" data-i18n="draft_step1_desc">Tell us what happened in your own words. Everything is generated on this device by a local AI - your details never leave this computer.</p>
             <textarea id="draft-situation" rows="4" data-i18n-ph="draft_step1_ph" placeholder="Describe your legal situation here…"></textarea>
             <div class="input-actions">
               <button class="btn btn-primary" id="draft-find-btn" onclick="findDraftDocuments()">
@@ -615,27 +615,27 @@
   <dialog class="modal-overlay" id="rights-card-modal" aria-labelledby="rights-card-modal-title">
     <div class="modal">
       <div class="modal-header">
-        <h3 id="rights-card-modal-title">🪪 Your Rights Card</h3>
-        <button class="modal-close" onclick="closeModal('rights-card-modal')">✕</button>
+        <h3 id="rights-card-modal-title"> Your Rights Card</h3>
+        <button class="modal-close" onclick="closeModal('rights-card-modal')"></button>
       </div>
       <div class="modal-body">
         <div class="rights-card-preview" id="rights-card-content">
           <div class="card-header">
-            <span class="card-logo">⚖️</span>
+            <span class="card-logo"></span>
             <h4 id="card-title">Your Rights</h4>
           </div>
           <div class="card-situation" id="card-situation"></div>
           <ul class="card-rights" id="card-rights"></ul>
           <div class="card-helplines" id="card-helplines">
-            <strong>📞 Emergency Numbers:</strong>
+            <strong> Emergency Numbers:</strong>
             <span>NALSA: 15100 | Tele-Law: 14454 | Police: 112 | Women: 181</span>
           </div>
-          <div class="card-footer">अधिKaar — AI Legal Assistant · अधिकार जानो, अधिकार पाओ</div>
+          <div class="card-footer">अधिKaar - AI Legal Assistant · अधिकार जानो, अधिकार पाओ</div>
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary btn-sm" onclick="downloadRightsCard()">📥 Download Image</button>
-        <button class="btn btn-primary btn-sm" onclick="shareRightsCard()">📤 Share</button>
+        <button class="btn btn-secondary btn-sm" onclick="downloadRightsCard()"> Download Image</button>
+        <button class="btn btn-primary btn-sm" onclick="shareRightsCard()"> Share</button>
       </div>
     </div>
   </dialog>
@@ -644,8 +644,8 @@
   <dialog class="modal-overlay" id="lang-modal" aria-labelledby="lang-modal-title">
     <div class="modal">
       <div class="modal-header">
-        <h3 id="lang-modal-title">🌐 Choose Language / भाषा चुनें</h3>
-        <button class="modal-close" onclick="closeModal('lang-modal')">✕</button>
+        <h3 id="lang-modal-title"> Choose Language / भाषा चुनें</h3>
+        <button class="modal-close" onclick="closeModal('lang-modal')"></button>
       </div>
       <div class="modal-body" id="lang-modal-options" style="display:flex; flex-direction:column; gap:8px;">
         <!-- Populated by JS -->
@@ -653,6 +653,6 @@
     </div>
   </dialog>
 
-  <script src="app.js?v=8"></script>
+  <script src="app.js?v=9"></script>
 </body>
 </html>

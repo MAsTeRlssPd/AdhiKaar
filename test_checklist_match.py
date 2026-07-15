@@ -1,7 +1,7 @@
 """Checks the deterministic evidence-checklist matcher.
 
 The matcher grounds the AI checklist in a human-reviewed template, so a WRONG
-match is worse than no match — it would hand the user the wrong documents and
+match is worse than no match - it would hand the user the wrong documents and
 the wrong statutory deadlines. The negative cases below matter as much as the
 positive ones: ambiguous or off-topic input must return None, not a guess.
 
@@ -23,7 +23,7 @@ CASES = [
     ("doctor operated on the wrong leg", "medical_negligence"),
     ("RTI application got no reply in 30 days", "rti_first_appeal"),
 
-    # Sibling case types that expansion can blur — "police" expands to include
+    # Sibling case types that expansion can blur - "police" expands to include
     # "FIR", which once tied a custodial complaint with fir_refusal.
     ("police refused to file my FIR", "fir_refusal"),
     ("the police beat me in custody", "police_misconduct"),

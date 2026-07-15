@@ -1,5 +1,5 @@
 /**
- * अधिKaar — AI Legal Assistant
+ * अधिKaar - AI Legal Assistant
  * Frontend Application Logic
  */
 
@@ -326,7 +326,7 @@ async function sendMessage() {
 
   } catch (error) {
     hideTyping();
-    addMessage('assistant', '⚠️ Sorry, I could not connect to the AI model. Please make sure:\n\n1. **Ollama is running** (`ollama serve`)\n2. **The Gemma model is installed** (check `ollama list`)\n3. **The server is running** (`python app.py`)\n\nThen try again.');
+    addMessage('assistant', ' Sorry, I could not connect to the AI model. Please make sure:\n\n1. **Ollama is running** (`ollama serve`)\n2. **The Gemma model is installed** (check `ollama list`)\n3. **The server is running** (`python app.py`)\n\nThen try again.');
   }
 }
 
@@ -415,7 +415,7 @@ async function extractDocText(file) {
   return result.data.text;
 }
 
-// A PDF is a binary container — reading it as text() gives garbage the model
+// A PDF is a binary container - reading it as text() gives garbage the model
 // rejects as "binary data". Use pdf.js to pull the real text layer; if the PDF
 // is scanned (no text layer), rasterise the first few pages and OCR them.
 async function extractPdfText(file) {
@@ -486,7 +486,7 @@ async function handleChatDocUpload(event) {
 
     const summary = (data.summary || '').trim();
     addMessage('assistant',
-      '📎 **' + escapeHtml(state.attachedDoc) + '** attached.\n\n' +
+      ' **' + escapeHtml(state.attachedDoc) + '** attached.\n\n' +
       (summary ? summary + '\n\n' : '') +
       '_You can now ask me questions about this document._');
   } catch (error) {
@@ -494,7 +494,7 @@ async function handleChatDocUpload(event) {
     console.error('Doc upload error:', error);
     setDocChip('', false);
     state.attachedDoc = null;
-    addMessage('assistant', '⚠️ Could not attach that document. ' + (error.message || 'Please try again.'));
+    addMessage('assistant', ' Could not attach that document. ' + (error.message || 'Please try again.'));
   }
 }
 
@@ -510,7 +510,7 @@ function setDocChip(label, attached) {
   chip.style.display = 'flex';
   if (attached) {
     chip.innerHTML =
-      '<span>📎 ' + escapeHtml(label) + ' attached — ask me about it</span>' +
+      '<span> ' + escapeHtml(label) + ' attached - ask me about it</span>' +
       '<button class="doc-chip-x" onclick="removeAttachedDoc()" title="Remove document" aria-label="Remove document">×</button>';
   } else {
     chip.innerHTML = '<span>' + escapeHtml(label) + '</span>';
@@ -696,7 +696,7 @@ async function runDevilAdvocate() {
     addMessage('assistant', '## ' + t('hdr_devil') + '\n\n' + data.response);
   } catch (error) {
     hideTyping();
-    addMessage('assistant', '⚠️ Could not run Devil\'s Advocate mode. Please check if the server is running.');
+    addMessage('assistant', ' Could not run Devil\'s Advocate mode. Please check if the server is running.');
   }
 }
 
@@ -716,7 +716,7 @@ async function runConsequenceSimulator() {
     addMessage('assistant', '## ' + t('hdr_consequence') + '\n\n' + data.response);
   } catch (error) {
     hideTyping();
-    addMessage('assistant', '⚠️ Could not run consequence simulator. Please check if the server is running.');
+    addMessage('assistant', ' Could not run consequence simulator. Please check if the server is running.');
   }
 }
 
@@ -737,7 +737,7 @@ async function runPanchayatBridge() {
     addMessage('assistant', '## ' + t('hdr_elder') + '\n\n' + data.response);
   } catch (error) {
     hideTyping();
-    addMessage('assistant', '⚠️ Could not generate elder summary. Please check if the server is running.');
+    addMessage('assistant', ' Could not generate elder summary. Please check if the server is running.');
   }
 }
 
@@ -757,7 +757,7 @@ async function generateChecklist() {
     addMessage('assistant', data.response);
   } catch (error) {
     hideTyping();
-    addMessage('assistant', '⚠️ Could not generate checklist. Please check if the server is running.');
+    addMessage('assistant', ' Could not generate checklist. Please check if the server is running.');
   }
 }
 
@@ -795,13 +795,13 @@ async function generateRightsCard() {
     });
 
     const helplines = card.helplines || ['NALSA: 15100', 'Tele-Law: 14454', 'Police: 112'];
-    $('card-helplines').innerHTML = `<strong>📞 Emergency Numbers:</strong><span>${helplines.join(' | ')}</span>`;
+    $('card-helplines').innerHTML = `<strong> Emergency Numbers:</strong><span>${helplines.join(' | ')}</span>`;
 
     // Show modal
     openModal('rights-card-modal');
   } catch (error) {
     hideTyping();
-    addMessage('assistant', '⚠️ Could not generate rights card. Please check if the server is running.');
+    addMessage('assistant', ' Could not generate rights card. Please check if the server is running.');
   }
 }
 
@@ -841,7 +841,7 @@ async function shareRightsCard() {
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
           files: [file],
-          title: 'अधिKaar — Know Your Rights',
+          title: 'अधिKaar - Know Your Rights',
           text: 'Here are my rights as explained by अधिKaar AI Legal Assistant',
         });
       } else {
@@ -856,14 +856,14 @@ async function shareRightsCard() {
 }
 
 // ══════════════════════════════════════════════════════════════
-// Voice Input (Web Speech API) — single shared dictation engine
+// Voice Input (Web Speech API) - single shared dictation engine
 // ══════════════════════════════════════════════════════════════
 //
 // NOTE: The browser Web Speech API sends microphone audio to the
 // browser vendor's cloud (e.g. Google) for transcription. It is NOT
 // on-device and needs an internet connection. For a fully-local,
 // private pipeline, transcription should move to a backend Whisper/
-// Vosk endpoint — tracked separately.
+// Vosk endpoint - tracked separately.
 
 let activeRecognition = null;     // the one recognizer currently running
 let dictationTimer = null;        // safety auto-stop timer
@@ -926,7 +926,7 @@ function voiceErrorMessage(err) {
     case 'service-not-allowed':
       return 'Microphone is blocked. Please allow mic access in your browser and try again.';
     case 'no-speech':
-      return "I didn't catch that — tap the mic and speak again.";
+      return "I didn't catch that - tap the mic and speak again.";
     case 'audio-capture':
       return 'No microphone found. Please connect a microphone and try again.';
     case 'network':
@@ -1026,7 +1026,7 @@ async function startDictation(targetEl, micBtn, opts = {}) {
       return;
     }
 
-    // "Transcribing…" state — whisper is not streaming, so this can take 1-3s.
+    // "Transcribing…" state - whisper is not streaming, so this can take 1-3s.
     micBtn?.classList.add('loading');
     setMicIcon(micBtn, 'loader-2');
     setListeningIndicator(true, t('mic_transcribing'));
@@ -1078,7 +1078,7 @@ function initVoice() {
   }
   // Don't hide the mic when it's merely unavailable: over plain HTTP on a LAN/
   // Tailscale IP the browser disables the microphone (secure-context rule), which
-  // used to hide the button and leave the user confused. Keep it visible — it
+  // used to hide the button and leave the user confused. Keep it visible - it
   // works on localhost/HTTPS, and startDictation explains why if it can't.
   if (!hasMediaRecorder()) {
     console.log('Microphone unavailable (needs a secure context: HTTPS or localhost).');
@@ -1135,7 +1135,7 @@ async function doSearchBns() {
   const aiContainer = $('bns-ai-explanation');
 
   if (!query) {
-    resultsContainer.innerHTML = '<div class="empty-state"><div class="empty-icon">🔍</div><p>Type a section number or offence name to search</p></div>';
+    resultsContainer.innerHTML = '<div class="empty-state"><div class="empty-icon"></div><p>Type a section number or offence name to search</p></div>';
     aiContainer.innerHTML = '';
     return;
   }
@@ -1164,13 +1164,13 @@ async function doSearchBns() {
           <div class="offence-name">${escapeHtml(r.offence)}</div>
           <div class="description">${escapeHtml(r.description).slice(0, 200)}${r.description.length > 200 ? '...' : ''}</div>
           <div class="key-changes">
-            <strong>⚡ Key Changes:</strong> ${escapeHtml(r.key_changes)}
+            <strong> Key Changes:</strong> ${escapeHtml(r.key_changes)}
           </div>
-          <div class="punishment">⚖️ ${escapeHtml(r.punishment)}</div>
+          <div class="punishment"> ${escapeHtml(r.punishment)}</div>
         </div>
       `).join('');
     } else {
-      resultsContainer.innerHTML = '<div class="empty-state"><div class="empty-icon">🤷</div><p>No exact matches found. Try a different section number or offence name.</p></div>';
+      resultsContainer.innerHTML = '<div class="empty-state"><div class="empty-icon"></div><p>No exact matches found. Try a different section number or offence name.</p></div>';
     }
 
     if (data.ai_explanation) {
@@ -1182,7 +1182,7 @@ async function doSearchBns() {
       `;
     }
   } catch (error) {
-    resultsContainer.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><p>Could not search. Please check if the server is running.</p></div>';
+    resultsContainer.innerHTML = '<div class="empty-state"><div class="empty-icon"></div><p>Could not search. Please check if the server is running.</p></div>';
   }
 }
 
@@ -1208,7 +1208,7 @@ async function doSearchCrpc() {
   const aiContainer = $('crpc-ai-explanation');
 
   if (!query) {
-    resultsContainer.innerHTML = '<div class="empty-state"><div class="empty-icon">🔍</div><p>Type a section number to search</p></div>';
+    resultsContainer.innerHTML = '<div class="empty-state"><div class="empty-icon"></div><p>Type a section number to search</p></div>';
     aiContainer.innerHTML = '';
     return;
   }
@@ -1233,13 +1233,13 @@ async function doSearchCrpc() {
           <div class="offence-name">${escapeHtml(r.offence)}</div>
           <div class="description">${escapeHtml(r.description).slice(0, 220)}${r.description.length > 220 ? '...' : ''}</div>
           <div class="key-changes">
-            <strong>⚡ Key Changes:</strong> ${escapeHtml(r.key_changes)}
+            <strong> Key Changes:</strong> ${escapeHtml(r.key_changes)}
           </div>
-          <div class="punishment">📂 ${escapeHtml(r.category)}</div>
+          <div class="punishment"> ${escapeHtml(r.category)}</div>
         </div>
       `).join('');
     } else {
-      resultsContainer.innerHTML = '<div class="empty-state"><div class="empty-icon">🤷</div><p>No exact match found. Try another section number (e.g., 144, 154, 438).</p></div>';
+      resultsContainer.innerHTML = '<div class="empty-state"><div class="empty-icon"></div><p>No exact match found. Try another section number (e.g., 144, 154, 438).</p></div>';
     }
 
     if (data.ai_explanation) {
@@ -1251,7 +1251,7 @@ async function doSearchCrpc() {
       `;
     }
   } catch (error) {
-    resultsContainer.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><p>Could not search. Please check if the server is running.</p></div>';
+    resultsContainer.innerHTML = '<div class="empty-state"><div class="empty-icon"></div><p>Could not search. Please check if the server is running.</p></div>';
   }
 }
 
@@ -1330,7 +1330,7 @@ async function onChecklistSelect() {
       </div>`).join('');
     const steps = (t.steps || []).map(s => `<li>${escapeHtml(s)}</li>`).join('');
     const deadlines = (t.deadlines || []).map(dl => `
-      <div class="checklist-deadline"><strong>${escapeHtml(dl.what || '')}</strong> — ${escapeHtml(dl.timeframe || '')}</div>`).join('');
+      <div class="checklist-deadline"><strong>${escapeHtml(dl.what || '')}</strong> - ${escapeHtml(dl.timeframe || '')}</div>`).join('');
     const tips = (t.tips || []).map(tip => `<li>${escapeHtml(tip)}</li>`).join('');
 
     detail.innerHTML = `
@@ -1340,14 +1340,14 @@ async function onChecklistSelect() {
           ${t.title_hi ? `<span class="checklist-head-hi">${escapeHtml(t.title_hi)}</span>` : ''}
         </div>
         ${t.description ? `<p class="checklist-desc">${escapeHtml(t.description)}</p>` : ''}
-        ${section('Documents to gather', '📄', docs)}
-        ${steps ? `<div class="checklist-block"><h4>🪜 Steps to take</h4><ol class="checklist-steps">${steps}</ol></div>` : ''}
-        ${deadlines ? `<div class="checklist-block"><h4>⏰ Deadlines that matter</h4>${deadlines}</div>` : ''}
-        ${tips ? `<div class="checklist-block"><h4>💡 Tips</h4><ul class="checklist-tips">${tips}</ul></div>` : ''}
-        ${t.helpline ? `<div class="checklist-helpline">📞 Helpline: ${escapeHtml(t.helpline)}</div>` : ''}
+        ${section('Documents to gather', '', docs)}
+        ${steps ? `<div class="checklist-block"><h4> Steps to take</h4><ol class="checklist-steps">${steps}</ol></div>` : ''}
+        ${deadlines ? `<div class="checklist-block"><h4> Deadlines that matter</h4>${deadlines}</div>` : ''}
+        ${tips ? `<div class="checklist-block"><h4> Tips</h4><ul class="checklist-tips">${tips}</ul></div>` : ''}
+        ${t.helpline ? `<div class="checklist-helpline"> Helpline: ${escapeHtml(t.helpline)}</div>` : ''}
       </div>`;
   } catch (e) {
-    detail.innerHTML = '<div class="empty-state"><p>⚠️ Could not load this checklist.</p></div>';
+    detail.innerHTML = '<div class="empty-state"><p> Could not load this checklist.</p></div>';
   }
 }
 
@@ -1360,13 +1360,13 @@ function renderHelplines() {
       <div class="helpline-number">${escapeHtml(h.number)}</div>
       <div class="helpline-name">${escapeHtml(h.name)}</div>
       <div class="helpline-desc">${escapeHtml(h.description)}</div>
-      <div class="helpline-hours">🕐 ${escapeHtml(h.hours)}</div>
+      <div class="helpline-hours"> ${escapeHtml(h.hours)}</div>
     </div>
   `).join('');
 }
 
 // Contact detail lines shared by SLSA + DLSA cards. Every field is optional in
-// the data (many new states have no verified phone/email yet) — guard each so a
+// the data (many new states have no verified phone/email yet) - guard each so a
 // card never shows an empty row or a bare "undefined".
 function contactLines(o) {
   const rows = [];
@@ -1374,34 +1374,34 @@ function contactLines(o) {
     rows.push(`<p class="contact-officer">${escapeHtml(o.officer_name)}${o.designation ? ' · ' + escapeHtml(o.designation) : ''}</p>`);
   }
   const site = o.official_url || o.website;
-  if (site) rows.push(`<p><a href="${escapeHtml(site)}" target="_blank" rel="noopener">🌐 Official website</a></p>`);
-  if (o.email) rows.push(`<p><a href="mailto:${escapeHtml(o.email)}">✉️ ${escapeHtml(o.email)}</a></p>`);
+  if (site) rows.push(`<p><a href="${escapeHtml(site)}" target="_blank" rel="noopener"> Official website</a></p>`);
+  if (o.email) rows.push(`<p><a href="mailto:${escapeHtml(o.email)}"> ${escapeHtml(o.email)}</a></p>`);
   return rows.join('');
 }
 
 function slsaCard(s) {
   return `
     <div class="contact-card">
-      <div class="contact-icon">🏛️</div>
+      <div class="contact-icon"></div>
       <div class="contact-info">
         <h4>${escapeHtml(s.name || 'State Legal Services Authority')}</h4>
         ${s.address ? `<p>${escapeHtml(s.address)}</p>` : ''}
         ${contactLines(s)}
       </div>
-      ${s.phone ? `<div class="contact-phone">📞 ${escapeHtml(s.phone)}</div>` : ''}
+      ${s.phone ? `<div class="contact-phone"> ${escapeHtml(s.phone)}</div>` : ''}
     </div>`;
 }
 
 function dlsaCard(d) {
   return `
     <div class="contact-card">
-      <div class="contact-icon">📍</div>
+      <div class="contact-icon"></div>
       <div class="contact-info">
-        <h4>DLSA — ${escapeHtml(d.name)}</h4>
+        <h4>DLSA - ${escapeHtml(d.name)}</h4>
         ${d.dlsa_address ? `<p>${escapeHtml(d.dlsa_address)}</p>` : ''}
         ${contactLines(d)}
       </div>
-      ${d.phone ? `<div class="contact-phone">📞 ${escapeHtml(d.phone)}</div>` : ''}
+      ${d.phone ? `<div class="contact-phone"> ${escapeHtml(d.phone)}</div>` : ''}
     </div>`;
 }
 
@@ -1433,7 +1433,7 @@ async function onStateSelect() {
       });
     }
   } catch (error) {
-    resultsContainer.innerHTML = '<div class="empty-state"><p>⚠️ Could not load data. Please check server.</p></div>';
+    resultsContainer.innerHTML = '<div class="empty-state"><p> Could not load data. Please check server.</p></div>';
   }
 }
 
@@ -1473,7 +1473,7 @@ function onDistrictSelect() {
 
 function resetUploadArea(uploadArea, heading) {
   uploadArea.innerHTML = `
-    <div class="upload-icon">📷</div>
+    <div class="upload-icon"></div>
     <h3>${escapeHtml(heading || 'Tap to upload another document')}</h3>
     <p>Take a photo or select from gallery. Supports JPG, PNG, PDF.</p>
     <input type="file" id="file-input" accept="image/*,.pdf,.txt" onchange="handleFileUpload(event)">
@@ -1485,7 +1485,7 @@ async function handleFileUpload(event) {
   const file = event.target.files[0];
   if (!file) return;
 
-  state.docIndexed = false;   // new document — re-index before the next follow-up
+  state.docIndexed = false;   // new document - re-index before the next follow-up
   const uploadArea = $('upload-area');
   uploadArea.innerHTML = `
     <div class="loading">
@@ -1522,7 +1522,7 @@ async function handleFileUpload(event) {
 
 // Fallback extraction in the browser when the backend extractor is unavailable.
 // Uses extractDocText, which reads PDFs via pdf.js (text layer, OCR fallback for
-// scans) and lazy-loads Tesseract — so a not-yet-loaded library or a PDF (which
+// scans) and lazy-loads Tesseract - so a not-yet-loaded library or a PDF (which
 // Tesseract can't read directly) no longer dead-ends here.
 async function tesseractFallback(file, uploadArea) {
   try {
@@ -1539,7 +1539,7 @@ async function tesseractFallback(file, uploadArea) {
     $('ocr-result-section').style.display = 'block';
     resetUploadArea(uploadArea);
     // Index the extracted text into this session so "Ask about this document"
-    // is grounded — the client fallback would otherwise leave the doc un-indexed.
+    // is grounded - the client fallback would otherwise leave the doc un-indexed.
     try {
       await apiCall('/api/upload-document', {
         method: 'POST',
@@ -1550,7 +1550,7 @@ async function tesseractFallback(file, uploadArea) {
     } catch (e) { console.error('Doc index (fallback) failed:', e); }
   } catch (error) {
     uploadArea.innerHTML = `
-      <div class="upload-icon">⚠️</div>
+      <div class="upload-icon"></div>
       <h3>Could not read document</h3>
       <p>${escapeHtml(error.message)}. Try pasting the text manually below.</p>
       <input type="file" id="file-input" accept="image/*,.pdf,.txt" onchange="handleFileUpload(event)">
@@ -1596,7 +1596,7 @@ async function askDocFollowup() {
   item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
   try {
-    // Send the document text straight from the page — grounding then never depends
+    // Send the document text straight from the page - grounding then never depends
     // on server-side session/index state (which resets on restart).
     const docText = ($('ocr-text')?.textContent || '').trim();
     const data = await apiCall('/api/ask-document', {
@@ -1610,7 +1610,7 @@ async function askDocFollowup() {
     refreshIcons();
   } catch (e) {
     item.querySelector('.doc-qa-a').innerHTML =
-      `<span class="doc-qa-err">⚠️ Could not get an answer. Make sure the server and Ollama are running, then try again.</span>`;
+      `<span class="doc-qa-err"> Could not get an answer. Make sure the server and Ollama are running, then try again.</span>`;
   }
 }
 
@@ -1649,7 +1649,7 @@ async function doTranslateDocument(text) {
 
     resultDiv.innerHTML = renderMarkdown(data.response);
   } catch (error) {
-    resultDiv.innerHTML = '<p>⚠️ Could not translate document. Please check if the server is running.</p>';
+    resultDiv.innerHTML = '<p> Could not translate document. Please check if the server is running.</p>';
   }
 }
 
@@ -1737,7 +1737,7 @@ document.addEventListener('DOMContentLoaded', () => {
     chatInput.addEventListener('input', () => autoResizeTextarea(chatInput));
   }
 
-  // Language select change — build options from LANGUAGES so every variant
+  // Language select change - build options from LANGUAGES so every variant
   // (including the romanized -lish ones) is always present and in sync.
   const langSelect = $('language-select');
   if (langSelect) {
@@ -1770,7 +1770,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Render lucide icons (script is deferred, so lucide is loaded by now)
   refreshIcons();
 
-  // Animated stat counters — count up when scrolled into view
+  // Animated stat counters - count up when scrolled into view
   const statsRow = $('stats-row');
   if (statsRow && 'IntersectionObserver' in window) {
     const animateCount = (el) => {
@@ -1805,7 +1805,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ══════════════════════════════════════════════════════════════
-// CASE WORKSPACE — private, stored on this device only
+// CASE WORKSPACE - private, stored on this device only
 // ══════════════════════════════════════════════════════════════
 
 function loadCases() {
@@ -1854,7 +1854,7 @@ function persistToActiveCase(role, content) {
   const cases = loadCases();
   let id = localStorage.getItem('adhikaar_active_case');
   let c = cases.find(x => x.id === id);
-  
+
   if (!c && role === 'user') {
     // Automatically create a new case/chat
     const title = content.slice(0, 30) + (content.length > 30 ? '...' : '');
@@ -1873,18 +1873,18 @@ function persistToActiveCase(role, content) {
     saveCases(cases);
     localStorage.setItem('adhikaar_active_case', newCase.id);
     c = newCase;
-    
+
     // Update UI
     updateCaseBanner();
   }
-  
+
   if (!c) return;
-  
+
   c.history.push({ role, content, time: Date.now() });
   c.updatedAt = Date.now();
   if (!c.summary && role === 'user') c.summary = content.slice(0, 120);
   saveCases(cases);
-  
+
   renderChatSidebar();
   if (state.currentView === 'cases') renderCases();
 }
@@ -2013,7 +2013,7 @@ function renderCases() {
     grid.innerHTML = `<div class="cases-empty">
       <div class="cases-empty-icon"><i data-lucide="folder-open"></i></div>
       <h3>No cases yet</h3>
-      <p>A case keeps one legal matter organized — its conversation, documents, and deadlines together, private on this device.</p>
+      <p>A case keeps one legal matter organized - its conversation, documents, and deadlines together, private on this device.</p>
       <button class="btn btn-primary" onclick="createCase()"><i data-lucide="plus"></i> ${t('ncase') || 'New Case'}</button>
     </div>`;
     refreshIcons();
@@ -2037,7 +2037,7 @@ function renderCases() {
         <span><i data-lucide="file-text"></i> ${(c.drafts || []).length} drafts</span>
       </div>
       ${dl ? `<div class="case-deadline ${soon ? 'deadline-soon' : ''}">
-        <i data-lucide="alarm-clock"></i> ${escapeHtml(dl.label)} — ${dl.date}
+        <i data-lucide="alarm-clock"></i> ${escapeHtml(dl.label)} - ${dl.date}
       </div>` : ''}
       <div class="case-actions">
         <button class="btn btn-sm btn-secondary" onclick="addDeadline('${c.id}', event)"><i data-lucide="calendar-plus"></i> Deadline</button>
@@ -2314,7 +2314,7 @@ function stripForSpeech(text) {
     .trim();
 }
 
-// getVoices() populates asynchronously — cache it and refresh on 'voiceschanged'.
+// getVoices() populates asynchronously - cache it and refresh on 'voiceschanged'.
 let ttsVoices = [];
 function loadVoices() {
   ttsVoices = window.speechSynthesis ? (window.speechSynthesis.getVoices() || []) : [];
@@ -2382,7 +2382,7 @@ function speakViaBrowser(clean, opts) {
   if (!voice) {
     console.warn(`[tts] No installed voice for "${lang}". Speech may be silent or use a default voice.`);
     if (opts.notify) {
-      showToast("Audio isn't available for this language on your device — showing the text instead.");
+      showToast("Audio isn't available for this language on your device - showing the text instead.");
     }
   }
   // Chunk long text so speechSynthesis doesn't cut off mid-answer
@@ -2416,7 +2416,7 @@ function speak(text, opts = {}) {
   const token = ++speakToken;
   // Optimistically report started; if the server fails we fall back to the browser.
   speakViaServer(clean, opts, token).catch(() => {
-    if (token !== speakToken) return;        // stopped/superseded — don't fall back
+    if (token !== speakToken) return;        // stopped/superseded - don't fall back
     speakViaBrowser(clean, opts);
   });
   return true;
@@ -2699,7 +2699,7 @@ function quickAskVoice() {
 }
 
 // ══════════════════════════════════════════════════════════════
-// Law & Next Steps — single verified structured analysis
+// Law & Next Steps - single verified structured analysis
 // ══════════════════════════════════════════════════════════════
 
 function lsExample(text) {
@@ -2752,7 +2752,7 @@ function renderLawSteps(r) {
   const a = lsPanel('scale', t('ls_a'),
     `<div class="markdown-body">${renderMarkdown(r.situation_and_law || '')}</div>`, true);
 
-  // (b) How each statement was checked — claim-level verification
+  // (b) How each statement was checked - claim-level verification
   const b = lsPanel('search-check', t('ls_b'),
     lsList(r.verification, v => {
       const ok = String(v.status || '').toLowerCase() === 'verified';
@@ -2783,14 +2783,14 @@ function renderLawSteps(r) {
     </div>`;
   const d = lsPanel('swords', t('ls_d'), stressHtml, false);
 
-  // (e) Rights card — reuses the shareable rights-card styling
+  // (e) Rights card - reuses the shareable rights-card styling
   const rc = r.rights_card || {};
   const rightsHtml = `
     <div class="rights-card-preview ls-rights">
-      <div class="card-header"><span class="card-logo">⚖️</span><h4>${escapeHtml(rc.title || t('ls_rights'))}</h4></div>
+      <div class="card-header"><span class="card-logo"></span><h4>${escapeHtml(rc.title || t('ls_rights'))}</h4></div>
       <ul class="card-rights">${(rc.rights || []).map(x =>
         `<li>${escapeHtml(x.text || '')}${x.source ? `<span class="ls-rc-src">${escapeHtml(x.source)}</span>` : ''}</li>`).join('')}</ul>
-      <div class="card-footer">अधिKaar — AI Legal Assistant</div>
+      <div class="card-footer">अधिKaar - AI Legal Assistant</div>
     </div>
     <div class="input-actions" style="margin-top:12px">
       <button class="btn btn-secondary btn-sm" onclick="openLsRightsCard()"><i data-lucide="share-2"></i> ${t('ls_share')}</button>
@@ -2821,7 +2821,7 @@ function openLsRightsCard() {
     li.textContent = x.source ? `${x.text} (${x.source})` : x.text;
     list.appendChild(li);
   });
-  $('card-helplines').innerHTML = '<strong>📞 Emergency Numbers:</strong><span>NALSA: 15100 | Tele-Law: 14454 | Police: 112 | Women: 181</span>';
+  $('card-helplines').innerHTML = '<strong> Emergency Numbers:</strong><span>NALSA: 15100 | Tele-Law: 14454 | Police: 112 | Women: 181</span>';
   openModal('rights-card-modal');
 }
 
@@ -2854,25 +2854,25 @@ function updateThemeButton(theme) {
 initTheme();
 
 // ══════════════════════════════════════════════════════════════
-// I18N — Multi-language interface translations
+// I18N - Multi-language interface translations
 // ══════════════════════════════════════════════════════════════
 
 const I18N = {
 en: { nav_home:'Home', nav_chat:'Talk to Legal Helper', nav_cases:'My Cases', nav_draft:'Draft a Document', nav_court:'Virtual Courtroom', nav_bns:'Section Converter', nav_crpc:'CrPC ↔ BNSS Converter', nav_aid:'Find Legal Aid', nav_doc:'Translate Legal Document',
-badge:'100% private · runs on your device', hero_sub:'Salary not paid? Deposit stuck? Got a legal notice? Ask in Hindi, English, or many other languages — free, offline, nothing leaves your computer.', cta1:'Ask Your Question', cta2:'See How It Works',
+badge:'100% private · runs on your device', hero_sub:'Salary not paid? Deposit stuck? Got a legal notice? Ask in Hindi, English, or many other languages - free, offline, nothing leaves your computer.', cta1:'Ask Your Question', cta2:'See How It Works',
 tr1:'No signup', tr2:'Works offline', tr3:'19 languages', tr4:'Free forever',
 st1:'IPC ↔ BNS sections mapped', st2:'Indian languages supported', st3:'Data sent to the cloud',
-how:'How It Works', s1t:'Describe your problem', s1d:'Type or speak in any of 11 languages. No legal words needed.', s2t:'Confirm the summary', s2d:'The AI restates your situation — you verify it understood correctly.', s3t:'Get rights + next steps', s3d:'Clear guidance with BNS sections, deadlines, and helplines.',
+how:'How It Works', s1t:'Describe your problem', s1d:'Type or speak in any of 11 languages. No legal words needed.', s2t:'Confirm the summary', s2d:'The AI restates your situation - you verify it understood correctly.', s3t:'Get rights + next steps', s3d:'Clear guidance with BNS sections, deadlines, and helplines.',
 feats:'Everything अधिKaar Can Do', open:'Open',
-f1t:'Talk to Legal Helper', f1d:'Describe your problem in any of 11 languages — get rights, steps, and deadlines.', f2t:'My Cases', f2d:'Keep each legal matter organized — private on your device.', f3t:'Draft a Document', f3d:'Ready-to-print legal notices, complaints, and RTI applications.', f4t:'Virtual Courtroom', f4d:'Watch both sides argue your case before an AI judge.', f5t:'IPC ↔ BNS Converter', f5d:'Convert old IPC sections to new BNS sections instantly.', f6t:'Find Legal Aid', f6d:'Free legal aid offices and helplines in your district.', f7t:'Translate Legal Documents', f7d:'Upload a notice or summons — get it explained simply.', f8t:'Voice Mode', f8d:'Speak your question and hear the answer aloud.', f9t:'CrPC ↔ BNSS Converter', f9d:'Convert old CrPC sections to new BNSS sections instantly.', f10t:'Law & Next Steps', f10d:'One verified answer — the law that applies, sources, and a rights card.',
+f1t:'Talk to Legal Helper', f1d:'Describe your problem in any of 11 languages - get rights, steps, and deadlines.', f2t:'My Cases', f2d:'Keep each legal matter organized - private on your device.', f3t:'Draft a Document', f3d:'Ready-to-print legal notices, complaints, and RTI applications.', f4t:'Virtual Courtroom', f4d:'Watch both sides argue your case before an AI judge.', f5t:'IPC ↔ BNS Converter', f5d:'Convert old IPC sections to new BNS sections instantly.', f6t:'Find Legal Aid', f6d:'Free legal aid offices and helplines in your district.', f7t:'Translate Legal Documents', f7d:'Upload a notice or summons - get it explained simply.', f8t:'Voice Mode', f8d:'Speak your question and hear the answer aloud.', f9t:'CrPC ↔ BNSS Converter', f9d:'Convert old CrPC sections to new BNSS sections instantly.', f10t:'Law & Next Steps', f10d:'One verified answer - the law that applies, sources, and a rights card.',
 hg:'Hello, how can I help you today?', hc1:'What are tenant rights in India?', hc2:'How to file a consumer complaint?', hc3:'Explain Domestic Violence Act', hph:'Type your legal question...', hnote:'Free to use. Your conversations stay on your device.',
 ct:'Legal Helper', cst:'Ready to help', cnew:'New Chat', wt:'Welcome to अधिKaar', wd:"Tell me about your legal problem in your own words. I'll help you understand your rights and options.",
 c1:'Unpaid salary', c2:'Security deposit', c3:'Got a legal notice', c4:'FIR not filed', c5:'Domestic violence', c6:'Online fraud',
 cph:'Describe your legal problem here...', chint:'Press Enter to send · Shift+Enter for new line · tap the mic for voice input', cdisc:'अधिKaar provides legal information, not legal advice. For complex matters, consult a qualified lawyer or call NALSA: 15100.',
-bns_t:'IPC ↔ BNS Section Converter', bns_d:'India\'s criminal law changed on 1 July 2024. Search any IPC or BNS section to find its equivalent.', aid_t:'Find Legal Aid Near You', aid_d:'Free legal assistance is your right. Find DLSA offices, helplines, and Tele-Law services.', doc_t:'Translate Legal Document', doc_d:'Upload a photo of your legal notice, FIR, or court summons — we\'ll explain it in simple words.',
-cases_t:'My Cases', cases_d:'Each case keeps its own conversation, documents, and deadlines — saved privately on this device.', draft_t:'Draft a Legal Document', draft_d:'Answer a few questions and get a ready-to-use document you can print and submit.', court_t:'Virtual Courtroom', court_d:'Watch both sides argue your case before an AI judge — and find your weak points before the other side does.',
+bns_t:'IPC ↔ BNS Section Converter', bns_d:'India\'s criminal law changed on 1 July 2024. Search any IPC or BNS section to find its equivalent.', aid_t:'Find Legal Aid Near You', aid_d:'Free legal assistance is your right. Find DLSA offices, helplines, and Tele-Law services.', doc_t:'Translate Legal Document', doc_d:'Upload a photo of your legal notice, FIR, or court summons - we\'ll explain it in simple words.',
+cases_t:'My Cases', cases_d:'Each case keeps its own conversation, documents, and deadlines - saved privately on this device.', draft_t:'Draft a Legal Document', draft_d:'Answer a few questions and get a ready-to-use document you can print and submit.', court_t:'Virtual Courtroom', court_d:'Watch both sides argue your case before an AI judge - and find your weak points before the other side does.',
 ncase:'New Case', shear:'Start Hearing', nround:'Next Round', vmode:'Voice Mode / आवाज़ मोड',
-nav_lawsteps:'Law & Next Steps', lsv_t:'Law & Next Steps', lsv_d:'Describe your situation once and get a single verified answer — the law that applies, how each claim was checked, official sources, both sides stress-tested, a rights card, and a plain summary to share.',
+nav_lawsteps:'Law & Next Steps', lsv_t:'Law & Next Steps', lsv_d:'Describe your situation once and get a single verified answer - the law that applies, how each claim was checked, official sources, both sides stress-tested, a rights card, and a plain summary to share.',
 ls_sit:'Your situation', ls_btn:'Get Full Analysis', ls_need:'Please describe your situation first.', ls_wait:'Analysing… local AI can take a minute', ls_err:'Could not generate the analysis. Make sure the server and Ollama are running, then try again.', ls_none:'Nothing to show here.',
 ls_a:'Your situation & the law', ls_b:'How each statement was checked', ls_c:'Official sources with links', ls_d:'Stress test from both sides', ls_e:'Rights card', ls_f:'Explain to someone you trust',
 ls_verified:'Verified', ls_unverified:'Unverified', ls_for:'For your position', ls_against:'Against you', ls_weak:'Weak points', ls_rights:'Your Rights', ls_share:'Share as image', ls_listen:'Listen',
@@ -2881,28 +2881,28 @@ btn_listen:'Listen', btn_stop:'Stop', btn_copy:'Copy', btn_copied:'Copied',
 hdr_devil:"Devil's Advocate Analysis", hdr_consequence:'What Happens If You Do Nothing', hdr_elder:'Community Elder Summary',
 conv_explain:'Detailed Explanation', conv_searching:'Searching...', conv_nomatch:'No exact matches found. Try a different section number or offence name.',
 mic_listening:'Listening…', mic_transcribing:'Transcribing…', mic_error:'Could not access the microphone.', mic_nospeech:'No speech detected. Please try again.',
-draft_step1_title:'Describe your case', draft_step1_desc:'Tell us what happened in your own words. Everything is generated on this device by a local AI — your details never leave this computer.', draft_step1_ph:'Describe your legal situation here…', draft_find:'Find the right documents',
+draft_step1_title:'Describe your case', draft_step1_desc:'Tell us what happened in your own words. Everything is generated on this device by a local AI - your details never leave this computer.', draft_step1_ph:'Describe your legal situation here…', draft_find:'Find the right documents',
 draft_step2_title:'Suggested documents', draft_step2_desc:'Based on your case, these documents may help. Pick one to prepare.', draft_manual:'Or choose a document format yourself',
 draft_step3_title:'Fill in the details', draft_step3_desc:'Answer these so the document is complete and ready to submit. Nothing is stored.', draft_generate:'Generate final document', draft_missing:'Please fill in the highlighted required fields.',
 draft_result_title:'Your document', draft_download:'Download', draft_print:'Print', draft_save:'Save to Case', draft_back:'Back', draft_privacy:'Everything is generated on this device by a local AI. Your details never leave this computer.',
 doc_followup_title:'Ask about this document', doc_followup_ph:'Ask a question about this document…', doc_extracting:'Reading the document…', doc_privacy:'The document is processed only on this computer.',
-kiosk_greeting:'Namaste. Tell me your problem — I am listening.', kiosk_listening:'Listening…', kiosk_thinking:'Thinking…', kiosk_error:'Sorry, something went wrong. Please try again.', kiosk_repeat:'Listen again', kiosk_exit:'Exit' },
+kiosk_greeting:'Namaste. Tell me your problem - I am listening.', kiosk_listening:'Listening…', kiosk_thinking:'Thinking…', kiosk_error:'Sorry, something went wrong. Please try again.', kiosk_repeat:'Listen again', kiosk_exit:'Exit' },
 
 hi: { nav_home:'होम', nav_chat:'कानूनी सहायक से बात करें', nav_cases:'मेरे केस', nav_draft:'दस्तावेज़ बनाएं', nav_court:'वर्चुअल अदालत', nav_bns:'सेक्शन परिवर्तक', nav_crpc:'CrPC ↔ BNSS परिवर्तक', nav_aid:'कानूनी सहायता खोजें', nav_doc:'कानूनी दस्तावेज़ समझें',
-badge:'100% निजी · आपके डिवाइस पर चलता है', hero_sub:'वेतन नहीं मिला? जमा राशि फंसी है? कानूनी नोटिस मिला? हिंदी, अंग्रेज़ी या 9 अन्य भाषाओं में पूछें — मुफ्त, ऑफलाइन, आपका डेटा बाहर नहीं जाता।', cta1:'अपना सवाल पूछें', cta2:'कैसे काम करता है देखें',
+badge:'100% निजी · आपके डिवाइस पर चलता है', hero_sub:'वेतन नहीं मिला? जमा राशि फंसी है? कानूनी नोटिस मिला? हिंदी, अंग्रेज़ी या 9 अन्य भाषाओं में पूछें - मुफ्त, ऑफलाइन, आपका डेटा बाहर नहीं जाता।', cta1:'अपना सवाल पूछें', cta2:'कैसे काम करता है देखें',
 tr1:'साइनअप नहीं चाहिए', tr2:'ऑफलाइन चलता है', tr3:'19 भाषाएं', tr4:'हमेशा मुफ्त',
 st1:'IPC ↔ BNS धाराएं जोड़ी गईं', st2:'भारतीय भाषाएं समर्थित', st3:'क्लाउड को भेजा गया डेटा',
-how:'यह कैसे काम करता है', s1t:'अपनी समस्या बताएं', s1d:'11 भाषाओं में लिखें या बोलें। कानूनी शब्द ज़रूरी नहीं।', s2t:'सारांश की पुष्टि करें', s2d:'AI आपकी स्थिति दोहराता है — आप जांचें कि सही समझा।', s3t:'अधिकार और अगले कदम पाएं', s3d:'BNS धाराओं, समय-सीमाओं और हेल्पलाइन के साथ स्पष्ट मार्गदर्शन।',
+how:'यह कैसे काम करता है', s1t:'अपनी समस्या बताएं', s1d:'11 भाषाओं में लिखें या बोलें। कानूनी शब्द ज़रूरी नहीं।', s2t:'सारांश की पुष्टि करें', s2d:'AI आपकी स्थिति दोहराता है - आप जांचें कि सही समझा।', s3t:'अधिकार और अगले कदम पाएं', s3d:'BNS धाराओं, समय-सीमाओं और हेल्पलाइन के साथ स्पष्ट मार्गदर्शन।',
 feats:'अधिKaar की सभी सुविधाएं', open:'खोलें',
-f1t:'कानूनी सहायक से बात करें', f1d:'11 भाषाओं में समस्या बताएं — अधिकार, कदम और समय-सीमा पाएं।', f2t:'मेरे केस', f2d:'हर कानूनी मामला व्यवस्थित — आपके डिवाइस पर निजी।', f3t:'दस्तावेज़ बनाएं', f3d:'छपने-योग्य कानूनी नोटिस, शिकायतें और RTI आवेदन।', f4t:'वर्चुअल अदालत', f4d:'AI जज के सामने दोनों पक्षों की बहस देखें।', f5t:'IPC ↔ BNS परिवर्तक', f5d:'पुरानी IPC धाराओं को नई BNS धाराओं में बदलें।', f6t:'कानूनी सहायता खोजें', f6d:'आपके जिले में मुफ्त कानूनी सहायता और हेल्पलाइन।', f7t:'कानूनी दस्तावेज़ समझें', f7d:'नोटिस या समन अपलोड करें — सरल भाषा में समझें।', f8t:'आवाज़ मोड', f8d:'बोलकर पूछें और जवाब सुनें।', f9t:'CrPC ↔ BNSS परिवर्तक', f9d:'पुरानी CrPC धाराओं को नई BNSS धाराओं में बदलें।', f10t:'कानून और अगले कदम', f10d:'एक सत्यापित उत्तर — लागू कानून, स्रोत और अधिकार कार्ड।',
+f1t:'कानूनी सहायक से बात करें', f1d:'11 भाषाओं में समस्या बताएं - अधिकार, कदम और समय-सीमा पाएं।', f2t:'मेरे केस', f2d:'हर कानूनी मामला व्यवस्थित - आपके डिवाइस पर निजी।', f3t:'दस्तावेज़ बनाएं', f3d:'छपने-योग्य कानूनी नोटिस, शिकायतें और RTI आवेदन।', f4t:'वर्चुअल अदालत', f4d:'AI जज के सामने दोनों पक्षों की बहस देखें।', f5t:'IPC ↔ BNS परिवर्तक', f5d:'पुरानी IPC धाराओं को नई BNS धाराओं में बदलें।', f6t:'कानूनी सहायता खोजें', f6d:'आपके जिले में मुफ्त कानूनी सहायता और हेल्पलाइन।', f7t:'कानूनी दस्तावेज़ समझें', f7d:'नोटिस या समन अपलोड करें - सरल भाषा में समझें।', f8t:'आवाज़ मोड', f8d:'बोलकर पूछें और जवाब सुनें।', f9t:'CrPC ↔ BNSS परिवर्तक', f9d:'पुरानी CrPC धाराओं को नई BNSS धाराओं में बदलें।', f10t:'कानून और अगले कदम', f10d:'एक सत्यापित उत्तर - लागू कानून, स्रोत और अधिकार कार्ड।',
 hg:'नमस्ते, मैं आपकी क्या मदद कर सकता हूँ?', hc1:'भारत में किरायेदार के अधिकार क्या हैं?', hc2:'उपभोक्ता शिकायत कैसे दर्ज करें?', hc3:'घरेलू हिंसा अधिनियम समझाएं', hph:'अपना कानूनी सवाल लिखें...', hnote:'उपयोग मुफ्त है। आपकी बातचीत आपके डिवाइस पर रहती है।',
 ct:'कानूनी सहायक', cst:'मदद के लिए तैयार', cnew:'नई बातचीत', wt:'अधिKaar में आपका स्वागत है', wd:'अपनी कानूनी समस्या अपने शब्दों में बताइए। मैं आपके अधिकार और विकल्प समझने में मदद करूँगा।',
 c1:'वेतन नहीं मिला', c2:'जमा राशि', c3:'कानूनी नोटिस मिला', c4:'FIR दर्ज नहीं हुई', c5:'घरेलू हिंसा', c6:'ऑनलाइन धोखाधड़ी',
 cph:'अपनी कानूनी समस्या यहाँ लिखें...', chint:'भेजने के लिए Enter · नई पंक्ति के लिए Shift+Enter · आवाज़ के लिए माइक दबाएं', cdisc:'अधिKaar कानूनी जानकारी देता है, कानूनी सलाह नहीं। जटिल मामलों में वकील से मिलें या NALSA को कॉल करें: 15100।',
-bns_t:'IPC ↔ BNS धारा परिवर्तक', bns_d:'1 जुलाई 2024 को आपराधिक कानून बदला। कोई भी IPC या BNS धारा खोजें।', aid_t:'नज़दीकी कानूनी सहायता खोजें', aid_d:'मुफ्त कानूनी सहायता आपका अधिकार है। DLSA कार्यालय, हेल्पलाइन और टेली-लॉ सेवाएं खोजें।', doc_t:'कानूनी दस्तावेज़ समझें', doc_d:'नोटिस, FIR या समन की फोटो अपलोड करें — हम सरल शब्दों में समझाएंगे।',
-cases_t:'मेरे केस', cases_d:'हर केस की बातचीत, दस्तावेज़ और समय-सीमाएं — इसी डिवाइस पर निजी।', draft_t:'कानूनी दस्तावेज़ बनाएं', draft_d:'कुछ सवालों के जवाब दें और छापने-जमा करने योग्य दस्तावेज़ पाएं।', court_t:'वर्चुअल अदालत', court_d:'AI जज के सामने दोनों पक्षों की बहस देखें — अपनी कमजोरियां पहले जानें।',
+bns_t:'IPC ↔ BNS धारा परिवर्तक', bns_d:'1 जुलाई 2024 को आपराधिक कानून बदला। कोई भी IPC या BNS धारा खोजें।', aid_t:'नज़दीकी कानूनी सहायता खोजें', aid_d:'मुफ्त कानूनी सहायता आपका अधिकार है। DLSA कार्यालय, हेल्पलाइन और टेली-लॉ सेवाएं खोजें।', doc_t:'कानूनी दस्तावेज़ समझें', doc_d:'नोटिस, FIR या समन की फोटो अपलोड करें - हम सरल शब्दों में समझाएंगे।',
+cases_t:'मेरे केस', cases_d:'हर केस की बातचीत, दस्तावेज़ और समय-सीमाएं - इसी डिवाइस पर निजी।', draft_t:'कानूनी दस्तावेज़ बनाएं', draft_d:'कुछ सवालों के जवाब दें और छापने-जमा करने योग्य दस्तावेज़ पाएं।', court_t:'वर्चुअल अदालत', court_d:'AI जज के सामने दोनों पक्षों की बहस देखें - अपनी कमजोरियां पहले जानें।',
 ncase:'नया केस', shear:'सुनवाई शुरू करें', nround:'अगला दौर', vmode:'आवाज़ मोड',
-nav_lawsteps:'कानून और अगले कदम', lsv_t:'कानून और अगले कदम', lsv_d:'अपनी स्थिति एक बार बताएं — लागू कानून, हर दावे की जाँच, आधिकारिक स्रोत, दोनों पक्षों की परख, अधिकार कार्ड और सरल सारांश एक साथ पाएं।',
+nav_lawsteps:'कानून और अगले कदम', lsv_t:'कानून और अगले कदम', lsv_d:'अपनी स्थिति एक बार बताएं - लागू कानून, हर दावे की जाँच, आधिकारिक स्रोत, दोनों पक्षों की परख, अधिकार कार्ड और सरल सारांश एक साथ पाएं।',
 ls_sit:'आपकी स्थिति', ls_btn:'पूरा विश्लेषण पाएं', ls_need:'कृपया पहले अपनी स्थिति बताएं।', ls_wait:'विश्लेषण हो रहा है… इसमें एक मिनट लग सकता है', ls_err:'विश्लेषण नहीं बन सका। सर्वर और Ollama चालू हैं यह जांचें, फिर दोबारा कोशिश करें।', ls_none:'यहाँ दिखाने को कुछ नहीं है।',
 ls_a:'आपकी स्थिति और कानून', ls_b:'हर बात कैसे जांची गई', ls_c:'आधिकारिक स्रोत और लिंक', ls_d:'दोनों पक्षों से परख', ls_e:'अधिकार कार्ड', ls_f:'अपनों को कैसे समझाएं',
 ls_verified:'सत्यापित', ls_unverified:'असत्यापित', ls_for:'आपके पक्ष में', ls_against:'आपके विरुद्ध', ls_weak:'कमज़ोर बिंदु', ls_rights:'आपके अधिकार', ls_share:'छवि के रूप में साझा करें', ls_listen:'सुनें',
@@ -2911,28 +2911,28 @@ btn_listen:'सुनें', btn_stop:'रोकें', btn_copy:'कॉपी
 hdr_devil:'विरोधी पक्ष का विश्लेषण', hdr_consequence:'कुछ न करने पर क्या होगा', hdr_elder:'सामुदायिक सहायक सारांश',
 conv_explain:'विस्तृत व्याख्या', conv_searching:'खोज रहे हैं...', conv_nomatch:'कोई सटीक मिलान नहीं मिला। दूसरा धारा नंबर या अपराध का नाम आज़माएं।',
 mic_listening:'सुन रहे हैं…', mic_transcribing:'लिख रहे हैं…', mic_error:'माइक्रोफ़ोन तक नहीं पहुँच सके।', mic_nospeech:'कोई आवाज़ नहीं सुनी। कृपया दोबारा कोशिश करें।',
-draft_step1_title:'अपना मामला बताएं', draft_step1_desc:'अपने शब्दों में बताएं क्या हुआ। सब कुछ इसी डिवाइस पर लोकल AI द्वारा बनता है — आपकी जानकारी बाहर नहीं जाती।', draft_step1_ph:'अपनी कानूनी स्थिति यहाँ बताएं…', draft_find:'सही दस्तावेज़ खोजें',
+draft_step1_title:'अपना मामला बताएं', draft_step1_desc:'अपने शब्दों में बताएं क्या हुआ। सब कुछ इसी डिवाइस पर लोकल AI द्वारा बनता है - आपकी जानकारी बाहर नहीं जाती।', draft_step1_ph:'अपनी कानूनी स्थिति यहाँ बताएं…', draft_find:'सही दस्तावेज़ खोजें',
 draft_step2_title:'सुझाए गए दस्तावेज़', draft_step2_desc:'आपके मामले के आधार पर ये दस्तावेज़ मदद कर सकते हैं। तैयार करने के लिए एक चुनें।', draft_manual:'या खुद कोई दस्तावेज़ प्रारूप चुनें',
 draft_step3_title:'विवरण भरें', draft_step3_desc:'इन्हें भरें ताकि दस्तावेज़ पूरा और जमा करने योग्य हो। कुछ भी संग्रहीत नहीं होता।', draft_generate:'अंतिम दस्तावेज़ बनाएं', draft_missing:'कृपया चिह्नित आवश्यक फ़ील्ड भरें।',
 draft_result_title:'आपका दस्तावेज़', draft_download:'डाउनलोड', draft_print:'प्रिंट', draft_save:'केस में सहेजें', draft_back:'वापस', draft_privacy:'सब कुछ इसी डिवाइस पर लोकल AI द्वारा बनता है। आपकी जानकारी बाहर नहीं जाती।',
 doc_followup_title:'इस दस्तावेज़ के बारे में पूछें', doc_followup_ph:'इस दस्तावेज़ के बारे में सवाल पूछें…', doc_extracting:'दस्तावेज़ पढ़ रहे हैं…', doc_privacy:'दस्तावेज़ केवल इसी कंप्यूटर पर संसाधित होता है।',
-kiosk_greeting:'नमस्ते। अपनी समस्या बताइए — मैं सुन रहा हूँ।', kiosk_listening:'सुन रहे हैं…', kiosk_thinking:'सोच रहे हैं…', kiosk_error:'क्षमा करें, कुछ गड़बड़ हुई। कृपया दोबारा कोशिश करें।', kiosk_repeat:'फिर सुनें', kiosk_exit:'बाहर निकलें' },
+kiosk_greeting:'नमस्ते। अपनी समस्या बताइए - मैं सुन रहा हूँ।', kiosk_listening:'सुन रहे हैं…', kiosk_thinking:'सोच रहे हैं…', kiosk_error:'क्षमा करें, कुछ गड़बड़ हुई। कृपया दोबारा कोशिश करें।', kiosk_repeat:'फिर सुनें', kiosk_exit:'बाहर निकलें' },
 
 hinglish: { nav_home:'Home', nav_chat:'Legal Helper se baat karein', nav_cases:'Mere Cases', nav_draft:'Document banayein', nav_court:'Virtual Adalat', nav_bns:'Section Converter', nav_crpc:'CrPC ↔ BNSS Converter', nav_aid:'Legal Aid dhundein', nav_doc:'Legal Document samjhein',
-badge:'100% private · aapke device par chalta hai', hero_sub:'Salary nahi mili? Deposit atka hai? Legal notice aaya? Hindi, English ya 9 aur bhashaon mein poochein — free, offline, data bahar nahi jaata.', cta1:'Apna sawaal poochein', cta2:'Kaise kaam karta hai dekhein',
+badge:'100% private · aapke device par chalta hai', hero_sub:'Salary nahi mili? Deposit atka hai? Legal notice aaya? Hindi, English ya 9 aur bhashaon mein poochein - free, offline, data bahar nahi jaata.', cta1:'Apna sawaal poochein', cta2:'Kaise kaam karta hai dekhein',
 tr1:'No signup', tr2:'Offline chalta hai', tr3:'19 bhashayein', tr4:'Hamesha free',
 st1:'IPC ↔ BNS sections mapped', st2:'Bhartiya bhashayein', st3:'Cloud ko bheja gaya data',
-how:'Yeh kaise kaam karta hai', s1t:'Apni problem batayein', s1d:'11 bhashaon mein likhein ya bolein.', s2t:'Summary confirm karein', s2d:'AI aapki baat dohrata hai — aap check karein.', s3t:'Rights aur agle kadam', s3d:'BNS sections, deadlines aur helplines ke saath.',
+how:'Yeh kaise kaam karta hai', s1t:'Apni problem batayein', s1d:'11 bhashaon mein likhein ya bolein.', s2t:'Summary confirm karein', s2d:'AI aapki baat dohrata hai - aap check karein.', s3t:'Rights aur agle kadam', s3d:'BNS sections, deadlines aur helplines ke saath.',
 feats:'अधिKaar ke saare features', open:'Kholein',
-f1t:'Legal Helper se baat karein', f1d:'11 bhashaon mein problem batayein — rights aur steps paayein.', f2t:'Mere Cases', f2d:'Har case organized — device par private.', f3t:'Document banayein', f3d:'Print-ready notices, complaints aur RTI.', f4t:'Virtual Adalat', f4d:'AI judge ke saamne dono taraf ki behas.', f5t:'IPC ↔ BNS Converter', f5d:'Purani IPC ko nayi BNS mein badlein.', f6t:'Legal Aid dhundein', f6d:'Aapke zile mein free legal aid.', f7t:'Legal Document samjhein', f7d:'Notice ya summons upload karein — simple mein samjhein.', f8t:'Voice Mode', f8d:'Bolkar poochein, jawab sunein.', f9t:'CrPC ↔ BNSS Converter', f9d:'Purani CrPC ko nayi BNSS mein badlein.', f10t:'Kanoon aur Agle Kadam', f10d:'Ek verified jawab — lagoo kanoon, sources aur rights card.',
+f1t:'Legal Helper se baat karein', f1d:'11 bhashaon mein problem batayein - rights aur steps paayein.', f2t:'Mere Cases', f2d:'Har case organized - device par private.', f3t:'Document banayein', f3d:'Print-ready notices, complaints aur RTI.', f4t:'Virtual Adalat', f4d:'AI judge ke saamne dono taraf ki behas.', f5t:'IPC ↔ BNS Converter', f5d:'Purani IPC ko nayi BNS mein badlein.', f6t:'Legal Aid dhundein', f6d:'Aapke zile mein free legal aid.', f7t:'Legal Document samjhein', f7d:'Notice ya summons upload karein - simple mein samjhein.', f8t:'Voice Mode', f8d:'Bolkar poochein, jawab sunein.', f9t:'CrPC ↔ BNSS Converter', f9d:'Purani CrPC ko nayi BNSS mein badlein.', f10t:'Kanoon aur Agle Kadam', f10d:'Ek verified jawab - lagoo kanoon, sources aur rights card.',
 hg:'Namaste, main aapki kya madad kar sakta hoon?', hc1:'India mein tenant rights kya hain?', hc2:'Consumer complaint kaise file karein?', hc3:'Domestic Violence Act samjhaayein', hph:'Apna legal sawaal likhein...', hnote:'Free hai. Aapki baatcheet device par rehti hai.',
 ct:'Legal Helper', cst:'Madad ke liye taiyaar', cnew:'Nayi Chat', wt:'अधिKaar mein swagat hai', wd:'Apni legal problem apne shabdon mein batayein.',
 c1:'Salary nahi mili', c2:'Security deposit', c3:'Legal notice aaya', c4:'FIR nahi hui', c5:'Gharelu hinsa', c6:'Online fraud',
 cph:'Apni legal problem yahan likhein...', chint:'Enter se bhejein · Shift+Enter nayi line · mic se bolein', cdisc:'अधिKaar legal information deta hai, advice nahi. Complex cases mein vakil se milein ya NALSA: 15100.',
 bns_t:'IPC ↔ BNS Section Converter', bns_d:'1 July 2024 ko criminal law badla. Koi bhi section search karein.', aid_t:'Nazdeeki Legal Aid', aid_d:'Free legal aid aapka haq hai. DLSA, helplines aur Tele-Law dhundein.', doc_t:'Legal Document samjhein', doc_d:'Notice, FIR ya summons ki photo upload karein.',
-cases_t:'Mere Cases', cases_d:'Har case ki baatcheet aur deadlines — device par private.', draft_t:'Legal Document banayein', draft_d:'Kuch sawaal, ready document.', court_t:'Virtual Adalat', court_d:'AI judge ke saamne behas dekhein — kamzori pehle jaanein.',
+cases_t:'Mere Cases', cases_d:'Har case ki baatcheet aur deadlines - device par private.', draft_t:'Legal Document banayein', draft_d:'Kuch sawaal, ready document.', court_t:'Virtual Adalat', court_d:'AI judge ke saamne behas dekhein - kamzori pehle jaanein.',
 ncase:'Naya Case', shear:'Sunwai shuru karein', nround:'Agla Round', vmode:'Voice Mode',
-nav_lawsteps:'Kanoon aur Agle Kadam', lsv_t:'Kanoon aur Agle Kadam', lsv_d:'Apni situation ek baar batayein — laagu kanoon, har claim ki jaanch, official sources, dono taraf ki parakh, rights card aur simple summary ek saath.',
+nav_lawsteps:'Kanoon aur Agle Kadam', lsv_t:'Kanoon aur Agle Kadam', lsv_d:'Apni situation ek baar batayein - laagu kanoon, har claim ki jaanch, official sources, dono taraf ki parakh, rights card aur simple summary ek saath.',
 ls_sit:'Aapki situation', ls_btn:'Poora analysis paayein', ls_need:'Pehle apni situation batayein.', ls_wait:'Analysis ho raha hai… ek minute lag sakta hai', ls_err:'Analysis nahi ban saka. Server aur Ollama chalu hain check karein, phir dobara try karein.', ls_none:'Yahan dikhane ko kuch nahi hai.',
 ls_a:'Aapki situation aur kanoon', ls_b:'Har baat kaise check hui', ls_c:'Official sources aur links', ls_d:'Dono taraf se parakh', ls_e:'Rights Card', ls_f:'Apno ko kaise samjhayein',
 ls_verified:'Verified', ls_unverified:'Unverified', ls_for:'Aapke paksh mein', ls_against:'Aapke khilaaf', ls_weak:'Kamzor points', ls_rights:'Aapke Adhikaar', ls_share:'Image ke roop mein share karein', ls_listen:'Sunein',
@@ -2941,131 +2941,131 @@ btn_listen:'Sunein', btn_stop:'Rokein', btn_copy:'Copy', btn_copied:'Copy ho gay
 hdr_devil:'Virodhi Paksh ka Analysis', hdr_consequence:'Kuch na karne par kya hoga', hdr_elder:'Community Helper Summary',
 conv_explain:'Vistaar se Samjhaein', conv_searching:'Search kar rahe hain...', conv_nomatch:'Koi exact match nahi mila. Doosra section number ya offence name try karein.',
 mic_listening:'Sun rahe hain…', mic_transcribing:'Likh rahe hain…', mic_error:'Microphone access nahi ho saka.', mic_nospeech:'Koi awaaz nahi suni. Dobara try karein.',
-draft_step1_title:'Apna case batayein', draft_step1_desc:'Apne shabdon mein batayein kya hua. Sab kuch isi device par local AI banata hai — aapki details bahar nahi jaati.', draft_step1_ph:'Apni legal situation yahan batayein…', draft_find:'Sahi documents dhundein',
+draft_step1_title:'Apna case batayein', draft_step1_desc:'Apne shabdon mein batayein kya hua. Sab kuch isi device par local AI banata hai - aapki details bahar nahi jaati.', draft_step1_ph:'Apni legal situation yahan batayein…', draft_find:'Sahi documents dhundein',
 draft_step2_title:'Suggested documents', draft_step2_desc:'Aapke case ke hisaab se ye documents madad kar sakte hain. Ek chunein.', draft_manual:'Ya khud koi document format chunein',
 draft_step3_title:'Details bharein', draft_step3_desc:'Ye bharein taaki document poora aur submit karne layak ho. Kuch bhi store nahi hota.', draft_generate:'Final document banayein', draft_missing:'Highlighted required fields bharein.',
 draft_result_title:'Aapka document', draft_download:'Download', draft_print:'Print', draft_save:'Case mein save karein', draft_back:'Wapas', draft_privacy:'Sab kuch isi device par local AI banata hai. Aapki details bahar nahi jaati.',
 doc_followup_title:'Is document ke baare mein poochein', doc_followup_ph:'Is document ke baare mein sawaal poochein…', doc_extracting:'Document padh rahe hain…', doc_privacy:'Document sirf isi computer par process hota hai.',
-kiosk_greeting:'Namaste. Apni samasya batayein — main sun raha hoon.', kiosk_listening:'Sun rahe hain…', kiosk_thinking:'Soch rahe hain…', kiosk_error:'Maaf kijiye, kuch gadbad hui. Dobara try karein.', kiosk_repeat:'Phir sunein', kiosk_exit:'Bahar niklein' },
+kiosk_greeting:'Namaste. Apni samasya batayein - main sun raha hoon.', kiosk_listening:'Sun rahe hain…', kiosk_thinking:'Soch rahe hain…', kiosk_error:'Maaf kijiye, kuch gadbad hui. Dobara try karein.', kiosk_repeat:'Phir sunein', kiosk_exit:'Bahar niklein' },
 
 ta: { nav_home:'முகப்பு', nav_chat:'சட்ட உதவியாளரிடம் பேசுங்கள்', nav_cases:'என் வழக்குகள்', nav_draft:'ஆவணம் உருவாக்கு', nav_court:'மெய்நிகர் நீதிமன்றம்', nav_bns:'IPC ↔ BNS மாற்றி', nav_aid:'சட்ட உதவி தேடு', nav_doc:'சட்ட ஆவணம் விளக்கு',
-badge:'100% தனிப்பட்டது · உங்கள் சாதனத்தில் இயங்குகிறது', hero_sub:'சம்பளம் வரவில்லையா? வைப்புத்தொகை சிக்கியதா? சட்ட நோட்டீஸ் வந்ததா? 11 மொழிகளில் கேளுங்கள் — இலவசம், ஆஃப்லைன்.', cta1:'உங்கள் கேள்வியைக் கேளுங்கள்', cta2:'எப்படி வேலை செய்கிறது',
+badge:'100% தனிப்பட்டது · உங்கள் சாதனத்தில் இயங்குகிறது', hero_sub:'சம்பளம் வரவில்லையா? வைப்புத்தொகை சிக்கியதா? சட்ட நோட்டீஸ் வந்ததா? 11 மொழிகளில் கேளுங்கள் - இலவசம், ஆஃப்லைன்.', cta1:'உங்கள் கேள்வியைக் கேளுங்கள்', cta2:'எப்படி வேலை செய்கிறது',
 tr1:'பதிவு தேவையில்லை', tr2:'ஆஃப்லைனில் இயங்கும்', tr3:'11 மொழிகள்', tr4:'எப்போதும் இலவசம்',
 st1:'IPC ↔ BNS பிரிவுகள்', st2:'இந்திய மொழிகள்', st3:'கிளவுடுக்கு அனுப்பிய தரவு',
-how:'இது எப்படி வேலை செய்கிறது', s1t:'உங்கள் பிரச்சனையை சொல்லுங்கள்', s1d:'11 மொழிகளில் எழுதுங்கள் அல்லது பேசுங்கள்.', s2t:'சுருக்கத்தை உறுதிசெய்யுங்கள்', s2d:'AI உங்கள் நிலையை மீண்டும் கூறும் — நீங்கள் சரிபார்க்கவும்.', s3t:'உரிமைகள் + அடுத்த படிகள்', s3d:'BNS பிரிவுகள், காலக்கெடுக்கள், உதவி எண்களுடன்.',
+how:'இது எப்படி வேலை செய்கிறது', s1t:'உங்கள் பிரச்சனையை சொல்லுங்கள்', s1d:'11 மொழிகளில் எழுதுங்கள் அல்லது பேசுங்கள்.', s2t:'சுருக்கத்தை உறுதிசெய்யுங்கள்', s2d:'AI உங்கள் நிலையை மீண்டும் கூறும் - நீங்கள் சரிபார்க்கவும்.', s3t:'உரிமைகள் + அடுத்த படிகள்', s3d:'BNS பிரிவுகள், காலக்கெடுக்கள், உதவி எண்களுடன்.',
 feats:'அధிKaar செய்யக்கூடியவை', open:'திற',
-f1t:'சட்ட உதவியாளரிடம் பேசுங்கள்', f1d:'11 மொழிகளில் பிரச்சனையை சொல்லுங்கள்.', f2t:'என் வழக்குகள்', f2d:'ஒவ்வொரு வழக்கும் ஒழுங்காக — தனிப்பட்டதாக.', f3t:'ஆவணம் உருவாக்கு', f3d:'அச்சிடத் தயாரான நோட்டீஸ்கள் மற்றும் RTI.', f4t:'மெய்நிகர் நீதிமன்றம்', f4d:'AI நீதிபதி முன் இரு தரப்பு வாதம்.', f5t:'IPC ↔ BNS மாற்றி', f5d:'பழைய IPC பிரிவுகளை புதிய BNS ஆக மாற்றுங்கள்.', f6t:'சட்ட உதவி தேடு', f6d:'உங்கள் மாவட்டத்தில் இலவச சட்ட உதவி.', f7t:'சட்ட ஆவணம் விளக்கு', f7d:'நோட்டீஸை பதிவேற்றுங்கள் — எளிமையாக புரிந்துகொள்ளுங்கள்.', f8t:'குரல் முறை', f8d:'பேசிக் கேளுங்கள், பதிலைக் கேளுங்கள்.', f9t:'CrPC ↔ BNSS மாற்றி', f9d:'பழைய CrPC பிரிவுகளை புதிய BNSS ஆக மாற்றுங்கள்.', f10t:'சட்டம் மற்றும் அடுத்த படிகள்', f10d:'ஒரு சரிபார்க்கப்பட்ட பதில் — பொருந்தும் சட்டம், ஆதாரங்கள், உரிமை அட்டை.',
+f1t:'சட்ட உதவியாளரிடம் பேசுங்கள்', f1d:'11 மொழிகளில் பிரச்சனையை சொல்லுங்கள்.', f2t:'என் வழக்குகள்', f2d:'ஒவ்வொரு வழக்கும் ஒழுங்காக - தனிப்பட்டதாக.', f3t:'ஆவணம் உருவாக்கு', f3d:'அச்சிடத் தயாரான நோட்டீஸ்கள் மற்றும் RTI.', f4t:'மெய்நிகர் நீதிமன்றம்', f4d:'AI நீதிபதி முன் இரு தரப்பு வாதம்.', f5t:'IPC ↔ BNS மாற்றி', f5d:'பழைய IPC பிரிவுகளை புதிய BNS ஆக மாற்றுங்கள்.', f6t:'சட்ட உதவி தேடு', f6d:'உங்கள் மாவட்டத்தில் இலவச சட்ட உதவி.', f7t:'சட்ட ஆவணம் விளக்கு', f7d:'நோட்டீஸை பதிவேற்றுங்கள் - எளிமையாக புரிந்துகொள்ளுங்கள்.', f8t:'குரல் முறை', f8d:'பேசிக் கேளுங்கள், பதிலைக் கேளுங்கள்.', f9t:'CrPC ↔ BNSS மாற்றி', f9d:'பழைய CrPC பிரிவுகளை புதிய BNSS ஆக மாற்றுங்கள்.', f10t:'சட்டம் மற்றும் அடுத்த படிகள்', f10d:'ஒரு சரிபார்க்கப்பட்ட பதில் - பொருந்தும் சட்டம், ஆதாரங்கள், உரிமை அட்டை.',
 hg:'வணக்கம், நான் எப்படி உதவலாம்?', hc1:'இந்தியாவில் குடியிருப்பாளர் உரிமைகள் என்ன?', hc2:'நுகர்வோர் புகார் எப்படி அளிப்பது?', hc3:'குடும்ப வன்முறை சட்டத்தை விளக்குங்கள்', hph:'உங்கள் சட்டக் கேள்வியை எழுதுங்கள்...', hnote:'இலவசம். உங்கள் உரையாடல்கள் உங்கள் சாதனத்திலேயே இருக்கும்.',
 ct:'சட்ட உதவியாளர்', cst:'உதவத் தயார்', cnew:'புதிய உரையாடல்', wt:'அధிKaar-க்கு வரவேற்கிறோம்', wd:'உங்கள் சட்டப் பிரச்சனையை உங்கள் வார்த்தைகளில் சொல்லுங்கள்.',
 c1:'சம்பளம் வரவில்லை', c2:'வைப்புத்தொகை', c3:'சட்ட நோட்டீஸ்', c4:'FIR பதிவாகவில்லை', c5:'குடும்ப வன்முறை', c6:'ஆன்லைன் மோசடி',
 cph:'உங்கள் சட்டப் பிரச்சனையை இங்கே எழுதுங்கள்...', chint:'அனுப்ப Enter · புதிய வரிக்கு Shift+Enter · பேச மைக்', cdisc:'அధிKaar சட்டத் தகவல் தருகிறது, ஆலோசனை அல்ல. சிக்கலான விஷயங்களுக்கு வழக்கறிஞரை அணுகவும் அல்லது NALSA: 15100.',
 bns_t:'IPC ↔ BNS பிரிவு மாற்றி', bns_d:'1 ஜூலை 2024 அன்று குற்றவியல் சட்டம் மாறியது. எந்த பிரிவையும் தேடுங்கள்.', aid_t:'அருகிலுள்ள சட்ட உதவி', aid_d:'இலவச சட்ட உதவி உங்கள் உரிமை. DLSA, உதவி எண்கள் தேடுங்கள்.', doc_t:'சட்ட ஆவணம் விளக்கு', doc_d:'நோட்டீஸ், FIR புகைப்படத்தை பதிவேற்றுங்கள்.',
-cases_t:'என் வழக்குகள்', cases_d:'ஒவ்வொரு வழக்கின் உரையாடலும் இந்த சாதனத்தில் தனிப்பட்டதாக.', draft_t:'சட்ட ஆவணம் உருவாக்கு', draft_d:'சில கேள்விகள் — தயார் ஆவணம்.', court_t:'மெய்நிகர் நீதிமன்றம்', court_d:'AI நீதிபதி முன் வாதம் — பலவீனங்களை முன்பே அறியுங்கள்.',
+cases_t:'என் வழக்குகள்', cases_d:'ஒவ்வொரு வழக்கின் உரையாடலும் இந்த சாதனத்தில் தனிப்பட்டதாக.', draft_t:'சட்ட ஆவணம் உருவாக்கு', draft_d:'சில கேள்விகள் - தயார் ஆவணம்.', court_t:'மெய்நிகர் நீதிமன்றம்', court_d:'AI நீதிபதி முன் வாதம் - பலவீனங்களை முன்பே அறியுங்கள்.',
 ncase:'புதிய வழக்கு', shear:'விசாரணை தொடங்கு', nround:'அடுத்த சுற்று', vmode:'குரல் முறை' },
 
 te: { nav_home:'హోమ్', nav_chat:'లీగల్ హెల్పర్‌తో మాట్లాడండి', nav_cases:'నా కేసులు', nav_draft:'పత్రం రూపొందించండి', nav_court:'వర్చువల్ కోర్టు', nav_bns:'IPC ↔ BNS మార్పిడి', nav_aid:'న్యాయ సహాయం వెతకండి', nav_doc:'చట్ట పత్రం వివరించండి',
-badge:'100% ప్రైవేట్ · మీ పరికరంలో నడుస్తుంది', hero_sub:'జీతం రాలేదా? డిపాజిట్ ఇరుక్కుందా? లీగల్ నోటీసు వచ్చిందా? 11 భాషల్లో అడగండి — ఉచితం, ఆఫ్‌లైన్.', cta1:'మీ ప్రశ్న అడగండి', cta2:'ఎలా పనిచేస్తుందో చూడండి',
+badge:'100% ప్రైవేట్ · మీ పరికరంలో నడుస్తుంది', hero_sub:'జీతం రాలేదా? డిపాజిట్ ఇరుక్కుందా? లీగల్ నోటీసు వచ్చిందా? 11 భాషల్లో అడగండి - ఉచితం, ఆఫ్‌లైన్.', cta1:'మీ ప్రశ్న అడగండి', cta2:'ఎలా పనిచేస్తుందో చూడండి',
 tr1:'సైన్అప్ అవసరం లేదు', tr2:'ఆఫ్‌లైన్‌లో పనిచేస్తుంది', tr3:'11 భాషలు', tr4:'ఎప్పటికీ ఉచితం',
 st1:'IPC ↔ BNS సెక్షన్లు', st2:'భారతీయ భాషలు', st3:'క్లౌడ్‌కు పంపిన డేటా',
-how:'ఇది ఎలా పనిచేస్తుంది', s1t:'మీ సమస్య చెప్పండి', s1d:'11 భాషల్లో రాయండి లేదా మాట్లాడండి.', s2t:'సారాంశం నిర్ధారించండి', s2d:'AI మీ పరిస్థితిని మళ్లీ చెబుతుంది — మీరు సరిచూడండి.', s3t:'హక్కులు + తదుపరి అడుగులు', s3d:'BNS సెక్షన్లు, గడువులు, హెల్ప్‌లైన్లతో.',
+how:'ఇది ఎలా పనిచేస్తుంది', s1t:'మీ సమస్య చెప్పండి', s1d:'11 భాషల్లో రాయండి లేదా మాట్లాడండి.', s2t:'సారాంశం నిర్ధారించండి', s2d:'AI మీ పరిస్థితిని మళ్లీ చెబుతుంది - మీరు సరిచూడండి.', s3t:'హక్కులు + తదుపరి అడుగులు', s3d:'BNS సెక్షన్లు, గడువులు, హెల్ప్‌లైన్లతో.',
 feats:'అధిKaar చేయగలిగినవన్నీ', open:'తెరవండి',
-f1t:'లీగల్ హెల్పర్‌తో మాట్లాడండి', f1d:'11 భాషల్లో సమస్య చెప్పండి — హక్కులు పొందండి.', f2t:'నా కేసులు', f2d:'ప్రతి కేసు క్రమంగా — మీ పరికరంలో ప్రైవేట్.', f3t:'పత్రం రూపొందించండి', f3d:'ప్రింట్-రెడీ నోటీసులు, ఫిర్యాదులు, RTI.', f4t:'వర్చువల్ కోర్టు', f4d:'AI న్యాయమూర్తి ముందు రెండు వైపుల వాదన.', f5t:'IPC ↔ BNS మార్పిడి', f5d:'పాత IPC సెక్షన్లను కొత్త BNSగా మార్చండి.', f6t:'న్యాయ సహాయం వెతకండి', f6d:'మీ జిల్లాలో ఉచిత న్యాయ సహాయం.', f7t:'చట్ట పత్రం వివరించండి', f7d:'నోటీసు అప్‌లోడ్ చేయండి — సరళంగా అర్థం చేసుకోండి.', f8t:'వాయిస్ మోడ్', f8d:'మాట్లాడి అడగండి, జవాబు వినండి.', f9t:'CrPC ↔ BNSS మార్పిడి', f9d:'పాత CrPC సెక్షన్లను కొత్త BNSSగా మార్చండి.', f10t:'చట్టం మరియు తదుపరి చర్యలు', f10d:'ఒక ధృవీకరించిన సమాధానం — వర్తించే చట్టం, మూలాలు, హక్కుల కార్డు.',
+f1t:'లీగల్ హెల్పర్‌తో మాట్లాడండి', f1d:'11 భాషల్లో సమస్య చెప్పండి - హక్కులు పొందండి.', f2t:'నా కేసులు', f2d:'ప్రతి కేసు క్రమంగా - మీ పరికరంలో ప్రైవేట్.', f3t:'పత్రం రూపొందించండి', f3d:'ప్రింట్-రెడీ నోటీసులు, ఫిర్యాదులు, RTI.', f4t:'వర్చువల్ కోర్టు', f4d:'AI న్యాయమూర్తి ముందు రెండు వైపుల వాదన.', f5t:'IPC ↔ BNS మార్పిడి', f5d:'పాత IPC సెక్షన్లను కొత్త BNSగా మార్చండి.', f6t:'న్యాయ సహాయం వెతకండి', f6d:'మీ జిల్లాలో ఉచిత న్యాయ సహాయం.', f7t:'చట్ట పత్రం వివరించండి', f7d:'నోటీసు అప్‌లోడ్ చేయండి - సరళంగా అర్థం చేసుకోండి.', f8t:'వాయిస్ మోడ్', f8d:'మాట్లాడి అడగండి, జవాబు వినండి.', f9t:'CrPC ↔ BNSS మార్పిడి', f9d:'పాత CrPC సెక్షన్లను కొత్త BNSSగా మార్చండి.', f10t:'చట్టం మరియు తదుపరి చర్యలు', f10d:'ఒక ధృవీకరించిన సమాధానం - వర్తించే చట్టం, మూలాలు, హక్కుల కార్డు.',
 hg:'నమస్తే, నేను మీకు ఎలా సహాయం చేయగలను?', hc1:'భారతదేశంలో అద్దెదారు హక్కులు ఏమిటి?', hc2:'వినియోగదారు ఫిర్యాదు ఎలా చేయాలి?', hc3:'గృహ హింస చట్టం వివరించండి', hph:'మీ చట్ట ప్రశ్న రాయండి...', hnote:'ఉచితం. మీ సంభాషణలు మీ పరికరంలోనే ఉంటాయి.',
 ct:'లీగల్ హెల్పర్', cst:'సహాయానికి సిద్ధం', cnew:'కొత్త సంభాషణ', wt:'అధిKaar కు స్వాగతం', wd:'మీ చట్టపరమైన సమస్యను మీ మాటల్లో చెప్పండి.',
 c1:'జీతం రాలేదు', c2:'సెక్యూరిటీ డిపాజిట్', c3:'లీగల్ నోటీసు', c4:'FIR నమోదు కాలేదు', c5:'గృహ హింస', c6:'ఆన్‌లైన్ మోసం',
 cph:'మీ చట్టపరమైన సమస్యను ఇక్కడ రాయండి...', chint:'పంపడానికి Enter · కొత్త లైన్ Shift+Enter · మాట్లాడటానికి మైక్', cdisc:'అధిKaar చట్ట సమాచారం ఇస్తుంది, సలహా కాదు. క్లిష్ట విషయాలకు న్యాయవాదిని కలవండి లేదా NALSA: 15100.',
 bns_t:'IPC ↔ BNS సెక్షన్ మార్పిడి', bns_d:'1 జూలై 2024న నేర చట్టం మారింది. ఏ సెక్షన్ అయినా వెతకండి.', aid_t:'సమీప న్యాయ సహాయం', aid_d:'ఉచిత న్యాయ సహాయం మీ హక్కు. DLSA, హెల్ప్‌లైన్లు వెతకండి.', doc_t:'చట్ట పత్రం వివరించండి', doc_d:'నోటీసు, FIR ఫోటో అప్‌లోడ్ చేయండి.',
-cases_t:'నా కేసులు', cases_d:'ప్రతి కేసు సంభాషణ ఈ పరికరంలో ప్రైవేట్‌గా.', draft_t:'చట్ట పత్రం రూపొందించండి', draft_d:'కొన్ని ప్రశ్నలు — సిద్ధమైన పత్రం.', court_t:'వర్చువల్ కోర్టు', court_d:'AI న్యాయమూర్తి ముందు వాదన — బలహీనతలు ముందే తెలుసుకోండి.',
+cases_t:'నా కేసులు', cases_d:'ప్రతి కేసు సంభాషణ ఈ పరికరంలో ప్రైవేట్‌గా.', draft_t:'చట్ట పత్రం రూపొందించండి', draft_d:'కొన్ని ప్రశ్నలు - సిద్ధమైన పత్రం.', court_t:'వర్చువల్ కోర్టు', court_d:'AI న్యాయమూర్తి ముందు వాదన - బలహీనతలు ముందే తెలుసుకోండి.',
 ncase:'కొత్త కేసు', shear:'విచారణ ప్రారంభించండి', nround:'తదుపరి రౌండ్', vmode:'వాయిస్ మోడ్' },
 
 bn: { nav_home:'হোম', nav_chat:'আইনি সহায়কের সাথে কথা বলুন', nav_cases:'আমার মামলা', nav_draft:'নথি তৈরি করুন', nav_court:'ভার্চুয়াল আদালত', nav_bns:'IPC ↔ BNS রূপান্তর', nav_aid:'আইনি সহায়তা খুঁজুন', nav_doc:'আইনি নথি বুঝুন',
-badge:'100% ব্যক্তিগত · আপনার ডিভাইসে চলে', hero_sub:'বেতন পাননি? জামানত আটকে আছে? আইনি নোটিশ পেয়েছেন? 11টি ভাষায় জিজ্ঞাসা করুন — বিনামূল্যে, অফলাইন।', cta1:'আপনার প্রশ্ন করুন', cta2:'কীভাবে কাজ করে দেখুন',
+badge:'100% ব্যক্তিগত · আপনার ডিভাইসে চলে', hero_sub:'বেতন পাননি? জামানত আটকে আছে? আইনি নোটিশ পেয়েছেন? 11টি ভাষায় জিজ্ঞাসা করুন - বিনামূল্যে, অফলাইন।', cta1:'আপনার প্রশ্ন করুন', cta2:'কীভাবে কাজ করে দেখুন',
 tr1:'সাইনআপ লাগে না', tr2:'অফলাইনে চলে', tr3:'11টি ভাষা', tr4:'চিরকাল বিনামূল্যে',
 st1:'IPC ↔ BNS ধারা', st2:'ভারতীয় ভাষা', st3:'ক্লাউডে পাঠানো ডেটা',
-how:'এটি কীভাবে কাজ করে', s1t:'আপনার সমস্যা বলুন', s1d:'11টি ভাষায় লিখুন বা বলুন।', s2t:'সারাংশ নিশ্চিত করুন', s2d:'AI আপনার পরিস্থিতি পুনরায় বলে — আপনি যাচাই করুন।', s3t:'অধিকার + পরবর্তী পদক্ষেপ', s3d:'BNS ধারা, সময়সীমা ও হেল্পলাইনসহ।',
+how:'এটি কীভাবে কাজ করে', s1t:'আপনার সমস্যা বলুন', s1d:'11টি ভাষায় লিখুন বা বলুন।', s2t:'সারাংশ নিশ্চিত করুন', s2d:'AI আপনার পরিস্থিতি পুনরায় বলে - আপনি যাচাই করুন।', s3t:'অধিকার + পরবর্তী পদক্ষেপ', s3d:'BNS ধারা, সময়সীমা ও হেল্পলাইনসহ।',
 feats:'অধিKaar যা যা করতে পারে', open:'খুলুন',
-f1t:'আইনি সহায়কের সাথে কথা বলুন', f1d:'11টি ভাষায় সমস্যা বলুন — অধিকার জানুন।', f2t:'আমার মামলা', f2d:'প্রতিটি মামলা গোছানো — ডিভাইসে ব্যক্তিগত।', f3t:'নথি তৈরি করুন', f3d:'প্রিন্ট-রেডি নোটিশ, অভিযোগ ও RTI।', f4t:'ভার্চুয়াল আদালত', f4d:'AI বিচারকের সামনে দুই পক্ষের যুক্তি।', f5t:'IPC ↔ BNS রূপান্তর', f5d:'পুরনো IPC ধারা নতুন BNS-এ বদলান।', f6t:'আইনি সহায়তা খুঁজুন', f6d:'আপনার জেলায় বিনামূল্যে আইনি সহায়তা।', f7t:'আইনি নথি বুঝুন', f7d:'নোটিশ আপলোড করুন — সহজ ভাষায় বুঝুন।', f8t:'ভয়েস মোড', f8d:'বলে জিজ্ঞাসা করুন, উত্তর শুনুন।', f9t:'CrPC ↔ BNSS রূপান্তর', f9d:'পুরনো CrPC ধারা নতুন BNSS-এ বদলান।', f10t:'আইন ও পরবর্তী পদক্ষেপ', f10d:'একটি যাচাই করা উত্তর — প্রযোজ্য আইন, সূত্র ও অধিকার কার্ড।',
+f1t:'আইনি সহায়কের সাথে কথা বলুন', f1d:'11টি ভাষায় সমস্যা বলুন - অধিকার জানুন।', f2t:'আমার মামলা', f2d:'প্রতিটি মামলা গোছানো - ডিভাইসে ব্যক্তিগত।', f3t:'নথি তৈরি করুন', f3d:'প্রিন্ট-রেডি নোটিশ, অভিযোগ ও RTI।', f4t:'ভার্চুয়াল আদালত', f4d:'AI বিচারকের সামনে দুই পক্ষের যুক্তি।', f5t:'IPC ↔ BNS রূপান্তর', f5d:'পুরনো IPC ধারা নতুন BNS-এ বদলান।', f6t:'আইনি সহায়তা খুঁজুন', f6d:'আপনার জেলায় বিনামূল্যে আইনি সহায়তা।', f7t:'আইনি নথি বুঝুন', f7d:'নোটিশ আপলোড করুন - সহজ ভাষায় বুঝুন।', f8t:'ভয়েস মোড', f8d:'বলে জিজ্ঞাসা করুন, উত্তর শুনুন।', f9t:'CrPC ↔ BNSS রূপান্তর', f9d:'পুরনো CrPC ধারা নতুন BNSS-এ বদলান।', f10t:'আইন ও পরবর্তী পদক্ষেপ', f10d:'একটি যাচাই করা উত্তর - প্রযোজ্য আইন, সূত্র ও অধিকার কার্ড।',
 hg:'নমস্কার, আমি কীভাবে সাহায্য করতে পারি?', hc1:'ভারতে ভাড়াটিয়ার অধিকার কী?', hc2:'ভোক্তা অভিযোগ কীভাবে করবেন?', hc3:'গার্হস্থ্য হিংসা আইন ব্যাখ্যা করুন', hph:'আপনার আইনি প্রশ্ন লিখুন...', hnote:'বিনামূল্যে। আপনার কথোপকথন আপনার ডিভাইসেই থাকে।',
 ct:'আইনি সহায়ক', cst:'সাহায্যের জন্য প্রস্তুত', cnew:'নতুন কথোপকথন', wt:'অধিKaar-এ স্বাগতম', wd:'আপনার আইনি সমস্যা নিজের ভাষায় বলুন।',
 c1:'বেতন পাইনি', c2:'জামানত', c3:'আইনি নোটিশ', c4:'FIR হয়নি', c5:'গার্হস্থ্য হিংসা', c6:'অনলাইন প্রতারণা',
 cph:'আপনার আইনি সমস্যা এখানে লিখুন...', chint:'পাঠাতে Enter · নতুন লাইনে Shift+Enter · বলতে মাইক', cdisc:'অধিKaar আইনি তথ্য দেয়, পরামর্শ নয়। জটিল বিষয়ে আইনজীবীর সাথে দেখা করুন বা NALSA: 15100।',
 bns_t:'IPC ↔ BNS ধারা রূপান্তর', bns_d:'1 জুলাই 2024-এ ফৌজদারি আইন বদলেছে। যেকোনো ধারা খুঁজুন।', aid_t:'কাছের আইনি সহায়তা', aid_d:'বিনামূল্যে আইনি সহায়তা আপনার অধিকার। DLSA, হেল্পলাইন খুঁজুন।', doc_t:'আইনি নথি বুঝুন', doc_d:'নোটিশ, FIR-এর ছবি আপলোড করুন।',
-cases_t:'আমার মামলা', cases_d:'প্রতিটি মামলার কথোপকথন এই ডিভাইসে ব্যক্তিগত।', draft_t:'আইনি নথি তৈরি করুন', draft_d:'কয়েকটি প্রশ্ন — প্রস্তুত নথি।', court_t:'ভার্চুয়াল আদালত', court_d:'AI বিচারকের সামনে যুক্তি — দুর্বলতা আগে জানুন।',
+cases_t:'আমার মামলা', cases_d:'প্রতিটি মামলার কথোপকথন এই ডিভাইসে ব্যক্তিগত।', draft_t:'আইনি নথি তৈরি করুন', draft_d:'কয়েকটি প্রশ্ন - প্রস্তুত নথি।', court_t:'ভার্চুয়াল আদালত', court_d:'AI বিচারকের সামনে যুক্তি - দুর্বলতা আগে জানুন।',
 ncase:'নতুন মামলা', shear:'শুনানি শুরু করুন', nround:'পরবর্তী রাউন্ড', vmode:'ভয়েস মোড' },
 
 mr: { nav_home:'होम', nav_chat:'कायदेशीर मदतनीसाशी बोला', nav_cases:'माझी प्रकरणे', nav_draft:'दस्तऐवज तयार करा', nav_court:'व्हर्च्युअल न्यायालय', nav_bns:'IPC ↔ BNS रूपांतर', nav_aid:'कायदेशीर मदत शोधा', nav_doc:'कायदेशीर दस्तऐवज समजून घ्या',
-badge:'100% खाजगी · तुमच्या डिव्हाइसवर चालते', hero_sub:'पगार मिळाला नाही? डिपॉझिट अडकले? कायदेशीर नोटीस आली? 11 भाषांमध्ये विचारा — मोफत, ऑफलाइन.', cta1:'तुमचा प्रश्न विचारा', cta2:'कसे काम करते ते पहा',
+badge:'100% खाजगी · तुमच्या डिव्हाइसवर चालते', hero_sub:'पगार मिळाला नाही? डिपॉझिट अडकले? कायदेशीर नोटीस आली? 11 भाषांमध्ये विचारा - मोफत, ऑफलाइन.', cta1:'तुमचा प्रश्न विचारा', cta2:'कसे काम करते ते पहा',
 tr1:'साइनअप नको', tr2:'ऑफलाइन चालते', tr3:'11 भाषा', tr4:'कायम मोफत',
 st1:'IPC ↔ BNS कलमे', st2:'भारतीय भाषा', st3:'क्लाउडला पाठवलेला डेटा',
-how:'हे कसे काम करते', s1t:'तुमची समस्या सांगा', s1d:'11 भाषांमध्ये लिहा किंवा बोला.', s2t:'सारांश निश्चित करा', s2d:'AI तुमची परिस्थिती पुन्हा सांगते — तुम्ही तपासा.', s3t:'हक्क + पुढील पावले', s3d:'BNS कलमे, मुदती आणि हेल्पलाइनसह.',
+how:'हे कसे काम करते', s1t:'तुमची समस्या सांगा', s1d:'11 भाषांमध्ये लिहा किंवा बोला.', s2t:'सारांश निश्चित करा', s2d:'AI तुमची परिस्थिती पुन्हा सांगते - तुम्ही तपासा.', s3t:'हक्क + पुढील पावले', s3d:'BNS कलमे, मुदती आणि हेल्पलाइनसह.',
 feats:'अधिKaar काय काय करू शकते', open:'उघडा',
-f1t:'कायदेशीर मदतनीसाशी बोला', f1d:'11 भाषांमध्ये समस्या सांगा — हक्क जाणून घ्या.', f2t:'माझी प्रकरणे', f2d:'प्रत्येक प्रकरण व्यवस्थित — डिव्हाइसवर खाजगी.', f3t:'दस्तऐवज तयार करा', f3d:'छापण्यायोग्य नोटीस, तक्रारी आणि RTI.', f4t:'व्हर्च्युअल न्यायालय', f4d:'AI न्यायाधीशासमोर दोन्ही बाजूंचा युक्तिवाद.', f5t:'IPC ↔ BNS रूपांतर', f5d:'जुनी IPC कलमे नवीन BNS मध्ये बदला.', f6t:'कायदेशीर मदत शोधा', f6d:'तुमच्या जिल्ह्यात मोफत कायदेशीर मदत.', f7t:'कायदेशीर दस्तऐवज समजून घ्या', f7d:'नोटीस अपलोड करा — सोप्या भाषेत समजून घ्या.', f8t:'व्हॉइस मोड', f8d:'बोलून विचारा, उत्तर ऐका.', f9t:'CrPC ↔ BNSS रूपांतर', f9d:'जुनी CrPC कलमे नवीन BNSS मध्ये बदला.', f10t:'कायदा आणि पुढील पावले', f10d:'एक पडताळलेले उत्तर — लागू कायदा, स्रोत आणि हक्क कार्ड.',
+f1t:'कायदेशीर मदतनीसाशी बोला', f1d:'11 भाषांमध्ये समस्या सांगा - हक्क जाणून घ्या.', f2t:'माझी प्रकरणे', f2d:'प्रत्येक प्रकरण व्यवस्थित - डिव्हाइसवर खाजगी.', f3t:'दस्तऐवज तयार करा', f3d:'छापण्यायोग्य नोटीस, तक्रारी आणि RTI.', f4t:'व्हर्च्युअल न्यायालय', f4d:'AI न्यायाधीशासमोर दोन्ही बाजूंचा युक्तिवाद.', f5t:'IPC ↔ BNS रूपांतर', f5d:'जुनी IPC कलमे नवीन BNS मध्ये बदला.', f6t:'कायदेशीर मदत शोधा', f6d:'तुमच्या जिल्ह्यात मोफत कायदेशीर मदत.', f7t:'कायदेशीर दस्तऐवज समजून घ्या', f7d:'नोटीस अपलोड करा - सोप्या भाषेत समजून घ्या.', f8t:'व्हॉइस मोड', f8d:'बोलून विचारा, उत्तर ऐका.', f9t:'CrPC ↔ BNSS रूपांतर', f9d:'जुनी CrPC कलमे नवीन BNSS मध्ये बदला.', f10t:'कायदा आणि पुढील पावले', f10d:'एक पडताळलेले उत्तर - लागू कायदा, स्रोत आणि हक्क कार्ड.',
 hg:'नमस्कार, मी तुमची कशी मदत करू?', hc1:'भारतात भाडेकरूचे हक्क काय आहेत?', hc2:'ग्राहक तक्रार कशी दाखल करावी?', hc3:'घरगुती हिंसाचार कायदा समजावून सांगा', hph:'तुमचा कायदेशीर प्रश्न लिहा...', hnote:'मोफत. तुमचे संभाषण तुमच्या डिव्हाइसवरच राहते.',
 ct:'कायदेशीर मदतनीस', cst:'मदतीसाठी तयार', cnew:'नवीन संभाषण', wt:'अधिKaar मध्ये स्वागत आहे', wd:'तुमची कायदेशीर समस्या तुमच्या शब्दांत सांगा.',
 c1:'पगार मिळाला नाही', c2:'डिपॉझिट', c3:'कायदेशीर नोटीस', c4:'FIR नोंदवली नाही', c5:'घरगुती हिंसाचार', c6:'ऑनलाइन फसवणूक',
 cph:'तुमची कायदेशीर समस्या इथे लिहा...', chint:'पाठवण्यासाठी Enter · नवीन ओळ Shift+Enter · बोलण्यासाठी माइक', cdisc:'अधिKaar कायदेशीर माहिती देते, सल्ला नाही. गुंतागुंतीच्या प्रकरणांसाठी वकिलांना भेटा किंवा NALSA: 15100.',
 bns_t:'IPC ↔ BNS कलम रूपांतर', bns_d:'1 जुलै 2024 रोजी फौजदारी कायदा बदलला. कोणतेही कलम शोधा.', aid_t:'जवळची कायदेशीर मदत', aid_d:'मोफत कायदेशीर मदत तुमचा हक्क आहे. DLSA, हेल्पलाइन शोधा.', doc_t:'कायदेशीर दस्तऐवज समजून घ्या', doc_d:'नोटीस, FIR चा फोटो अपलोड करा.',
-cases_t:'माझी प्रकरणे', cases_d:'प्रत्येक प्रकरणाचे संभाषण या डिव्हाइसवर खाजगी.', draft_t:'कायदेशीर दस्तऐवज तयार करा', draft_d:'काही प्रश्न — तयार दस्तऐवज.', court_t:'व्हर्च्युअल न्यायालय', court_d:'AI न्यायाधीशासमोर युक्तिवाद — कमकुवतपणा आधी जाणा.',
+cases_t:'माझी प्रकरणे', cases_d:'प्रत्येक प्रकरणाचे संभाषण या डिव्हाइसवर खाजगी.', draft_t:'कायदेशीर दस्तऐवज तयार करा', draft_d:'काही प्रश्न - तयार दस्तऐवज.', court_t:'व्हर्च्युअल न्यायालय', court_d:'AI न्यायाधीशासमोर युक्तिवाद - कमकुवतपणा आधी जाणा.',
 ncase:'नवीन प्रकरण', shear:'सुनावणी सुरू करा', nround:'पुढील फेरी', vmode:'व्हॉइस मोड' },
 
 gu: { nav_home:'હોમ', nav_chat:'કાનૂની સહાયક સાથે વાત કરો', nav_cases:'મારા કેસ', nav_draft:'દસ્તાવેજ બનાવો', nav_court:'વર્ચ્યુઅલ કોર્ટ', nav_bns:'IPC ↔ BNS રૂપાંતર', nav_aid:'કાનૂની સહાય શોધો', nav_doc:'કાનૂની દસ્તાવેજ સમજો',
-badge:'100% ખાનગી · તમારા ડિવાઇસ પર ચાલે છે', hero_sub:'પગાર નથી મળ્યો? ડિપોઝિટ અટકી છે? કાનૂની નોટિસ મળી? 11 ભાષાઓમાં પૂછો — મફત, ઑફલાઇન.', cta1:'તમારો પ્રશ્ન પૂછો', cta2:'કેવી રીતે કામ કરે છે જુઓ',
+badge:'100% ખાનગી · તમારા ડિવાઇસ પર ચાલે છે', hero_sub:'પગાર નથી મળ્યો? ડિપોઝિટ અટકી છે? કાનૂની નોટિસ મળી? 11 ભાષાઓમાં પૂછો - મફત, ઑફલાઇન.', cta1:'તમારો પ્રશ્ન પૂછો', cta2:'કેવી રીતે કામ કરે છે જુઓ',
 tr1:'સાઇનઅપ નહીં', tr2:'ઑફલાઇન ચાલે છે', tr3:'11 ભાષાઓ', tr4:'હંમેશા મફત',
 st1:'IPC ↔ BNS કલમો', st2:'ભારતીય ભાષાઓ', st3:'ક્લાઉડને મોકલેલો ડેટા',
-how:'આ કેવી રીતે કામ કરે છે', s1t:'તમારી સમસ્યા કહો', s1d:'11 ભાષાઓમાં લખો અથવા બોલો.', s2t:'સારાંશ ખાતરી કરો', s2d:'AI તમારી પરિસ્થિતિ ફરી કહે છે — તમે ચકાસો.', s3t:'હક્કો + આગળનાં પગલાં', s3d:'BNS કલમો, સમયમર્યાદા અને હેલ્પલાઇન સાથે.',
+how:'આ કેવી રીતે કામ કરે છે', s1t:'તમારી સમસ્યા કહો', s1d:'11 ભાષાઓમાં લખો અથવા બોલો.', s2t:'સારાંશ ખાતરી કરો', s2d:'AI તમારી પરિસ્થિતિ ફરી કહે છે - તમે ચકાસો.', s3t:'હક્કો + આગળનાં પગલાં', s3d:'BNS કલમો, સમયમર્યાદા અને હેલ્પલાઇન સાથે.',
 feats:'અધિKaar શું શું કરી શકે', open:'ખોલો',
-f1t:'કાનૂની સહાયક સાથે વાત કરો', f1d:'11 ભાષાઓમાં સમસ્યા કહો — હક્કો જાણો.', f2t:'મારા કેસ', f2d:'દરેક કેસ વ્યવસ્થિત — ડિવાઇસ પર ખાનગી.', f3t:'દસ્તાવેજ બનાવો', f3d:'પ્રિન્ટ-રેડી નોટિસ, ફરિયાદો અને RTI.', f4t:'વર્ચ્યુઅલ કોર્ટ', f4d:'AI ન્યાયાધીશ સામે બંને પક્ષોની દલીલ.', f5t:'IPC ↔ BNS રૂપાંતર', f5d:'જૂની IPC કલમો નવી BNS માં બદલો.', f6t:'કાનૂની સહાય શોધો', f6d:'તમારા જિલ્લામાં મફત કાનૂની સહાય.', f7t:'કાનૂની દસ્તાવેજ સમજો', f7d:'નોટિસ અપલોડ કરો — સરળ ભાષામાં સમજો.', f8t:'વૉઇસ મોડ', f8d:'બોલીને પૂછો, જવાબ સાંભળો.', f9t:'CrPC ↔ BNSS રૂપાંતર', f9d:'જૂની CrPC કલમો નવી BNSS માં બદલો.', f10t:'કાયદો અને આગળનાં પગલાં', f10d:'એક ચકાસાયેલ જવાબ — લાગુ કાયદો, સ્રોત અને હક્ક કાર્ડ.',
+f1t:'કાનૂની સહાયક સાથે વાત કરો', f1d:'11 ભાષાઓમાં સમસ્યા કહો - હક્કો જાણો.', f2t:'મારા કેસ', f2d:'દરેક કેસ વ્યવસ્થિત - ડિવાઇસ પર ખાનગી.', f3t:'દસ્તાવેજ બનાવો', f3d:'પ્રિન્ટ-રેડી નોટિસ, ફરિયાદો અને RTI.', f4t:'વર્ચ્યુઅલ કોર્ટ', f4d:'AI ન્યાયાધીશ સામે બંને પક્ષોની દલીલ.', f5t:'IPC ↔ BNS રૂપાંતર', f5d:'જૂની IPC કલમો નવી BNS માં બદલો.', f6t:'કાનૂની સહાય શોધો', f6d:'તમારા જિલ્લામાં મફત કાનૂની સહાય.', f7t:'કાનૂની દસ્તાવેજ સમજો', f7d:'નોટિસ અપલોડ કરો - સરળ ભાષામાં સમજો.', f8t:'વૉઇસ મોડ', f8d:'બોલીને પૂછો, જવાબ સાંભળો.', f9t:'CrPC ↔ BNSS રૂપાંતર', f9d:'જૂની CrPC કલમો નવી BNSS માં બદલો.', f10t:'કાયદો અને આગળનાં પગલાં', f10d:'એક ચકાસાયેલ જવાબ - લાગુ કાયદો, સ્રોત અને હક્ક કાર્ડ.',
 hg:'નમસ્તે, હું તમારી કેવી રીતે મદદ કરી શકું?', hc1:'ભારતમાં ભાડૂતના હક્કો શું છે?', hc2:'ગ્રાહક ફરિયાદ કેવી રીતે કરવી?', hc3:'ઘરેલુ હિંસા કાયદો સમજાવો', hph:'તમારો કાનૂની પ્રશ્ન લખો...', hnote:'મફત. તમારી વાતચીત તમારા ડિવાઇસ પર જ રહે છે.',
 ct:'કાનૂની સહાયક', cst:'મદદ માટે તૈયાર', cnew:'નવી વાતચીત', wt:'અધિKaar માં આપનું સ્વાગત છે', wd:'તમારી કાનૂની સમસ્યા તમારા શબ્દોમાં કહો.',
 c1:'પગાર નથી મળ્યો', c2:'ડિપોઝિટ', c3:'કાનૂની નોટિસ', c4:'FIR નોંધાઈ નથી', c5:'ઘરેલુ હિંસા', c6:'ઑનલાઇન છેતરપિંડી',
 cph:'તમારી કાનૂની સમસ્યા અહીં લખો...', chint:'મોકલવા Enter · નવી લાઇન Shift+Enter · બોલવા માઇક', cdisc:'અધિKaar કાનૂની માહિતી આપે છે, સલાહ નહીં. જટિલ બાબતો માટે વકીલને મળો અથવા NALSA: 15100.',
 bns_t:'IPC ↔ BNS કલમ રૂપાંતર', bns_d:'1 જુલાઈ 2024ના રોજ ફોજદારી કાયદો બદલાયો. કોઈપણ કલમ શોધો.', aid_t:'નજીકની કાનૂની સહાય', aid_d:'મફત કાનૂની સહાય તમારો હક છે. DLSA, હેલ્પલાઇન શોધો.', doc_t:'કાનૂની દસ્તાવેજ સમજો', doc_d:'નોટિસ, FIR નો ફોટો અપલોડ કરો.',
-cases_t:'મારા કેસ', cases_d:'દરેક કેસની વાતચીત આ ડિવાઇસ પર ખાનગી.', draft_t:'કાનૂની દસ્તાવેજ બનાવો', draft_d:'થોડા પ્રશ્નો — તૈયાર દસ્તાવેજ.', court_t:'વર્ચ્યુઅલ કોર્ટ', court_d:'AI ન્યાયાધીશ સામે દલીલ — નબળાઈઓ પહેલા જાણો.',
+cases_t:'મારા કેસ', cases_d:'દરેક કેસની વાતચીત આ ડિવાઇસ પર ખાનગી.', draft_t:'કાનૂની દસ્તાવેજ બનાવો', draft_d:'થોડા પ્રશ્નો - તૈયાર દસ્તાવેજ.', court_t:'વર્ચ્યુઅલ કોર્ટ', court_d:'AI ન્યાયાધીશ સામે દલીલ - નબળાઈઓ પહેલા જાણો.',
 ncase:'નવો કેસ', shear:'સુનાવણી શરૂ કરો', nround:'આગળનો રાઉન્ડ', vmode:'વૉઇસ મોડ' },
 
 kn: { nav_home:'ಹೋಮ್', nav_chat:'ಕಾನೂನು ಸಹಾಯಕರೊಂದಿಗೆ ಮಾತನಾಡಿ', nav_cases:'ನನ್ನ ಪ್ರಕರಣಗಳು', nav_draft:'ದಾಖಲೆ ರಚಿಸಿ', nav_court:'ವರ್ಚುವಲ್ ನ್ಯಾಯಾಲಯ', nav_bns:'IPC ↔ BNS ಪರಿವರ್ತಕ', nav_aid:'ಕಾನೂನು ನೆರವು ಹುಡುಕಿ', nav_doc:'ಕಾನೂನು ದಾಖಲೆ ವಿವರಿಸಿ',
-badge:'100% ಖಾಸಗಿ · ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ ಚಲಿಸುತ್ತದೆ', hero_sub:'ಸಂಬಳ ಬಂದಿಲ್ಲವೇ? ಠೇವಣಿ ಸಿಲುಕಿದೆಯೇ? ಕಾನೂನು ನೋಟಿಸ್ ಬಂದಿದೆಯೇ? 11 ಭಾಷೆಗಳಲ್ಲಿ ಕೇಳಿ — ಉಚಿತ, ಆಫ್‌ಲೈನ್.', cta1:'ನಿಮ್ಮ ಪ್ರಶ್ನೆ ಕೇಳಿ', cta2:'ಹೇಗೆ ಕೆಲಸ ಮಾಡುತ್ತದೆ ನೋಡಿ',
+badge:'100% ಖಾಸಗಿ · ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ ಚಲಿಸುತ್ತದೆ', hero_sub:'ಸಂಬಳ ಬಂದಿಲ್ಲವೇ? ಠೇವಣಿ ಸಿಲುಕಿದೆಯೇ? ಕಾನೂನು ನೋಟಿಸ್ ಬಂದಿದೆಯೇ? 11 ಭಾಷೆಗಳಲ್ಲಿ ಕೇಳಿ - ಉಚಿತ, ಆಫ್‌ಲೈನ್.', cta1:'ನಿಮ್ಮ ಪ್ರಶ್ನೆ ಕೇಳಿ', cta2:'ಹೇಗೆ ಕೆಲಸ ಮಾಡುತ್ತದೆ ನೋಡಿ',
 tr1:'ಸೈನ್ಅಪ್ ಬೇಡ', tr2:'ಆಫ್‌ಲೈನ್ ಚಲಿಸುತ್ತದೆ', tr3:'11 ಭಾಷೆಗಳು', tr4:'ಶಾಶ್ವತ ಉಚಿತ',
 st1:'IPC ↔ BNS ವಿಭಾಗಗಳು', st2:'ಭಾರತೀಯ ಭಾಷೆಗಳು', st3:'ಕ್ಲೌಡ್‌ಗೆ ಕಳುಹಿಸಿದ ಡೇಟಾ',
-how:'ಇದು ಹೇಗೆ ಕೆಲಸ ಮಾಡುತ್ತದೆ', s1t:'ನಿಮ್ಮ ಸಮಸ್ಯೆ ಹೇಳಿ', s1d:'11 ಭಾಷೆಗಳಲ್ಲಿ ಬರೆಯಿರಿ ಅಥವಾ ಮಾತನಾಡಿ.', s2t:'ಸಾರಾಂಶ ದೃಢೀಕರಿಸಿ', s2d:'AI ನಿಮ್ಮ ಪರಿಸ್ಥಿತಿಯನ್ನು ಮತ್ತೆ ಹೇಳುತ್ತದೆ — ನೀವು ಪರಿಶೀಲಿಸಿ.', s3t:'ಹಕ್ಕುಗಳು + ಮುಂದಿನ ಹೆಜ್ಜೆಗಳು', s3d:'BNS ವಿಭಾಗಗಳು, ಗಡುವುಗಳು, ಸಹಾಯವಾಣಿಗಳೊಂದಿಗೆ.',
+how:'ಇದು ಹೇಗೆ ಕೆಲಸ ಮಾಡುತ್ತದೆ', s1t:'ನಿಮ್ಮ ಸಮಸ್ಯೆ ಹೇಳಿ', s1d:'11 ಭಾಷೆಗಳಲ್ಲಿ ಬರೆಯಿರಿ ಅಥವಾ ಮಾತನಾಡಿ.', s2t:'ಸಾರಾಂಶ ದೃಢೀಕರಿಸಿ', s2d:'AI ನಿಮ್ಮ ಪರಿಸ್ಥಿತಿಯನ್ನು ಮತ್ತೆ ಹೇಳುತ್ತದೆ - ನೀವು ಪರಿಶೀಲಿಸಿ.', s3t:'ಹಕ್ಕುಗಳು + ಮುಂದಿನ ಹೆಜ್ಜೆಗಳು', s3d:'BNS ವಿಭಾಗಗಳು, ಗಡುವುಗಳು, ಸಹಾಯವಾಣಿಗಳೊಂದಿಗೆ.',
 feats:'ಅಧಿKaar ಮಾಡಬಹುದಾದದ್ದೆಲ್ಲ', open:'ತೆರೆಯಿರಿ',
-f1t:'ಕಾನೂನು ಸಹಾಯಕರೊಂದಿಗೆ ಮಾತನಾಡಿ', f1d:'11 ಭಾಷೆಗಳಲ್ಲಿ ಸಮಸ್ಯೆ ಹೇಳಿ — ಹಕ್ಕುಗಳನ್ನು ತಿಳಿಯಿರಿ.', f2t:'ನನ್ನ ಪ್ರಕರಣಗಳು', f2d:'ಪ್ರತಿ ಪ್ರಕರಣ ವ್ಯವಸ್ಥಿತ — ಸಾಧನದಲ್ಲಿ ಖಾಸಗಿ.', f3t:'ದಾಖಲೆ ರಚಿಸಿ', f3d:'ಪ್ರಿಂಟ್-ರೆಡಿ ನೋಟಿಸ್, ದೂರುಗಳು ಮತ್ತು RTI.', f4t:'ವರ್ಚುವಲ್ ನ್ಯಾಯಾಲಯ', f4d:'AI ನ್ಯಾಯಾಧೀಶರ ಮುಂದೆ ಎರಡೂ ಕಡೆಯ ವಾದ.', f5t:'IPC ↔ BNS ಪರಿವರ್ತಕ', f5d:'ಹಳೆಯ IPC ವಿಭಾಗಗಳನ್ನು ಹೊಸ BNS ಗೆ ಬದಲಿಸಿ.', f6t:'ಕಾನೂನು ನೆರವು ಹುಡುಕಿ', f6d:'ನಿಮ್ಮ ಜಿಲ್ಲೆಯಲ್ಲಿ ಉಚಿತ ಕಾನೂನು ನೆರವು.', f7t:'ಕಾನೂನು ದಾಖಲೆ ವಿವರಿಸಿ', f7d:'ನೋಟಿಸ್ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ — ಸರಳವಾಗಿ ಅರ್ಥಮಾಡಿಕೊಳ್ಳಿ.', f8t:'ಧ್ವನಿ ಮೋಡ್', f8d:'ಮಾತನಾಡಿ ಕೇಳಿ, ಉತ್ತರ ಕೇಳಿ.', f9t:'CrPC ↔ BNSS ಪರಿವರ್ತಕ', f9d:'ಹಳೆಯ CrPC ವಿಭಾಗಗಳನ್ನು ಹೊಸ BNSS ಗೆ ಬದಲಿಸಿ.', f10t:'ಕಾನೂನು ಮತ್ತು ಮುಂದಿನ ಹಂತಗಳು', f10d:'ಒಂದು ಪರಿಶೀಲಿಸಿದ ಉತ್ತರ — ಅನ್ವಯವಾಗುವ ಕಾನೂನು, ಮೂಲಗಳು, ಹಕ್ಕುಗಳ ಕಾರ್ಡ್.',
+f1t:'ಕಾನೂನು ಸಹಾಯಕರೊಂದಿಗೆ ಮಾತನಾಡಿ', f1d:'11 ಭಾಷೆಗಳಲ್ಲಿ ಸಮಸ್ಯೆ ಹೇಳಿ - ಹಕ್ಕುಗಳನ್ನು ತಿಳಿಯಿರಿ.', f2t:'ನನ್ನ ಪ್ರಕರಣಗಳು', f2d:'ಪ್ರತಿ ಪ್ರಕರಣ ವ್ಯವಸ್ಥಿತ - ಸಾಧನದಲ್ಲಿ ಖಾಸಗಿ.', f3t:'ದಾಖಲೆ ರಚಿಸಿ', f3d:'ಪ್ರಿಂಟ್-ರೆಡಿ ನೋಟಿಸ್, ದೂರುಗಳು ಮತ್ತು RTI.', f4t:'ವರ್ಚುವಲ್ ನ್ಯಾಯಾಲಯ', f4d:'AI ನ್ಯಾಯಾಧೀಶರ ಮುಂದೆ ಎರಡೂ ಕಡೆಯ ವಾದ.', f5t:'IPC ↔ BNS ಪರಿವರ್ತಕ', f5d:'ಹಳೆಯ IPC ವಿಭಾಗಗಳನ್ನು ಹೊಸ BNS ಗೆ ಬದಲಿಸಿ.', f6t:'ಕಾನೂನು ನೆರವು ಹುಡುಕಿ', f6d:'ನಿಮ್ಮ ಜಿಲ್ಲೆಯಲ್ಲಿ ಉಚಿತ ಕಾನೂನು ನೆರವು.', f7t:'ಕಾನೂನು ದಾಖಲೆ ವಿವರಿಸಿ', f7d:'ನೋಟಿಸ್ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ - ಸರಳವಾಗಿ ಅರ್ಥಮಾಡಿಕೊಳ್ಳಿ.', f8t:'ಧ್ವನಿ ಮೋಡ್', f8d:'ಮಾತನಾಡಿ ಕೇಳಿ, ಉತ್ತರ ಕೇಳಿ.', f9t:'CrPC ↔ BNSS ಪರಿವರ್ತಕ', f9d:'ಹಳೆಯ CrPC ವಿಭಾಗಗಳನ್ನು ಹೊಸ BNSS ಗೆ ಬದಲಿಸಿ.', f10t:'ಕಾನೂನು ಮತ್ತು ಮುಂದಿನ ಹಂತಗಳು', f10d:'ಒಂದು ಪರಿಶೀಲಿಸಿದ ಉತ್ತರ - ಅನ್ವಯವಾಗುವ ಕಾನೂನು, ಮೂಲಗಳು, ಹಕ್ಕುಗಳ ಕಾರ್ಡ್.',
 hg:'ನಮಸ್ತೆ, ನಾನು ಹೇಗೆ ಸಹಾಯ ಮಾಡಬಹುದು?', hc1:'ಭಾರತದಲ್ಲಿ ಬಾಡಿಗೆದಾರರ ಹಕ್ಕುಗಳೇನು?', hc2:'ಗ್ರಾಹಕ ದೂರು ಹೇಗೆ ಸಲ್ಲಿಸುವುದು?', hc3:'ಗೃಹ ಹಿಂಸೆ ಕಾಯ್ದೆ ವಿವರಿಸಿ', hph:'ನಿಮ್ಮ ಕಾನೂನು ಪ್ರಶ್ನೆ ಬರೆಯಿರಿ...', hnote:'ಉಚಿತ. ನಿಮ್ಮ ಸಂಭಾಷಣೆಗಳು ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿಯೇ ಇರುತ್ತವೆ.',
 ct:'ಕಾನೂನು ಸಹಾಯಕ', cst:'ಸಹಾಯಕ್ಕೆ ಸಿದ್ಧ', cnew:'ಹೊಸ ಸಂಭಾಷಣೆ', wt:'ಅಧಿKaar ಗೆ ಸ್ವಾಗತ', wd:'ನಿಮ್ಮ ಕಾನೂನು ಸಮಸ್ಯೆಯನ್ನು ನಿಮ್ಮ ಮಾತಿನಲ್ಲಿ ಹೇಳಿ.',
 c1:'ಸಂಬಳ ಬಂದಿಲ್ಲ', c2:'ಠೇವಣಿ', c3:'ಕಾನೂನು ನೋಟಿಸ್', c4:'FIR ದಾಖಲಾಗಿಲ್ಲ', c5:'ಗೃಹ ಹಿಂಸೆ', c6:'ಆನ್‌ಲೈನ್ ವಂಚನೆ',
 cph:'ನಿಮ್ಮ ಕಾನೂನು ಸಮಸ್ಯೆಯನ್ನು ಇಲ್ಲಿ ಬರೆಯಿರಿ...', chint:'ಕಳುಹಿಸಲು Enter · ಹೊಸ ಸಾಲಿಗೆ Shift+Enter · ಮಾತನಾಡಲು ಮೈಕ್', cdisc:'ಅಧಿKaar ಕಾನೂನು ಮಾಹಿತಿ ನೀಡುತ್ತದೆ, ಸಲಹೆ ಅಲ್ಲ. ಸಂಕೀರ್ಣ ವಿಷಯಗಳಿಗೆ ವಕೀಲರನ್ನು ಭೇಟಿ ಮಾಡಿ ಅಥವಾ NALSA: 15100.',
 bns_t:'IPC ↔ BNS ವಿಭಾಗ ಪರಿವರ್ತಕ', bns_d:'1 ಜುಲೈ 2024 ರಂದು ಅಪರಾಧ ಕಾನೂನು ಬದಲಾಯಿತು. ಯಾವುದೇ ವಿಭಾಗ ಹುಡುಕಿ.', aid_t:'ಹತ್ತಿರದ ಕಾನೂನು ನೆರವು', aid_d:'ಉಚಿತ ಕಾನೂನು ನೆರವು ನಿಮ್ಮ ಹಕ್ಕು. DLSA, ಸಹಾಯವಾಣಿ ಹುಡುಕಿ.', doc_t:'ಕಾನೂನು ದಾಖಲೆ ವಿವರಿಸಿ', doc_d:'ನೋಟಿಸ್, FIR ಫೋಟೋ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ.',
-cases_t:'ನನ್ನ ಪ್ರಕರಣಗಳು', cases_d:'ಪ್ರತಿ ಪ್ರಕರಣದ ಸಂಭಾಷಣೆ ಈ ಸಾಧನದಲ್ಲಿ ಖಾಸಗಿ.', draft_t:'ಕಾನೂನು ದಾಖಲೆ ರಚಿಸಿ', draft_d:'ಕೆಲವು ಪ್ರಶ್ನೆಗಳು — ಸಿದ್ಧ ದಾಖಲೆ.', court_t:'ವರ್ಚುವಲ್ ನ್ಯಾಯಾಲಯ', court_d:'AI ನ್ಯಾಯಾಧೀಶರ ಮುಂದೆ ವಾದ — ದೌರ್ಬಲ್ಯ ಮೊದಲೇ ತಿಳಿಯಿರಿ.',
+cases_t:'ನನ್ನ ಪ್ರಕರಣಗಳು', cases_d:'ಪ್ರತಿ ಪ್ರಕರಣದ ಸಂಭಾಷಣೆ ಈ ಸಾಧನದಲ್ಲಿ ಖಾಸಗಿ.', draft_t:'ಕಾನೂನು ದಾಖಲೆ ರಚಿಸಿ', draft_d:'ಕೆಲವು ಪ್ರಶ್ನೆಗಳು - ಸಿದ್ಧ ದಾಖಲೆ.', court_t:'ವರ್ಚುವಲ್ ನ್ಯಾಯಾಲಯ', court_d:'AI ನ್ಯಾಯಾಧೀಶರ ಮುಂದೆ ವಾದ - ದೌರ್ಬಲ್ಯ ಮೊದಲೇ ತಿಳಿಯಿರಿ.',
 ncase:'ಹೊಸ ಪ್ರಕರಣ', shear:'ವಿಚಾರಣೆ ಪ್ರಾರಂಭಿಸಿ', nround:'ಮುಂದಿನ ಸುತ್ತು', vmode:'ಧ್ವನಿ ಮೋಡ್' },
 
 ml: { nav_home:'ഹോം', nav_chat:'നിയമ സഹായിയോട് സംസാരിക്കുക', nav_cases:'എന്റെ കേസുകൾ', nav_draft:'രേഖ തയ്യാറാക്കുക', nav_court:'വെർച്വൽ കോടതി', nav_bns:'IPC ↔ BNS മാറ്റം', nav_aid:'നിയമ സഹായം കണ്ടെത്തുക', nav_doc:'നിയമ രേഖ വിശദീകരിക്കുക',
-badge:'100% സ്വകാര്യം · നിങ്ങളുടെ ഉപകരണത്തിൽ പ്രവർത്തിക്കുന്നു', hero_sub:'ശമ്പളം കിട്ടിയില്ലേ? ഡെപ്പോസിറ്റ് കുടുങ്ങിയോ? നിയമ നോട്ടീസ് വന്നോ? 11 ഭാഷകളിൽ ചോദിക്കൂ — സൗജന്യം, ഓഫ്‌ലൈൻ.', cta1:'നിങ്ങളുടെ ചോദ്യം ചോദിക്കുക', cta2:'എങ്ങനെ പ്രവർത്തിക്കുന്നു കാണുക',
+badge:'100% സ്വകാര്യം · നിങ്ങളുടെ ഉപകരണത്തിൽ പ്രവർത്തിക്കുന്നു', hero_sub:'ശമ്പളം കിട്ടിയില്ലേ? ഡെപ്പോസിറ്റ് കുടുങ്ങിയോ? നിയമ നോട്ടീസ് വന്നോ? 11 ഭാഷകളിൽ ചോദിക്കൂ - സൗജന്യം, ഓഫ്‌ലൈൻ.', cta1:'നിങ്ങളുടെ ചോദ്യം ചോദിക്കുക', cta2:'എങ്ങനെ പ്രവർത്തിക്കുന്നു കാണുക',
 tr1:'സൈൻഅപ്പ് വേണ്ട', tr2:'ഓഫ്‌ലൈനിൽ പ്രവർത്തിക്കുന്നു', tr3:'11 ഭാഷകൾ', tr4:'എന്നും സൗജന്യം',
 st1:'IPC ↔ BNS വകുപ്പുകൾ', st2:'ഇന്ത്യൻ ഭാഷകൾ', st3:'ക്ലൗഡിലേക്ക് അയച്ച ഡാറ്റ',
-how:'ഇത് എങ്ങനെ പ്രവർത്തിക്കുന്നു', s1t:'നിങ്ങളുടെ പ്രശ്നം പറയുക', s1d:'11 ഭാഷകളിൽ എഴുതുകയോ സംസാരിക്കുകയോ ചെയ്യുക.', s2t:'സംഗ്രഹം സ്ഥിരീകരിക്കുക', s2d:'AI നിങ്ങളുടെ സാഹചര്യം വീണ്ടും പറയുന്നു — നിങ്ങൾ പരിശോധിക്കുക.', s3t:'അവകാശങ്ങൾ + അടുത്ത ഘട്ടങ്ങൾ', s3d:'BNS വകുപ്പുകൾ, സമയപരിധികൾ, ഹെൽപ്പ്‌ലൈനുകൾ സഹിതം.',
+how:'ഇത് എങ്ങനെ പ്രവർത്തിക്കുന്നു', s1t:'നിങ്ങളുടെ പ്രശ്നം പറയുക', s1d:'11 ഭാഷകളിൽ എഴുതുകയോ സംസാരിക്കുകയോ ചെയ്യുക.', s2t:'സംഗ്രഹം സ്ഥിരീകരിക്കുക', s2d:'AI നിങ്ങളുടെ സാഹചര്യം വീണ്ടും പറയുന്നു - നിങ്ങൾ പരിശോധിക്കുക.', s3t:'അവകാശങ്ങൾ + അടുത്ത ഘട്ടങ്ങൾ', s3d:'BNS വകുപ്പുകൾ, സമയപരിധികൾ, ഹെൽപ്പ്‌ലൈനുകൾ സഹിതം.',
 feats:'അധിKaar ചെയ്യാവുന്നതെല്ലാം', open:'തുറക്കുക',
-f1t:'നിയമ സഹായിയോട് സംസാരിക്കുക', f1d:'11 ഭാഷകളിൽ പ്രശ്നം പറയുക — അവകാശങ്ങൾ അറിയുക.', f2t:'എന്റെ കേസുകൾ', f2d:'ഓരോ കേസും ക്രമീകൃതം — ഉപകരണത്തിൽ സ്വകാര്യം.', f3t:'രേഖ തയ്യാറാക്കുക', f3d:'പ്രിന്റ്-റെഡി നോട്ടീസുകൾ, പരാതികൾ, RTI.', f4t:'വെർച്വൽ കോടതി', f4d:'AI ജഡ്ജിക്ക് മുന്നിൽ ഇരുവശത്തിന്റെയും വാദം.', f5t:'IPC ↔ BNS മാറ്റം', f5d:'പഴയ IPC വകുപ്പുകൾ പുതിയ BNS ആക്കുക.', f6t:'നിയമ സഹായം കണ്ടെത്തുക', f6d:'നിങ്ങളുടെ ജില്ലയിൽ സൗജന്യ നിയമ സഹായം.', f7t:'നിയമ രേഖ വിശദീകരിക്കുക', f7d:'നോട്ടീസ് അപ്‌ലോഡ് ചെയ്യുക — ലളിതമായി മനസ്സിലാക്കുക.', f8t:'വോയ്സ് മോഡ്', f8d:'സംസാരിച്ച് ചോദിക്കുക, ഉത്തരം കേൾക്കുക.', f9t:'CrPC ↔ BNSS മാറ്റം', f9d:'പഴയ CrPC വകുപ്പുകൾ പുതിയ BNSS ആക്കുക.', f10t:'നിയമവും അടുത്ത ഘട്ടങ്ങളും', f10d:'ഒരു പരിശോധിച്ച ഉത്തരം — ബാധകമായ നിയമം, സ്രോതസ്സുകൾ, അവകാശ കാർഡ്.',
+f1t:'നിയമ സഹായിയോട് സംസാരിക്കുക', f1d:'11 ഭാഷകളിൽ പ്രശ്നം പറയുക - അവകാശങ്ങൾ അറിയുക.', f2t:'എന്റെ കേസുകൾ', f2d:'ഓരോ കേസും ക്രമീകൃതം - ഉപകരണത്തിൽ സ്വകാര്യം.', f3t:'രേഖ തയ്യാറാക്കുക', f3d:'പ്രിന്റ്-റെഡി നോട്ടീസുകൾ, പരാതികൾ, RTI.', f4t:'വെർച്വൽ കോടതി', f4d:'AI ജഡ്ജിക്ക് മുന്നിൽ ഇരുവശത്തിന്റെയും വാദം.', f5t:'IPC ↔ BNS മാറ്റം', f5d:'പഴയ IPC വകുപ്പുകൾ പുതിയ BNS ആക്കുക.', f6t:'നിയമ സഹായം കണ്ടെത്തുക', f6d:'നിങ്ങളുടെ ജില്ലയിൽ സൗജന്യ നിയമ സഹായം.', f7t:'നിയമ രേഖ വിശദീകരിക്കുക', f7d:'നോട്ടീസ് അപ്‌ലോഡ് ചെയ്യുക - ലളിതമായി മനസ്സിലാക്കുക.', f8t:'വോയ്സ് മോഡ്', f8d:'സംസാരിച്ച് ചോദിക്കുക, ഉത്തരം കേൾക്കുക.', f9t:'CrPC ↔ BNSS മാറ്റം', f9d:'പഴയ CrPC വകുപ്പുകൾ പുതിയ BNSS ആക്കുക.', f10t:'നിയമവും അടുത്ത ഘട്ടങ്ങളും', f10d:'ഒരു പരിശോധിച്ച ഉത്തരം - ബാധകമായ നിയമം, സ്രോതസ്സുകൾ, അവകാശ കാർഡ്.',
 hg:'നമസ്തേ, ഞാൻ എങ്ങനെ സഹായിക്കാം?', hc1:'ഇന്ത്യയിൽ വാടകക്കാരുടെ അവകാശങ്ങൾ എന്തൊക്കെ?', hc2:'ഉപഭോക്തൃ പരാതി എങ്ങനെ നൽകാം?', hc3:'ഗാർഹിക പീഡന നിയമം വിശദീകരിക്കുക', hph:'നിങ്ങളുടെ നിയമ ചോദ്യം എഴുതുക...', hnote:'സൗജന്യം. നിങ്ങളുടെ സംഭാഷണങ്ങൾ ഉപകരണത്തിൽ തന്നെ.',
 ct:'നിയമ സഹായി', cst:'സഹായത്തിന് തയ്യാർ', cnew:'പുതിയ സംഭാഷണം', wt:'അധിKaar ലേക്ക് സ്വാഗതം', wd:'നിങ്ങളുടെ നിയമ പ്രശ്നം സ്വന്തം വാക്കുകളിൽ പറയുക.',
 c1:'ശമ്പളം കിട്ടിയില്ല', c2:'ഡെപ്പോസിറ്റ്', c3:'നിയമ നോട്ടീസ്', c4:'FIR രജിസ്റ്റർ ചെയ്തില്ല', c5:'ഗാർഹിക പീഡനം', c6:'ഓൺലൈൻ തട്ടിപ്പ്',
 cph:'നിങ്ങളുടെ നിയമ പ്രശ്നം ഇവിടെ എഴുതുക...', chint:'അയയ്ക്കാൻ Enter · പുതിയ വരിക്ക് Shift+Enter · സംസാരിക്കാൻ മൈക്ക്', cdisc:'അധിKaar നിയമ വിവരങ്ങൾ നൽകുന്നു, ഉപദേശമല്ല. സങ്കീർണ്ണ വിഷയങ്ങൾക്ക് അഭിഭാഷകനെ കാണുക അല്ലെങ്കിൽ NALSA: 15100.',
 bns_t:'IPC ↔ BNS വകുപ്പ് മാറ്റം', bns_d:'1 ജൂലൈ 2024ന് ക്രിമിനൽ നിയമം മാറി. ഏത് വകുപ്പും തിരയുക.', aid_t:'അടുത്തുള്ള നിയമ സഹായം', aid_d:'സൗജന്യ നിയമ സഹായം നിങ്ങളുടെ അവകാശം. DLSA, ഹെൽപ്പ്‌ലൈനുകൾ തിരയുക.', doc_t:'നിയമ രേഖ വിശദീകരിക്കുക', doc_d:'നോട്ടീസ്, FIR ഫോട്ടോ അപ്‌ലോഡ് ചെയ്യുക.',
-cases_t:'എന്റെ കേസുകൾ', cases_d:'ഓരോ കേസിന്റെയും സംഭാഷണം ഈ ഉപകരണത്തിൽ സ്വകാര്യം.', draft_t:'നിയമ രേഖ തയ്യാറാക്കുക', draft_d:'കുറച്ച് ചോദ്യങ്ങൾ — തയ്യാറായ രേഖ.', court_t:'വെർച്വൽ കോടതി', court_d:'AI ജഡ്ജിക്ക് മുന്നിൽ വാദം — ദൗർബല്യങ്ങൾ മുൻകൂട്ടി അറിയുക.',
+cases_t:'എന്റെ കേസുകൾ', cases_d:'ഓരോ കേസിന്റെയും സംഭാഷണം ഈ ഉപകരണത്തിൽ സ്വകാര്യം.', draft_t:'നിയമ രേഖ തയ്യാറാക്കുക', draft_d:'കുറച്ച് ചോദ്യങ്ങൾ - തയ്യാറായ രേഖ.', court_t:'വെർച്വൽ കോടതി', court_d:'AI ജഡ്ജിക്ക് മുന്നിൽ വാദം - ദൗർബല്യങ്ങൾ മുൻകൂട്ടി അറിയുക.',
 ncase:'പുതിയ കേസ്', shear:'വിചാരണ ആരംഭിക്കുക', nround:'അടുത്ത റൗണ്ട്', vmode:'വോയ്സ് മോഡ്' },
 
 pa: { nav_home:'ਹੋਮ', nav_chat:'ਕਾਨੂੰਨੀ ਸਹਾਇਕ ਨਾਲ ਗੱਲ ਕਰੋ', nav_cases:'ਮੇਰੇ ਕੇਸ', nav_draft:'ਦਸਤਾਵੇਜ਼ ਬਣਾਓ', nav_court:'ਵਰਚੁਅਲ ਅਦਾਲਤ', nav_bns:'IPC ↔ BNS ਬਦਲੋ', nav_aid:'ਕਾਨੂੰਨੀ ਮਦਦ ਲੱਭੋ', nav_doc:'ਕਾਨੂੰਨੀ ਦਸਤਾਵੇਜ਼ ਸਮਝੋ',
-badge:'100% ਨਿੱਜੀ · ਤੁਹਾਡੀ ਡਿਵਾਈਸ ਤੇ ਚੱਲਦਾ ਹੈ', hero_sub:'ਤਨਖਾਹ ਨਹੀਂ ਮਿਲੀ? ਡਿਪਾਜ਼ਿਟ ਫਸਿਆ ਹੈ? ਕਾਨੂੰਨੀ ਨੋਟਿਸ ਆਇਆ? 11 ਭਾਸ਼ਾਵਾਂ ਵਿੱਚ ਪੁੱਛੋ — ਮੁਫ਼ਤ, ਔਫਲਾਈਨ.', cta1:'ਆਪਣਾ ਸਵਾਲ ਪੁੱਛੋ', cta2:'ਕਿਵੇਂ ਕੰਮ ਕਰਦਾ ਹੈ ਵੇਖੋ',
+badge:'100% ਨਿੱਜੀ · ਤੁਹਾਡੀ ਡਿਵਾਈਸ ਤੇ ਚੱਲਦਾ ਹੈ', hero_sub:'ਤਨਖਾਹ ਨਹੀਂ ਮਿਲੀ? ਡਿਪਾਜ਼ਿਟ ਫਸਿਆ ਹੈ? ਕਾਨੂੰਨੀ ਨੋਟਿਸ ਆਇਆ? 11 ਭਾਸ਼ਾਵਾਂ ਵਿੱਚ ਪੁੱਛੋ - ਮੁਫ਼ਤ, ਔਫਲਾਈਨ.', cta1:'ਆਪਣਾ ਸਵਾਲ ਪੁੱਛੋ', cta2:'ਕਿਵੇਂ ਕੰਮ ਕਰਦਾ ਹੈ ਵੇਖੋ',
 tr1:'ਸਾਈਨਅੱਪ ਨਹੀਂ', tr2:'ਔਫਲਾਈਨ ਚੱਲਦਾ ਹੈ', tr3:'11 ਭਾਸ਼ਾਵਾਂ', tr4:'ਹਮੇਸ਼ਾ ਮੁਫ਼ਤ',
 st1:'IPC ↔ BNS ਧਾਰਾਵਾਂ', st2:'ਭਾਰਤੀ ਭਾਸ਼ਾਵਾਂ', st3:'ਕਲਾਉਡ ਨੂੰ ਭੇਜਿਆ ਡੇਟਾ',
-how:'ਇਹ ਕਿਵੇਂ ਕੰਮ ਕਰਦਾ ਹੈ', s1t:'ਆਪਣੀ ਸਮੱਸਿਆ ਦੱਸੋ', s1d:'11 ਭਾਸ਼ਾਵਾਂ ਵਿੱਚ ਲਿਖੋ ਜਾਂ ਬੋਲੋ.', s2t:'ਸਾਰ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ', s2d:'AI ਤੁਹਾਡੀ ਸਥਿਤੀ ਦੁਹਰਾਉਂਦਾ ਹੈ — ਤੁਸੀਂ ਜਾਂਚੋ.', s3t:'ਹੱਕ + ਅਗਲੇ ਕਦਮ', s3d:'BNS ਧਾਰਾਵਾਂ, ਸਮਾਂ-ਸੀਮਾਵਾਂ ਅਤੇ ਹੈਲਪਲਾਈਨਾਂ ਨਾਲ.',
+how:'ਇਹ ਕਿਵੇਂ ਕੰਮ ਕਰਦਾ ਹੈ', s1t:'ਆਪਣੀ ਸਮੱਸਿਆ ਦੱਸੋ', s1d:'11 ਭਾਸ਼ਾਵਾਂ ਵਿੱਚ ਲਿਖੋ ਜਾਂ ਬੋਲੋ.', s2t:'ਸਾਰ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ', s2d:'AI ਤੁਹਾਡੀ ਸਥਿਤੀ ਦੁਹਰਾਉਂਦਾ ਹੈ - ਤੁਸੀਂ ਜਾਂਚੋ.', s3t:'ਹੱਕ + ਅਗਲੇ ਕਦਮ', s3d:'BNS ਧਾਰਾਵਾਂ, ਸਮਾਂ-ਸੀਮਾਵਾਂ ਅਤੇ ਹੈਲਪਲਾਈਨਾਂ ਨਾਲ.',
 feats:'ਅਧਿKaar ਜੋ ਕੁਝ ਕਰ ਸਕਦਾ ਹੈ', open:'ਖੋਲ੍ਹੋ',
-f1t:'ਕਾਨੂੰਨੀ ਸਹਾਇਕ ਨਾਲ ਗੱਲ ਕਰੋ', f1d:'11 ਭਾਸ਼ਾਵਾਂ ਵਿੱਚ ਸਮੱਸਿਆ ਦੱਸੋ — ਹੱਕ ਜਾਣੋ.', f2t:'ਮੇਰੇ ਕੇਸ', f2d:'ਹਰ ਕੇਸ ਵਿਵਸਥਿਤ — ਡਿਵਾਈਸ ਤੇ ਨਿੱਜੀ.', f3t:'ਦਸਤਾਵੇਜ਼ ਬਣਾਓ', f3d:'ਪ੍ਰਿੰਟ-ਤਿਆਰ ਨੋਟਿਸ, ਸ਼ਿਕਾਇਤਾਂ ਅਤੇ RTI.', f4t:'ਵਰਚੁਅਲ ਅਦਾਲਤ', f4d:'AI ਜੱਜ ਸਾਹਮਣੇ ਦੋਵਾਂ ਪੱਖਾਂ ਦੀ ਬਹਿਸ.', f5t:'IPC ↔ BNS ਬਦਲੋ', f5d:'ਪੁਰਾਣੀਆਂ IPC ਧਾਰਾਵਾਂ ਨਵੀਂ BNS ਵਿੱਚ ਬਦਲੋ.', f6t:'ਕਾਨੂੰਨੀ ਮਦਦ ਲੱਭੋ', f6d:'ਤੁਹਾਡੇ ਜ਼ਿਲ੍ਹੇ ਵਿੱਚ ਮੁਫ਼ਤ ਕਾਨੂੰਨੀ ਮਦਦ.', f7t:'ਕਾਨੂੰਨੀ ਦਸਤਾਵੇਜ਼ ਸਮਝੋ', f7d:'ਨੋਟਿਸ ਅੱਪਲੋਡ ਕਰੋ — ਸੌਖੀ ਭਾਸ਼ਾ ਵਿੱਚ ਸਮਝੋ.', f8t:'ਆਵਾਜ਼ ਮੋਡ', f8d:'ਬੋਲ ਕੇ ਪੁੱਛੋ, ਜਵਾਬ ਸੁਣੋ.', f9t:'CrPC ↔ BNSS ਬਦਲੋ', f9d:'ਪੁਰਾਣੀਆਂ CrPC ਧਾਰਾਵਾਂ ਨਵੀਂ BNSS ਵਿੱਚ ਬਦਲੋ.', f10t:'ਕਾਨੂੰਨ ਅਤੇ ਅਗਲੇ ਕਦਮ', f10d:'ਇੱਕ ਤਸਦੀਕਸ਼ੁਦਾ ਜਵਾਬ — ਲਾਗੂ ਕਾਨੂੰਨ, ਸਰੋਤ ਅਤੇ ਹੱਕ ਕਾਰਡ.',
+f1t:'ਕਾਨੂੰਨੀ ਸਹਾਇਕ ਨਾਲ ਗੱਲ ਕਰੋ', f1d:'11 ਭਾਸ਼ਾਵਾਂ ਵਿੱਚ ਸਮੱਸਿਆ ਦੱਸੋ - ਹੱਕ ਜਾਣੋ.', f2t:'ਮੇਰੇ ਕੇਸ', f2d:'ਹਰ ਕੇਸ ਵਿਵਸਥਿਤ - ਡਿਵਾਈਸ ਤੇ ਨਿੱਜੀ.', f3t:'ਦਸਤਾਵੇਜ਼ ਬਣਾਓ', f3d:'ਪ੍ਰਿੰਟ-ਤਿਆਰ ਨੋਟਿਸ, ਸ਼ਿਕਾਇਤਾਂ ਅਤੇ RTI.', f4t:'ਵਰਚੁਅਲ ਅਦਾਲਤ', f4d:'AI ਜੱਜ ਸਾਹਮਣੇ ਦੋਵਾਂ ਪੱਖਾਂ ਦੀ ਬਹਿਸ.', f5t:'IPC ↔ BNS ਬਦਲੋ', f5d:'ਪੁਰਾਣੀਆਂ IPC ਧਾਰਾਵਾਂ ਨਵੀਂ BNS ਵਿੱਚ ਬਦਲੋ.', f6t:'ਕਾਨੂੰਨੀ ਮਦਦ ਲੱਭੋ', f6d:'ਤੁਹਾਡੇ ਜ਼ਿਲ੍ਹੇ ਵਿੱਚ ਮੁਫ਼ਤ ਕਾਨੂੰਨੀ ਮਦਦ.', f7t:'ਕਾਨੂੰਨੀ ਦਸਤਾਵੇਜ਼ ਸਮਝੋ', f7d:'ਨੋਟਿਸ ਅੱਪਲੋਡ ਕਰੋ - ਸੌਖੀ ਭਾਸ਼ਾ ਵਿੱਚ ਸਮਝੋ.', f8t:'ਆਵਾਜ਼ ਮੋਡ', f8d:'ਬੋਲ ਕੇ ਪੁੱਛੋ, ਜਵਾਬ ਸੁਣੋ.', f9t:'CrPC ↔ BNSS ਬਦਲੋ', f9d:'ਪੁਰਾਣੀਆਂ CrPC ਧਾਰਾਵਾਂ ਨਵੀਂ BNSS ਵਿੱਚ ਬਦਲੋ.', f10t:'ਕਾਨੂੰਨ ਅਤੇ ਅਗਲੇ ਕਦਮ', f10d:'ਇੱਕ ਤਸਦੀਕਸ਼ੁਦਾ ਜਵਾਬ - ਲਾਗੂ ਕਾਨੂੰਨ, ਸਰੋਤ ਅਤੇ ਹੱਕ ਕਾਰਡ.',
 hg:'ਸਤ ਸ੍ਰੀ ਅਕਾਲ, ਮੈਂ ਕਿਵੇਂ ਮਦਦ ਕਰ ਸਕਦਾ ਹਾਂ?', hc1:'ਭਾਰਤ ਵਿੱਚ ਕਿਰਾਏਦਾਰ ਦੇ ਹੱਕ ਕੀ ਹਨ?', hc2:'ਖਪਤਕਾਰ ਸ਼ਿਕਾਇਤ ਕਿਵੇਂ ਦਰਜ ਕਰੀਏ?', hc3:'ਘਰੇਲੂ ਹਿੰਸਾ ਕਾਨੂੰਨ ਸਮਝਾਓ', hph:'ਆਪਣਾ ਕਾਨੂੰਨੀ ਸਵਾਲ ਲਿਖੋ...', hnote:'ਮੁਫ਼ਤ। ਤੁਹਾਡੀ ਗੱਲਬਾਤ ਤੁਹਾਡੀ ਡਿਵਾਈਸ ਤੇ ਹੀ ਰਹਿੰਦੀ ਹੈ.',
 ct:'ਕਾਨੂੰਨੀ ਸਹਾਇਕ', cst:'ਮਦਦ ਲਈ ਤਿਆਰ', cnew:'ਨਵੀਂ ਗੱਲਬਾਤ', wt:'ਅਧਿKaar ਵਿੱਚ ਜੀ ਆਇਆਂ ਨੂੰ', wd:'ਆਪਣੀ ਕਾਨੂੰਨੀ ਸਮੱਸਿਆ ਆਪਣੇ ਸ਼ਬਦਾਂ ਵਿੱਚ ਦੱਸੋ.',
 c1:'ਤਨਖਾਹ ਨਹੀਂ ਮਿਲੀ', c2:'ਡਿਪਾਜ਼ਿਟ', c3:'ਕਾਨੂੰਨੀ ਨੋਟਿਸ', c4:'FIR ਦਰਜ ਨਹੀਂ ਹੋਈ', c5:'ਘਰੇਲੂ ਹਿੰਸਾ', c6:'ਆਨਲਾਈਨ ਧੋਖਾਧੜੀ',
 cph:'ਆਪਣੀ ਕਾਨੂੰਨੀ ਸਮੱਸਿਆ ਇੱਥੇ ਲਿਖੋ...', chint:'ਭੇਜਣ ਲਈ Enter · ਨਵੀਂ ਲਾਈਨ Shift+Enter · ਬੋਲਣ ਲਈ ਮਾਈਕ', cdisc:'ਅਧਿKaar ਕਾਨੂੰਨੀ ਜਾਣਕਾਰੀ ਦਿੰਦਾ ਹੈ, ਸਲਾਹ ਨਹੀਂ। ਗੁੰਝਲਦਾਰ ਮਾਮਲਿਆਂ ਲਈ ਵਕੀਲ ਨੂੰ ਮਿਲੋ ਜਾਂ NALSA: 15100.',
 bns_t:'IPC ↔ BNS ਧਾਰਾ ਬਦਲੋ', bns_d:'1 ਜੁਲਾਈ 2024 ਨੂੰ ਫੌਜਦਾਰੀ ਕਾਨੂੰਨ ਬਦਲਿਆ। ਕੋਈ ਵੀ ਧਾਰਾ ਲੱਭੋ.', aid_t:'ਨੇੜੇ ਦੀ ਕਾਨੂੰਨੀ ਮਦਦ', aid_d:'ਮੁਫ਼ਤ ਕਾਨੂੰਨੀ ਮਦਦ ਤੁਹਾਡਾ ਹੱਕ ਹੈ। DLSA, ਹੈਲਪਲਾਈਨਾਂ ਲੱਭੋ.', doc_t:'ਕਾਨੂੰਨੀ ਦਸਤਾਵੇਜ਼ ਸਮਝੋ', doc_d:'ਨੋਟਿਸ, FIR ਦੀ ਫੋਟੋ ਅੱਪਲੋਡ ਕਰੋ.',
-cases_t:'ਮੇਰੇ ਕੇਸ', cases_d:'ਹਰ ਕੇਸ ਦੀ ਗੱਲਬਾਤ ਇਸ ਡਿਵਾਈਸ ਤੇ ਨਿੱਜੀ.', draft_t:'ਕਾਨੂੰਨੀ ਦਸਤਾਵੇਜ਼ ਬਣਾਓ', draft_d:'ਕੁਝ ਸਵਾਲ — ਤਿਆਰ ਦਸਤਾਵੇਜ਼.', court_t:'ਵਰਚੁਅਲ ਅਦਾਲਤ', court_d:'AI ਜੱਜ ਸਾਹਮਣੇ ਬਹਿਸ — ਕਮਜ਼ੋਰੀਆਂ ਪਹਿਲਾਂ ਜਾਣੋ.',
+cases_t:'ਮੇਰੇ ਕੇਸ', cases_d:'ਹਰ ਕੇਸ ਦੀ ਗੱਲਬਾਤ ਇਸ ਡਿਵਾਈਸ ਤੇ ਨਿੱਜੀ.', draft_t:'ਕਾਨੂੰਨੀ ਦਸਤਾਵੇਜ਼ ਬਣਾਓ', draft_d:'ਕੁਝ ਸਵਾਲ - ਤਿਆਰ ਦਸਤਾਵੇਜ਼.', court_t:'ਵਰਚੁਅਲ ਅਦਾਲਤ', court_d:'AI ਜੱਜ ਸਾਹਮਣੇ ਬਹਿਸ - ਕਮਜ਼ੋਰੀਆਂ ਪਹਿਲਾਂ ਜਾਣੋ.',
 ncase:'ਨਵਾਂ ਕੇਸ', shear:'ਸੁਣਵਾਈ ਸ਼ੁਰੂ ਕਰੋ', nround:'ਅਗਲਾ ਦੌਰ', vmode:'ਆਵਾਜ਼ ਮੋਡ' },
 };
 

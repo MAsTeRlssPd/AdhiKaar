@@ -1,5 +1,5 @@
 """
-अधिKaar RAG Setup — Ingest legal knowledge into ChromaDB for retrieval.
+अधिKaar RAG Setup - Ingest legal knowledge into ChromaDB for retrieval.
 
 Run once before starting the server:  python rag_setup.py
 Rebuild a single collection without redoing the slow corpus:
@@ -18,7 +18,7 @@ import chromadb
 from chromadb.utils import embedding_functions
 
 # Windows consoles default to cp1252 and blow up on the emoji in our progress
-# output — same guard app.py already uses.
+# output - same guard app.py already uses.
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 
@@ -51,7 +51,7 @@ def _add_batched(col, documents, metadatas, ids):
 
 # ── 1. IPC ↔ BNS Mapping ──
 def build_ipc_bns(client, ef):
-    print("📚 Loading IPC ↔ BNS mapping...")
+    print(" Loading IPC ↔ BNS mapping...")
     col = _fresh_collection(client, ef, "ipc_bns", "IPC to BNS section mapping")
     data = load_json('ipc_bns_mapping.json')
     documents, metadatas, ids = [], [], []
@@ -69,12 +69,12 @@ def build_ipc_bns(client, ef):
         })
         ids.append(f"ipc_bns_{i}")
     _add_batched(col, documents, metadatas, ids)
-    print(f"  ✅ Added {len(documents)} IPC-BNS mappings")
+    print(f"   Added {len(documents)} IPC-BNS mappings")
 
 
 # ── 2. Rights knowledge (+ checklists, case studies, templates, IndicLegalQA) ──
 def build_rights(client, ef):
-    print("📚 Loading rights knowledge...")
+    print(" Loading rights knowledge...")
     col = _fresh_collection(client, ef, "rights_knowledge", "Legal rights information by case type")
     rights_data = load_json('rights_knowledge.json')
     documents, metadatas, ids = [], [], []
@@ -113,38 +113,38 @@ def build_rights(client, ef):
         push(f"Legal Term: {term['term']}. Meaning: {term['meaning']}. Hindi Meaning: {term.get('meaning_hi', '')}.",
              {"case_type_id": "legal_terms", "case_type_name": "Legal Terminology", "doc_type": "term"})
 
-    # Evidence checklists — reviewed document lists, steps and statutory deadlines.
+    # Evidence checklists - reviewed document lists, steps and statutory deadlines.
     for tpl in load_json('evidence_checklists.json').get('templates', []):
         parts = [f"Evidence checklist: {tpl['title']} ({tpl.get('title_hi', '')}). {tpl.get('description', '')}"]
-        parts += [f"Document needed: {d['name']} — {d.get('why', '')} How to get: {d.get('how_to_get', '')}"
+        parts += [f"Document needed: {d['name']} - {d.get('why', '')} How to get: {d.get('how_to_get', '')}"
                   for d in tpl.get('documents', [])]
         parts += [f"Step {i}: {s}" for i, s in enumerate(tpl.get('steps', []), 1)]
-        parts += [f"Deadline: {dl.get('what', '')} — {dl.get('timeframe', '')}" for dl in tpl.get('deadlines', [])]
+        parts += [f"Deadline: {dl.get('what', '')} - {dl.get('timeframe', '')}" for dl in tpl.get('deadlines', [])]
         parts += [f"Tip: {t}" for t in tpl.get('tips', [])]
         if tpl.get('helpline'):
             parts.append(f"Helpline: {tpl['helpline']}")
         push(" ".join(parts),
              {"type": "evidence_checklist", "checklist_id": tpl['id'], "category": tpl.get('category', ''), "doc_type": "checklist"})
 
-    # Case studies — real-world Q&A pairs that make chat answers concrete.
+    # Case studies - real-world Q&A pairs that make chat answers concrete.
     for cs in load_json('case_studies.json').get('cases', []):
         push(f"Case study ({cs.get('category', '')}): {cs.get('scenario', '')} "
              f"Question: {cs.get('question', '')} Answer: {cs.get('answer', '')} "
              f"Keywords: {', '.join(cs.get('keywords', []))}",
              {"type": "case_study", "case_id": cs['id'], "category": cs.get('category', ''), "doc_type": "case_study"})
 
-    # Document templates — so answers can point to the right format to file.
+    # Document templates - so answers can point to the right format to file.
     for tpl in load_json('document_templates.json').get('templates', []):
         push(f"Legal document format: {tpl.get('title', '')} ({tpl.get('category', '')}). "
              f"When to use: {tpl.get('when_to_use', '')} Where to submit: {tpl.get('where_to_submit', '')} "
              f"Tips: {' '.join(tpl.get('tips', []))}",
              {"type": "document_template", "template_id": tpl['id'], "category": tpl.get('category', ''), "doc_type": "template"})
 
-    # IndicLegalQA — optional external Q&A dataset. Warn-and-skip if absent.
+    # IndicLegalQA - optional external Q&A dataset. Warn-and-skip if absent.
     qa_added = _ingest_indic_legal_qa(push)
 
     _add_batched(col, documents, metadatas, ids)
-    print(f"  ✅ Added {doc_count} rights knowledge documents (incl. checklists, case studies, templates, "
+    print(f"   Added {doc_count} rights knowledge documents (incl. checklists, case studies, templates, "
           f"{qa_added} Q&A pairs)")
 
 
@@ -152,14 +152,14 @@ def _ingest_indic_legal_qa(push):
     """Add IndicLegalQA pairs if data/raw/indic_legal_qa.json is present."""
     path = os.path.join(DATA_DIR, 'raw', 'indic_legal_qa.json')
     if not os.path.exists(path):
-        print("  ℹ️  IndicLegalQA not found (data/raw/indic_legal_qa.json) — skipping. "
+        print("    IndicLegalQA not found (data/raw/indic_legal_qa.json) - skipping. "
               "Download from Kaggle 'kmldas/indiclegalqa-dataset' to include it.")
         return 0
     try:
         with open(path, 'r', encoding='utf-8') as f:
             raw = json.load(f)
     except Exception as e:
-        print(f"  ⚠️  Could not read IndicLegalQA: {e} — skipping.")
+        print(f"    Could not read IndicLegalQA: {e} - skipping.")
         return 0
 
     # Accept a top-level list, or a dict wrapping the list under a common key.
@@ -170,7 +170,7 @@ def _ingest_indic_legal_qa(push):
                 rows = raw[k]
                 break
     if not isinstance(rows, list):
-        print("  ⚠️  IndicLegalQA has an unexpected shape — skipping.")
+        print("    IndicLegalQA has an unexpected shape - skipping.")
         return 0
 
     def field(row, *names):
@@ -196,13 +196,13 @@ def _ingest_indic_legal_qa(push):
         push(f"Legal Q&A. Question: {q} Answer: {a}",
              {"type": "qa_pair", "doc_type": "qa_pair", "source": "indic_legal_qa"})
         kept += 1
-    print(f"  ✅ IndicLegalQA: kept {kept}, dropped {dropped}")
+    print(f"   IndicLegalQA: kept {kept}, dropped {dropped}")
     return kept
 
 
 # ── 3. Legal aid directory ──
 def build_legal_aid(client, ef):
-    print("📚 Loading legal aid directory...")
+    print(" Loading legal aid directory...")
     col = _fresh_collection(client, ef, "legal_aid", "Legal aid contacts and helplines")
     data = load_json('legal_aid_directory.json')
     documents, metadatas, ids = [], [], []
@@ -242,11 +242,11 @@ def build_legal_aid(client, ef):
             doc_count += 1
 
     _add_batched(col, documents, metadatas, ids)
-    print(f"  ✅ Added {doc_count} legal aid entries")
+    print(f"   Added {doc_count} legal aid entries")
 
 
 # ── 4. Official law corpus (Nyaya Navigator JSONL) ──
-# Chroma metadata must be flat scalars — no None, lists or dicts. Keep the fields
+# Chroma metadata must be flat scalars - no None, lists or dicts. Keep the fields
 # a citation actually needs.
 _KEEP_META = ("act", "title", "section_id", "heading", "source_id", "language",
               "status", "effective_from", "priority", "official_url", "official_landing_url",
@@ -268,11 +268,11 @@ def _flatten_meta(record):
 
 
 def build_official_law(client, ef):
-    print("📚 Loading official-law corpus (this is the slow one)...")
+    print(" Loading official-law corpus (this is the slow one)...")
     col = _fresh_collection(client, ef, "official_law", "Official Indian statute text with source URLs")
     files = sorted(glob.glob(os.path.join(CORPUS_DIR, '*.jsonl')))
     if not files:
-        print(f"  ⚠️  No corpus files in {CORPUS_DIR} — skipping official_law.")
+        print(f"    No corpus files in {CORPUS_DIR} - skipping official_law.")
         return
 
     documents, metadatas, ids = [], [], []
@@ -297,7 +297,7 @@ def build_official_law(client, ef):
                 ids.append(cid)
 
     _add_batched(col, documents, metadatas, ids)
-    print(f"  ✅ Added {len(documents)} official-law chunks from {len(files)} files (skipped {skipped_empty} empty)")
+    print(f"   Added {len(documents)} official-law chunks from {len(files)} files (skipped {skipped_empty} empty)")
 
 
 BUILDERS = {
@@ -309,7 +309,7 @@ BUILDERS = {
 
 
 def setup_rag(only="all"):
-    print("🔧 Setting up अधिKaar RAG knowledge base...")
+    print(" Setting up अधिKaar RAG knowledge base...")
     ef = embedding_functions.DefaultEmbeddingFunction()
     client = chromadb.PersistentClient(path=CHROMA_DIR)
 
@@ -317,7 +317,7 @@ def setup_rag(only="all"):
     for name in targets:
         BUILDERS[name](client, ef)
 
-    print("\n✅ RAG knowledge base setup complete!")
+    print("\n RAG knowledge base setup complete!")
     print(f"   Database location: {CHROMA_DIR}")
     print(f"   Collections built: {', '.join(targets)}")
 

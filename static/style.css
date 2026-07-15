@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════
-   अधिKaar — AI Legal Assistant
+   अधिKaar - AI Legal Assistant
    Light Theme · Village-Friendly · Premium Design
    ══════════════════════════════════════════════════════════ */
 
@@ -11,7 +11,7 @@
 
 /* ── CSS Custom Properties ── */
 :root {
-  /* Colors — indigo primary, saffron accent, warm ivory neutrals */
+  /* Colors - indigo primary, saffron accent, warm ivory neutrals */
   --primary: #4338CA;
   --primary-dark: #3730A3;
   --primary-darker: #312E81;
@@ -34,7 +34,7 @@
   --info: #3B82F6;
   --info-bg: #DBEAFE;
 
-  /* Neutrals — warm ivory instead of cold gray */
+  /* Neutrals - warm ivory instead of cold gray */
   --bg: #FAF9F6;
   --bg-card: #FFFFFF;
   --bg-elevated: #FFFFFF;
@@ -44,14 +44,14 @@
   --text: #1C1917;
   --text-secondary: #57534E;
   /* Was #A8A29E, which measured 2.25:1 against bg-input and 2.40:1 against bg
-     — it carried every placeholder, the mobile nav labels and the mic button.
+     - it carried every placeholder, the mobile nav labels and the mic button.
      #746D68 is the lightest step on this hue that still clears 4.5:1 on all
      three surfaces, so the ramp keeps three distinct steps and stays readable. */
   --text-tertiary: #746D68;
   --text-inverse: #FFFFFF;
 
   /* Ink colours for coloured surfaces. Each semantic colour is a *wash* in this
-     system, and the wash needs a label dark/light enough to read on it — the
+     system, and the wash needs a label dark/light enough to read on it - the
      semantic hue itself never is. White on #F59E0B is 2.15:1; --danger on
      --danger-bg is 3.08:1; --success on --success-bg is 2.24:1. */
   --accent-ink: #451A03;   /* on --accent / --accent-dark   4.70:1 */
@@ -61,7 +61,7 @@
   --success-ink: #065F46;  /* on --success-bg               6.78:1 */
   --warning-ink: #78350F;  /* on --warning-bg               7.31:1 */
   --info-ink: #1E40AF;     /* on --info-bg                  6.63:1 */
-  /* On solid --danger (the recording mic). 3.76:1 — under the 4.5:1 text bar
+  /* On solid --danger (the recording mic). 3.76:1 - under the 4.5:1 text bar
      but over the 3:1 WCAG 1.4.11 bar for non-text UI, and this surface only
      ever carries an icon. --danger is not re-themed, so neither is this. */
   --on-danger: #FFFFFF;
@@ -1453,7 +1453,7 @@ input, textarea, select {
 }
 
 .rights-card-preview .card-rights li::before {
-  content: '✅ ';
+  content: ' ';
 }
 
 .rights-card-preview .card-helplines {
@@ -1830,7 +1830,7 @@ input, textarea, select {
 }
 
 /* ══════════════════════════════════════════════════════════
-   Home redesign — hero split, trust strip, stats, steps
+   Home redesign - hero split, trust strip, stats, steps
    ══════════════════════════════════════════════════════════ */
 
 .hero-split {
@@ -2005,7 +2005,7 @@ svg.inline-icon, .inline-icon { width: 16px; height: 16px; vertical-align: -2px;
 }
 
 /* ══════════════════════════════════════════════════════════
-   Dark mode — opt-in via the toggle button (never automatic)
+   Dark mode - opt-in via the toggle button (never automatic)
    ══════════════════════════════════════════════════════════ */
 
 :root[data-theme="dark"] {
@@ -2044,7 +2044,7 @@ svg.inline-icon, .inline-icon { width: 16px; height: 16px; vertical-align: -2px;
 
   --text: #F5F4F9;
   --text-secondary: #C6C2D6;
-  /* Was #6E6A80 — 2.81:1 on bg-input. #8E8E98 is the darkest step here that
+  /* Was #6E6A80 - 2.81:1 on bg-input. #8E8E98 is the darkest step here that
      clears 4.5:1 on bg, bg-card and bg-input alike. */
   --text-tertiary: #8E8E98;
   --text-inverse: #14121A;
@@ -2479,7 +2479,7 @@ svg.inline-icon, .inline-icon { width: 16px; height: 16px; vertical-align: -2px;
 }
 
 /* ══════════════════════════════════════════════════════════
-   Draft view — richer cards + steps + tip
+   Draft view - richer cards + steps + tip
    ══════════════════════════════════════════════════════════ */
 
 .draft-content {
@@ -2594,7 +2594,7 @@ svg.inline-icon, .inline-icon { width: 16px; height: 16px; vertical-align: -2px;
 .feature-card:hover .card-go { color: var(--primary-dark); }
 .feature-card:hover .card-go svg { transform: translateX(4px); }
 
-/* ── Home page chat panel — matches the site theme ── */
+/* ── Home page chat panel - matches the site theme ── */
 .home-chat { margin: var(--space-2xl) 0; }
 
 .home-chat-box {
@@ -2907,7 +2907,7 @@ svg.inline-icon, .inline-icon { width: 16px; height: 16px; vertical-align: -2px;
   font-size: var(--font-size-sm);
 }
 
-/* Collapsible panel — native <details>, no JS toggle needed */
+/* Collapsible panel - native <details>, no JS toggle needed */
 .ls-panel {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -2978,7 +2978,7 @@ svg.inline-icon, .inline-icon { width: 16px; height: 16px; vertical-align: -2px;
 .ls-claim { color: var(--text); font-weight: 500; }
 .ls-support { font-size: var(--font-size-xs); color: var(--text-tertiary); }
 
-/* (d) Stress test — both sides side by side */
+/* (d) Stress test - both sides side by side */
 .ls-stress {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -3009,7 +3009,7 @@ svg.inline-icon, .inline-icon { width: 16px; height: 16px; vertical-align: -2px;
 .ls-weak { border-left: 3px solid var(--warning); }
 .ls-weak h5 { color: #92400E; }
 
-/* (e) Rights card — reuses .rights-card-preview, each right carries its source */
+/* (e) Rights card - reuses .rights-card-preview, each right carries its source */
 .ls-rights { margin-bottom: 0; }
 
 .ls-rights .card-rights li {
@@ -3034,7 +3034,7 @@ svg.inline-icon, .inline-icon { width: 16px; height: 16px; vertical-align: -2px;
    LEGAL-AID CONTACT LINKS + EVIDENCE CHECKLISTS
    ══════════════════════════════════════════════ */
 
-/* Contact cards now carry multiple stacked lines — stop vertically centring. */
+/* Contact cards now carry multiple stacked lines - stop vertically centring. */
 .contact-card { align-items: flex-start; }
 .contact-card .contact-info { display: flex; flex-direction: column; gap: 2px; }
 .contact-card .contact-info p a {
@@ -3155,7 +3155,7 @@ svg.inline-icon, .inline-icon { width: 16px; height: 16px; vertical-align: -2px;
 .doc-qa-err { color: var(--danger); }
 .doc-qa-wait { color: var(--text-secondary); display: inline-flex; align-items: center; gap: 8px; }
 
-/* Karaoke — highlight the word currently being spoken (Listen / TTS) */
+/* Karaoke - highlight the word currently being spoken (Listen / TTS) */
 .tts-word { border-radius: 3px; transition: background-color 0.12s ease, color 0.12s ease; }
 .tts-word.tts-active {
   background: var(--accent-light);
@@ -3169,7 +3169,7 @@ svg.inline-icon, .inline-icon { width: 16px; height: 16px; vertical-align: -2px;
 }
 
 /* ══════════════════════════════════════════════════════════════
-   MOTION & POLISH  (visual only — no markup/logic changes)
+   MOTION & POLISH  (visual only - no markup/logic changes)
    Premium personality: ease-out entrances, quick hovers, no bounce.
    ══════════════════════════════════════════════════════════════ */
 :root {
@@ -3257,7 +3257,7 @@ svg.inline-icon, .inline-icon { width: 16px; height: 16px; vertical-align: -2px;
 .feature-card .card-icon { transition: transform 0.28s var(--ease-out-quint); }
 .feature-card:hover .card-icon { transform: scale(1.12) rotate(-4deg); }
 
-/* Animated "Open →" — arrow slides, text gets an underline sweep */
+/* Animated "Open →" - arrow slides, text gets an underline sweep */
 .feature-card .card-go { position: relative; display: inline-flex; align-items: center; gap: 4px; }
 .feature-card .card-go svg { transition: transform 0.28s var(--ease-out-quint); }
 .feature-card:hover .card-go svg { transform: translateX(5px); }
