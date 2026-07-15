@@ -96,6 +96,15 @@ function renderMarkdown(text) {
     .replace(/\n/g, '<br>');
 }
 
+function stripHowToUseSection(text) {
+  if (!text) return '';
+  const normalized = String(text).replace(/\r\n/g, '\n');
+  const marker = /##\s*HOW TO USE THIS\b/i;
+  const match = normalized.match(marker);
+  if (!match || match.index === undefined) return normalized.trim();
+  return normalized.slice(0, match.index).trim();
+}
+
 async function apiCall(endpoint, options = {}) {
   try {
     const response = await fetch(`${API_BASE}${endpoint}`, {
@@ -2201,7 +2210,8 @@ async function generateDraft() {
 
 function downloadDraft() {
   if (!lastDraftText) return;
-  const html = `<html><head><meta charset="utf-8"></head><body style="font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.6;">${renderMarkdown(lastDraftText)}</body></html>`;
+  const documentText = stripHowToUseSection(lastDraftText);
+  const html = `<html><head><meta charset="utf-8"></head><body style="font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.6;">${renderMarkdown(documentText)}</body></html>`;
   const blob = new Blob([html], { type: 'application/msword' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -2212,8 +2222,9 @@ function downloadDraft() {
 
 function printDraft() {
   if (!lastDraftText) return;
+  const documentText = stripHowToUseSection(lastDraftText);
   const w = window.open('', '_blank');
-  w.document.write(`<html><head><title>Print</title></head><body style="font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.6; padding: 2cm;">${renderMarkdown(lastDraftText)}</body></html>`);
+  w.document.write(`<html><head><title>Print</title></head><body style="font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.6; padding: 2cm;">${renderMarkdown(documentText)}</body></html>`);
   w.document.close();
   w.print();
 }
@@ -2224,7 +2235,8 @@ function saveDraftToCase() {
   if (!c) { alert('Open or create a case first (My Cases), then save the draft to it.'); return; }
   const cases = loadCases();
   const target = cases.find(x => x.id === c.id);
-  target.drafts.push({ type: currentDraftType, text: lastDraftText, createdAt: Date.now() });
+  const documentText = stripHowToUseSection(lastDraftText);
+  target.drafts.push({ type: currentDraftType, text: documentText, createdAt: Date.now() });
   target.updatedAt = Date.now();
   saveCases(cases);
   alert(`Draft saved to case: ${target.title}`);
