@@ -2387,10 +2387,29 @@ def transcribe():
         segments, info = model.transcribe(
             io.BytesIO(audio_bytes),
             language=whisper_lang,
-            beam_size=1,
-            vad_filter=True,
+            beam_size=5,
+            vad_filter=True,                                  # strip silence...
+            vad_parameters=dict(min_silence_duration_ms=500),
+            temperature=[0.0, 0.2, 0.4],
+            condition_on_previous_text=False,                 # ...so it stops looping
+            no_speech_threshold=0.6,
+            log_prob_threshold=-1.0,
         )
-        text = "".join(seg.text for seg in segments).strip()
+        # Drop segments the model itself flags as probably-silence — that is what
+        # produces the phantom "Thank you"/"Thanks for watching" on a quiet or too-
+        # short clip. Then reject a lone known-hallucination phrase outright.
+        kept = [
+            seg.text for seg in segments
+            if getattr(seg, 'no_speech_prob', 0.0) < 0.6
+            and getattr(seg, 'avg_logprob', 0.0) > -1.0
+        ]
+        text = "".join(kept).strip()
+        HALLUCINATIONS = {
+            "thank you", "thank you.", "thanks for watching", "thanks for watching.",
+            "you", ".", "bye", "bye.", "thank you for watching", "please subscribe",
+        }
+        if text.lower() in HALLUCINATIONS:
+            text = ""
 
         return jsonify({
             "text": text,
