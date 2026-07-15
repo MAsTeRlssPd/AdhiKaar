@@ -620,14 +620,13 @@ SITUATION CONTEXT:
 {rag_context}
 """
 
-PANCHAYAT_BRIDGE_PROMPT = """Rewrite the following legal situation and advice in the simplest possible language, formatted to be shown to a respected village elder, panchayat head, ASHA worker, or NGO worker who will help the citizen take action.
+PANCHAYAT_BRIDGE_PROMPT = """Rewrite the following legal situation and advice in the simplest possible language, formatted to be shown to a respected elder who will help the citizen take action.
 
 RULES:
 - Use extremely simple language that a non-educated person can understand
 - Be respectful and formal in tone
 - Include specific law section numbers (BNS sections) for credibility
-- Keep it to 5-7 key points maximum
-- Include relevant helpline numbers
+- Keep it to 3-4 key points maximum
 - Format as simple text without emojis or complex formatting
 - Make clear what ACTION needs to be taken and by whom
 
@@ -643,11 +642,8 @@ FORMAT (No emojis, simple text):
 Community Helper Summary
 
 Person's Situation: [1-2 sentences]
-Their Rights: [3-5 sentences]
 Who Can Help Locally: [Sarpanch/mukhiya, NGOs, legal-aid clinic, ASHA worker — as relevant]
-What To Do Next: [Numbered steps specific to their problem]
 Legal Sections: [Relevant BNS sections]
-Helpline Numbers: [Numbers]
 Reassurance: [2-3 calming, supportive sentences]
 
 {language_instruction}
