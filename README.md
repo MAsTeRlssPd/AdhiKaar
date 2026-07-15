@@ -50,9 +50,25 @@
    pip install -r requirements.txt
    ```
 
+   > **First-run model downloads (need one online session, then fully offline):**
+   > - Voice input uses **faster-whisper** (`small`, ~460 MB) — downloads on first use.
+   > - Document OCR uses **PaddleOCR** (+ PaddlePaddle, ~1 GB install) — recognition
+   >   models download on first use.
+   > - Text-to-speech uses **Facebook MMS-TTS** — one small model per language on first use.
+   >
+   > Pre-download voice/OCR models before going offline:
+   > ```bash
+   > python -c "from faster_whisper import WhisperModel; WhisperModel('small')"
+   > python -c "from paddleocr import PaddleOCR; PaddleOCR(lang='en')"
+   > ```
+
 4. **Set up RAG knowledge base (one-time)**
    ```bash
    python rag_setup.py
+   ```
+   Re-run just the legal-aid collection after editing contact data:
+   ```bash
+   python rag_setup.py --only legal_aid
    ```
 
 5. **Start the server**

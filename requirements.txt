@@ -7,3 +7,11 @@ transformers>=4.33.0
 torch>=2.0.0
 scipy>=1.10.0
 pypdf>=4.0.0
+# Offline speech-to-text (voice input). ~460MB model download on first use.
+faster-whisper>=1.0.0
+# Server-side OCR for document translation (supports Indic scripts). ~1GB install;
+# downloads detection/recognition models on first use (needs one online session).
+paddlepaddle>=3.0.0
+paddleocr>=3.0.0
+# Rasterize scanned PDFs server-side without poppler (Windows-friendly).
+pypdfium2>=4.0.0
