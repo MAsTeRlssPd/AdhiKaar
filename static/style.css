@@ -3153,3 +3153,4 @@ svg.inline-icon, .inline-icon { width: 16px; height: 16px; vertical-align: -2px;
 .doc-qa-q { font-weight: 600; margin-bottom: var(--space-sm); }
 .doc-qa-a { color: var(--text); }
 .doc-qa-err { color: var(--danger); }
+.doc-qa-wait { color: var(--text-secondary); display: inline-flex; align-items: center; gap: 8px; }

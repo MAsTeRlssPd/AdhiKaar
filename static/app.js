@@ -1479,6 +1479,7 @@ async function handleFileUpload(event) {
   const file = event.target.files[0];
   if (!file) return;
 
+  state.docIndexed = false;   // new document — re-index before the next follow-up
   const uploadArea = $('upload-area');
   uploadArea.innerHTML = `
     <div class="loading">
@@ -1502,6 +1503,7 @@ async function handleFileUpload(event) {
     $('ocr-text').textContent = ocrText;
     $('ocr-result-section').style.display = 'block';
     state.attachedDoc = file.name;   // doc is indexed → follow-up questions work
+    state.docIndexed = true;         // server extractor already indexed it
     resetUploadArea(uploadArea);
     // Explain it straight away.
     doTranslateDocument(ocrText);
@@ -1538,6 +1540,7 @@ async function tesseractFallback(file, uploadArea) {
         body: JSON.stringify({ text, filename: file.name, language: state.language, session_id: state.sessionId }),
       });
       state.attachedDoc = file.name;
+      state.docIndexed = true;
     } catch (e) { console.error('Doc index (fallback) failed:', e); }
   } catch (error) {
     uploadArea.innerHTML = `
@@ -1552,10 +1555,25 @@ async function tesseractFallback(file, uploadArea) {
 
 // Follow-up: the uploaded doc is already indexed into this session, so a normal
 // chat message is grounded in it.
-// Answer a question about the uploaded document INLINE on this page. Rerouting to
-// the chat view landed the user in an unrelated case whose session had no
-// document attached, so answers weren't grounded. Here we hit /api/chat with the
-// same session_id the document was indexed under, so the doc RAG kicks in.
+// Make sure the visible OCR text is indexed into this session on the server, so
+// the follow-up is grounded even if the server restarted (its in-memory doc is
+// then gone) or the extraction happened via a path that didn't index. Idempotent
+// per document via state.docIndexed.
+async function ensureDocIndexed() {
+  if (state.docIndexed) return true;
+  const text = ($('ocr-text')?.textContent || '').trim();
+  if (!text) return false;
+  await apiCall('/api/upload-document', {
+    method: 'POST',
+    body: JSON.stringify({ text, filename: state.attachedDoc || 'document', language: state.language, session_id: state.sessionId }),
+  });
+  state.docIndexed = true;
+  return true;
+}
+
+// Answer a question about the uploaded document INLINE on this page, grounded in
+// the document. (It used to reroute into an unrelated chat case whose session had
+// no document, so answers weren't from the document.)
 async function askDocFollowup() {
   const input = $('doc-followup-input');
   const q = (input.value || '').trim();
@@ -1567,21 +1585,24 @@ async function askDocFollowup() {
   item.className = 'doc-qa';
   item.innerHTML = `
     <div class="doc-qa-q">${escapeHtml(q)}</div>
-    <div class="doc-qa-a"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
+    <div class="doc-qa-a"><span class="doc-qa-wait"><span class="typing-dots"><span></span><span></span><span></span></span> ${t('ls_wait') || 'Thinking… local AI can take a minute'}</span></div>`;
   box.appendChild(item);
   item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
   try {
+    await ensureDocIndexed();
     const data = await apiCall('/api/chat', {
       method: 'POST',
       body: JSON.stringify({ message: q, language: state.language, session_id: state.sessionId }),
     });
-    item.querySelector('.doc-qa-a').innerHTML =
-      `<div class="markdown-body">${renderMarkdown(data.response || '')}</div>`;
+    const answer = (data.response || '').trim();
+    item.querySelector('.doc-qa-a').innerHTML = answer
+      ? `<div class="markdown-body">${renderMarkdown(answer)}</div>`
+      : `<span class="doc-qa-err">No answer came back. Try rephrasing, or re-upload the document.</span>`;
     refreshIcons();
   } catch (e) {
     item.querySelector('.doc-qa-a').innerHTML =
-      `<span class="doc-qa-err">⚠️ Could not get an answer. Is the server running?</span>`;
+      `<span class="doc-qa-err">⚠️ Could not get an answer. Make sure the server and Ollama are running, then try again.</span>`;
   }
 }
 
