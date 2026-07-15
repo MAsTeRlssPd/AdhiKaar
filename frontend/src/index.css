@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+/* ── Self-hosted Noto (privacy claim stays true: no font CDN) ── */
+@font-face {
+  font-family: "Noto Sans";
+  font-style: normal; font-weight: 400; font-display: swap;
+  src: url("/landing/fonts/noto-sans-latin-400.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Noto Sans";
+  font-style: normal; font-weight: 700; font-display: swap;
+  src: url("/landing/fonts/noto-sans-latin-700.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Noto Sans";
+  font-style: normal; font-weight: 800; font-display: swap;
+  src: url("/landing/fonts/noto-sans-latin-800.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Noto Sans Devanagari";
+  font-style: normal; font-weight: 400; font-display: swap;
+  src: url("/landing/fonts/noto-sans-devanagari-400.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Noto Sans Devanagari";
+  font-style: normal; font-weight: 700; font-display: swap;
+  src: url("/landing/fonts/noto-sans-devanagari-700.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Noto Sans Devanagari";
+  font-style: normal; font-weight: 800; font-display: swap;
+  src: url("/landing/fonts/noto-sans-devanagari-800.woff2") format("woff2");
+}
+
+/* ── The Records Room After Dark: brand tokens, inverted ── */
+@theme {
+  --font-sans: "Noto Sans", "Noto Sans Devanagari", system-ui, sans-serif;
+
+  --color-ink: #1C1917;          /* base ground */
+  --color-ink-deep: #100E0C;     /* vignette edge */
+  --color-ink-soft: #211D1A;     /* raised ink surfaces */
+  --color-bone: #FAF9F6;         /* paper */
+  --color-bone-dim: #E9E6E0;
+  --color-bone-muted: #A8A29E;   /* muted text on ink */
+  --color-indigo: #6366F1;       /* light: glow / focus / links */
+  --color-indigo-bright: #818CF8;
+  --color-indigo-deep: #4338CA;
+  --color-turmeric: #F59E0B;     /* the stamp / seal, only */
+  --color-turmeric-deep: #D97706;
+
+  --shadow-lamp: 0 0 120px 40px rgba(99,102,241,0.10);
+  --shadow-paper: 0 24px 60px -20px rgba(0,0,0,0.7), 0 2px 0 0 rgba(250,249,246,0.04);
+}
+
+html { scroll-behavior: auto; background: var(--color-ink-deep); }
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background: var(--color-ink-deep);
+  color: var(--color-bone);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Devanagari glyphs get their own family, matched optically to Noto Sans */
+.deva { font-family: "Noto Sans Devanagari", "Noto Sans", sans-serif; }
+
+/* Court-file kicker label */
+.kicker {
+  font-weight: 400;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  color: var(--color-bone-muted);
+}
+
+::selection { background: rgba(245,158,11,0.30); color: #fff; }
+
+*:focus-visible {
+  outline: 2px solid var(--color-indigo-bright);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
