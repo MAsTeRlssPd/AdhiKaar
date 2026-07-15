@@ -1273,26 +1273,40 @@ def ask_document():
         if not question:
             return jsonify({"error": "No question provided"}), 400
 
-        doc_col = load_doc_collection(session_id)
-        if doc_col is None:
-            return jsonify({"answer": "", "error": "no_document"}), 200
-
-        context = retrieve_context(question, doc_col, n_results=5, max_chars=2500, threshold=999)
+        # Use the WHOLE document, not semantic snippets. This is one small file the
+        # user uploaded — RAG top-k over a big OCR-garbled doc often misses the exact
+        # line (e.g. the FIR number), so the model answers generically. Feeding the
+        # full text (capped to fit the context window) guarantees the fact is present.
+        context = ""
+        safe_session = re.sub(r'[^a-zA-Z0-9_-]', '', session_id) or 'default'
+        upload_path = os.path.join(UPLOADS_DIR, f"{safe_session}.txt")
+        if os.path.exists(upload_path):
+            with open(upload_path, 'r', encoding='utf-8') as fh:
+                context = fh.read()
+        if not context.strip():
+            # Fallback: reconstruct from the indexed chunks
+            doc_col = load_doc_collection(session_id)
+            if doc_col is not None:
+                got = doc_col.get(include=['documents'])
+                context = "\n".join(got.get('documents') or [])
         if not context.strip():
             return jsonify({"answer": "", "error": "no_document"}), 200
 
+        context = context[:16000]  # fits num_ctx 8192 alongside the question + answer
         system = (
             "You are a legal assistant. Answer the user's question using ONLY the document text below. "
-            "The text may come from imperfect OCR — do your best to interpret it. If the answer is genuinely "
-            "not in the document, say so plainly. Be concise and specific.\n\nDOCUMENT:\n" + context
+            "The text comes from imperfect OCR of a scanned document, so it has typos and stray characters — "
+            "read through them and extract the actual facts (names, numbers, sections, dates). Quote the specific "
+            "value from the document when asked for one. If the answer is genuinely not in the document, say so.\n\n"
+            "DOCUMENT:\n" + context
         )
         messages = [
             {"role": "system", "content": system},
             {"role": "user", "content": question},
         ]
-        answer = (call_gemma_lang(messages, language, temperature=0.4, num_ctx=4096) or "").strip()
+        answer = (call_gemma_lang(messages, language, temperature=0.3, num_ctx=8192) or "").strip()
         if not answer:  # thinking model occasionally returns empty content — one retry
-            answer = (call_gemma_lang(messages, language, temperature=0.6, num_ctx=4096) or "").strip()
+            answer = (call_gemma_lang(messages, language, temperature=0.5, num_ctx=8192) or "").strip()
 
         return jsonify({"answer": answer})
     except Exception as e:
