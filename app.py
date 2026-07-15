@@ -758,25 +758,25 @@ def call_gemma_lang(messages, language, **kwargs):
     ]
     return call_gemma(messages, **kwargs)
 
-def call_gemma(messages, temperature=0.7, fallback_cpu=False, num_ctx=2048, response_format=None):
+def call_gemma(messages, temperature=0.7, fallback_cpu=False, num_ctx=4096, response_format=None, num_predict=900):
     """Call the working LLM model via Ollama (auto-detected at first call).
 
-    num_ctx is shared between the prompt AND the generation. The 2048 default keeps
-    us clear of the GGML_SCHED_MAX_SPLIT_INPUTS crash, but a long prompt that asks
-    for a large structured answer will silently run out of room and return
-    truncated (unparseable) output — callers that need a big JSON back should raise
-    this. GPU crashes still fall back to CPU below.
+    num_ctx is shared between the prompt and the generation. The larger default here
+    avoids the short-answer truncation that happens when the model runs out of room
+    for a long reply. num_predict controls how much the model can write in one turn.
+    GPU crashes still fall back to CPU below.
 
     response_format: pass 'json' (or a JSON schema dict) to grammar-constrain the
     output via Ollama's format= — the reliable fix for JSON that won't parse.
     """
     model = get_working_model()
     total_chars = sum(len(m["content"]) for m in messages)
-    print(f"[call_gemma] model={model} messages={len(messages)} chars={total_chars} num_ctx={num_ctx}")
+    print(f"[call_gemma] model={model} messages={len(messages)} chars={total_chars} num_ctx={num_ctx} num_predict={num_predict}")
     try:
         options = {
             'temperature': temperature,
             'num_ctx': num_ctx,
+            'num_predict': num_predict,
         }
         if fallback_cpu:
             options['num_gpu'] = 0
@@ -976,7 +976,7 @@ def devil_advocate():
             {"role": "user", "content": f"Here is the person's legal situation:\n{situation}\n\nConversation history:{history_text}\n\nNow argue against their position and then help them prepare."}
         ]
 
-        response_text = call_gemma_lang(messages, language, temperature=0.8)
+        response_text = call_gemma_lang(messages, language, temperature=0.8, num_ctx=4096, num_predict=900)
         
         return jsonify({"response": response_text})
     
