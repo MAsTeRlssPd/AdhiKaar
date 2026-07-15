@@ -1503,24 +1503,22 @@ async function handleFileUpload(event) {
   }
 }
 
-// Fallback OCR in the browser when the backend extractor is unavailable.
+// Fallback extraction in the browser when the backend extractor is unavailable.
+// Uses extractDocText, which reads PDFs via pdf.js (text layer, OCR fallback for
+// scans) and lazy-loads Tesseract — so a not-yet-loaded library or a PDF (which
+// Tesseract can't read directly) no longer dead-ends here.
 async function tesseractFallback(file, uploadArea) {
   try {
-    if (typeof Tesseract === 'undefined') {
-      throw new Error('OCR library not loaded yet. Please wait and try again.');
+    uploadArea.innerHTML = `
+      <div class="loading">
+        <div class="spinner"></div>
+        <span>${t('doc_extracting') || 'Reading the document…'}</span>
+      </div>`;
+    const text = await extractDocText(file);
+    if (!text || !text.trim()) {
+      throw new Error("Couldn't find readable text in this file");
     }
-    const result = await Tesseract.recognize(file, 'eng+hin', {
-      logger: m => {
-        if (m.status === 'recognizing text') {
-          uploadArea.innerHTML = `
-            <div class="loading">
-              <div class="spinner"></div>
-              <span>${t('doc_extracting') || 'Reading the document…'} ${Math.round(m.progress * 100)}%</span>
-            </div>`;
-        }
-      },
-    });
-    $('ocr-text').textContent = result.data.text;
+    $('ocr-text').textContent = text;
     $('ocr-result-section').style.display = 'block';
     resetUploadArea(uploadArea);
   } catch (error) {
