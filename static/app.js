@@ -1590,10 +1590,12 @@ async function askDocFollowup() {
   item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
   try {
-    await ensureDocIndexed();
+    // Send the document text straight from the page — grounding then never depends
+    // on server-side session/index state (which resets on restart).
+    const docText = ($('ocr-text')?.textContent || '').trim();
     const data = await apiCall('/api/ask-document', {
       method: 'POST',
-      body: JSON.stringify({ question: q, language: state.language, session_id: state.sessionId }),
+      body: JSON.stringify({ question: q, document: docText, language: state.language, session_id: state.sessionId }),
     });
     const answer = (data.answer || '').trim();
     item.querySelector('.doc-qa-a').innerHTML = answer

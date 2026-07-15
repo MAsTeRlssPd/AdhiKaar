@@ -1273,18 +1273,19 @@ def ask_document():
         if not question:
             return jsonify({"error": "No question provided"}), 400
 
-        # Use the WHOLE document, not semantic snippets. This is one small file the
-        # user uploaded — RAG top-k over a big OCR-garbled doc often misses the exact
-        # line (e.g. the FIR number), so the model answers generically. Feeding the
-        # full text (capped to fit the context window) guarantees the fact is present.
-        context = ""
-        safe_session = re.sub(r'[^a-zA-Z0-9_-]', '', session_id) or 'default'
-        upload_path = os.path.join(UPLOADS_DIR, f"{safe_session}.txt")
-        if os.path.exists(upload_path):
-            with open(upload_path, 'r', encoding='utf-8') as fh:
-                context = fh.read()
+        # Use the WHOLE document, not semantic snippets. RAG top-k over a big
+        # OCR-garbled doc often misses the exact line (e.g. the FIR number), so the
+        # model answers generically. The frontend sends the visible document text
+        # directly, which also means grounding never depends on server-side session
+        # state (lost on restart) or on whether an index build happened.
+        context = (data.get('document') or '').strip()
+        if not context:
+            safe_session = re.sub(r'[^a-zA-Z0-9_-]', '', session_id) or 'default'
+            upload_path = os.path.join(UPLOADS_DIR, f"{safe_session}.txt")
+            if os.path.exists(upload_path):
+                with open(upload_path, 'r', encoding='utf-8') as fh:
+                    context = fh.read()
         if not context.strip():
-            # Fallback: reconstruct from the indexed chunks
             doc_col = load_doc_collection(session_id)
             if doc_col is not None:
                 got = doc_col.get(include=['documents'])
