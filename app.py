@@ -758,12 +758,14 @@ def call_gemma_lang(messages, language, **kwargs):
     ]
     return call_gemma(messages, **kwargs)
 
-def call_gemma(messages, temperature=0.7, fallback_cpu=False, num_ctx=4096, response_format=None, num_predict=900):
+def call_gemma(messages, temperature=0.7, fallback_cpu=False, num_ctx=4096, response_format=None, num_predict=2048):
     """Call the working LLM model via Ollama (auto-detected at first call).
 
     num_ctx is shared between the prompt and the generation. The larger default here
     avoids the short-answer truncation that happens when the model runs out of room
-    for a long reply. num_predict controls how much the model can write in one turn.
+    for a long reply. num_predict caps how much the model writes in one turn — 900
+    was cutting long replies (e.g. the document explanation) mid-sentence, so the
+    default is 2048; callers with a big prompt should also raise num_ctx to match.
     GPU crashes still fall back to CPU below.
 
     response_format: pass 'json' (or a JSON schema dict) to grammar-constrain the
@@ -1207,7 +1209,9 @@ def translate_document():
             {"role": "user", "content": f"Please explain this legal document to me in simple words:\n\n{document_text}"}
         ]
 
-        response_text = call_gemma_lang(messages, language, temperature=0.5, num_ctx=4096)
+        # A full document explanation runs long; give it room for both the OCR
+        # prompt and the answer so it is not cut off by the num_predict cap.
+        response_text = call_gemma_lang(messages, language, temperature=0.5, num_ctx=8192, num_predict=2048)
 
         return jsonify({"response": response_text})
     
