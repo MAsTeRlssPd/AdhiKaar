@@ -973,7 +973,11 @@ function setMicIcon(btn, icon) {
  */
 async function startDictation(targetEl, micBtn, opts = {}) {
   if (!hasMediaRecorder()) {
-    showToast('Voice input is not supported in this browser.');
+    // Almost always the secure-context rule: getUserMedia is blocked on http://
+    // LAN/Tailscale IPs. Tell the user the actual fix instead of "not supported".
+    showToast(window.isSecureContext
+      ? 'Voice input is not supported in this browser.'
+      : 'Microphone needs a secure connection. Open the app on the same computer (http://localhost:5000) or over HTTPS.');
     return null;
   }
   if (!targetEl) return null;
@@ -1072,10 +1076,12 @@ function initVoice() {
   if (window.speechSynthesis) {
     window.speechSynthesis.onvoiceschanged = loadVoices;
   }
+  // Don't hide the mic when it's merely unavailable: over plain HTTP on a LAN/
+  // Tailscale IP the browser disables the microphone (secure-context rule), which
+  // used to hide the button and leave the user confused. Keep it visible — it
+  // works on localhost/HTTPS, and startDictation explains why if it can't.
   if (!hasMediaRecorder()) {
-    document.querySelectorAll('#voice-btn, #home-chat-mic, #global-ask-mic, #kiosk-mic-btn')
-      .forEach(b => { if (b) b.style.display = 'none'; });
-    console.log('Audio recording not supported — mic buttons hidden.');
+    console.log('Microphone unavailable (needs a secure context: HTTPS or localhost).');
   }
   updateAutoSpeakBtn();
 }
@@ -2353,9 +2359,15 @@ async function speakViaServer(clean, opts, token) {
   const url = URL.createObjectURL(blob);
   const audio = new Audio(url);
   currentAudio = audio;
+  // Drive the word-highlight (karaoke) from playback position. MMS-TTS gives no
+  // word boundaries, so approximate: fraction of audio elapsed → word index.
+  audio.ontimeupdate = () => {
+    if (audio.duration && opts.onProgress) opts.onProgress(audio.currentTime / audio.duration);
+  };
   audio.onended = () => {
     URL.revokeObjectURL(url);
     if (currentAudio === audio) currentAudio = null;
+    opts.onProgress && opts.onProgress(1);
     opts.onDone && opts.onDone();
   };
   await audio.play();                        // rejects -> caller falls back
@@ -2376,12 +2388,21 @@ function speakViaBrowser(clean, opts) {
   // Chunk long text so speechSynthesis doesn't cut off mid-answer
   const chunks = (clean.match(/[^.।!?]+[.।!?]?/g) || [clean]).filter(c => c.trim());
   if (!chunks.length) { opts.onDone && opts.onDone(); return; }
+  let charOffset = 0;
   chunks.forEach((chunk, idx) => {
+    const chunkStart = charOffset;
+    charOffset += chunk.length;
     const u = new SpeechSynthesisUtterance(chunk.trim());
     u.lang = lang;
     if (voice) u.voice = voice;
     u.rate = 0.95;
-    if (idx === chunks.length - 1 && opts.onDone) u.onend = opts.onDone;
+    // Precise word boundaries when the browser provides them.
+    if (opts.onProgress) {
+      u.onboundary = (e) => opts.onProgress(Math.min(1, (chunkStart + (e.charIndex || 0)) / clean.length));
+    }
+    if (idx === chunks.length - 1) {
+      u.onend = () => { opts.onProgress && opts.onProgress(1); opts.onDone && opts.onDone(); };
+    }
     window.speechSynthesis.speak(u);
   });
 }
@@ -2401,6 +2422,63 @@ function speak(text, opts = {}) {
   return true;
 }
 
+// ── Karaoke: highlight each word as it is spoken ──
+let activeSpeakSpans = null;
+
+// Wrap the answer's words in spans so they can be highlighted. Skips the action
+// and meta rows (buttons) that live inside the same content element, and leaves
+// the spans in place afterwards (removing them would drop the buttons' handlers).
+function karaokePrepare(contentEl) {
+  if (!contentEl) return null;
+  if (contentEl.dataset.ttsWrapped) {
+    return Array.from(contentEl.querySelectorAll('.tts-word'));
+  }
+  const walker = document.createTreeWalker(contentEl, NodeFilter.SHOW_TEXT, {
+    acceptNode(node) {
+      if (!node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      if (node.parentElement.closest('.message-actions, .message-meta, button, .tts-word')) {
+        return NodeFilter.FILTER_REJECT;
+      }
+      return NodeFilter.FILTER_ACCEPT;
+    },
+  });
+  const textNodes = [];
+  while (walker.nextNode()) textNodes.push(walker.currentNode);
+  for (const node of textNodes) {
+    const frag = document.createDocumentFragment();
+    for (const part of node.nodeValue.split(/(\s+)/)) {
+      if (!part) continue;
+      if (part.trim()) {
+        const span = document.createElement('span');
+        span.className = 'tts-word';
+        span.textContent = part;
+        frag.appendChild(span);
+      } else {
+        frag.appendChild(document.createTextNode(part));
+      }
+    }
+    node.parentNode.replaceChild(frag, node);
+  }
+  contentEl.dataset.ttsWrapped = '1';
+  return Array.from(contentEl.querySelectorAll('.tts-word'));
+}
+
+function karaokeHighlight(spans, fraction) {
+  if (!spans || !spans.length) return;
+  const idx = Math.max(0, Math.min(spans.length - 1, Math.floor(fraction * spans.length)));
+  for (let i = 0; i < spans.length; i++) {
+    spans[i].classList.toggle('tts-active', i === idx);
+  }
+  spans[idx].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+
+function karaokeClear() {
+  if (activeSpeakSpans) {
+    activeSpeakSpans.forEach(s => s.classList.remove('tts-active'));
+    activeSpeakSpans = null;
+  }
+}
+
 // ── Listen / Stop control for chat answers ──
 let activeSpeakBtn = null;
 
@@ -2408,9 +2486,18 @@ function toggleSpeak(btn, text) {
   // Tapping the button that's currently speaking stops it
   if (activeSpeakBtn === btn) { stopSpeaking(); return; }
   stopSpeaking();   // stop any other answer being read
-  const started = speak(text, { notify: true, onDone: resetSpeakBtn });
+
+  const contentEl = btn && btn.closest('.message-content');
+  const spans = karaokePrepare(contentEl);
+
+  const started = speak(text, {
+    notify: true,
+    onProgress: (f) => karaokeHighlight(spans, f),
+    onDone: () => { karaokeClear(); resetSpeakBtn(); },
+  });
   if (started && btn) {
     activeSpeakBtn = btn;
+    activeSpeakSpans = spans;
     btn.innerHTML = `<i data-lucide="square"></i> ${t('btn_stop')}`;
     refreshIcons();
   }
@@ -2420,6 +2507,7 @@ function stopSpeaking() {
   speakToken++;                 // invalidate any in-flight server TTS request
   stopAudio();                  // stop server-audio playback
   window.speechSynthesis?.cancel();
+  karaokeClear();
   resetSpeakBtn();
 }
 

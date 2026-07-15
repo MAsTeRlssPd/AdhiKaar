@@ -3154,3 +3154,16 @@ svg.inline-icon, .inline-icon { width: 16px; height: 16px; vertical-align: -2px;
 .doc-qa-a { color: var(--text); }
 .doc-qa-err { color: var(--danger); }
 .doc-qa-wait { color: var(--text-secondary); display: inline-flex; align-items: center; gap: 8px; }
+
+/* Karaoke — highlight the word currently being spoken (Listen / TTS) */
+.tts-word { border-radius: 3px; transition: background-color 0.12s ease, color 0.12s ease; }
+.tts-word.tts-active {
+  background: var(--accent-light);
+  color: var(--text);
+  box-shadow: 0 0 0 2px var(--accent-light);
+}
+:root[data-theme="dark"] .tts-word.tts-active {
+  background: var(--primary-light);
+  color: #fff;
+  box-shadow: 0 0 0 2px var(--primary-light);
+}
