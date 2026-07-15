@@ -81,102 +81,165 @@ Browser (vanilla-JS SPA)  ──HTTP──►  Flask service (127.0.0.1:5000)
 
 ---
 
-## Setup Guide
+## Setup — Step by Step (Fresh PC)
 
-### 0. Prerequisites
+Follow every step in order. Commands are shown for **Windows (PowerShell)** first; macOS/Linux equivalents are noted where they differ. You need an internet connection for the one-time setup (installing tools and downloading models); after that the app runs fully offline.
 
-| Tool | Version | Notes |
-|---|---|---|
-| Python | 3.11 / 3.12 | 3.13 works too |
-| [Ollama](https://ollama.com/download) | latest | runs the local Gemma model |
-| Git | any | to clone |
+> **Disk & memory:** budget ~20 GB free disk (Gemma models + Python deps + OCR/voice models) and ideally 16 GB RAM. It runs on CPU; a GPU is not required.
 
-### 1. Clone & enter
+### Step 1 — Install Git
 
-```bash
+- **Windows:** download and install from https://git-scm.com/download/win
+- **macOS:** `brew install git`  ·  **Linux:** `sudo apt install git`
+
+Verify:
+```powershell
+git --version
+```
+
+### Step 2 — Install Python 3.11 or 3.12
+
+- **Windows:** download from https://www.python.org/downloads/ and **check "Add Python to PATH"** during install.
+- **macOS:** `brew install python@3.12`  ·  **Linux:** `sudo apt install python3.12 python3.12-venv`
+
+Verify (must print 3.11.x or 3.12.x):
+```powershell
+python --version
+```
+
+### Step 3 — Install Ollama (runs the local Gemma model)
+
+- Download and install from **https://ollama.com/download**.
+- After install, Ollama runs a local server automatically. Verify it responds:
+```powershell
+curl http://127.0.0.1:11434/api/tags
+```
+If it doesn't respond, start it manually and leave it running: `ollama serve`
+
+### Step 4 — Pull the Gemma models
+
+```powershell
+ollama pull gemma4:e4b
+ollama pull embeddinggemma
+```
+Confirm both are present:
+```powershell
+ollama list
+```
+
+### Step 5 — Clone the project
+
+```powershell
 git clone https://github.com/MAsTeRlssPd/AdhiKaar.git
 cd AdhiKaar
 ```
 
-### 2. Create a virtual environment & install dependencies
+### Step 6 — Create and activate a virtual environment
 
-```bash
+```powershell
 python -m venv .venv
-# Windows:
-.\.venv\Scripts\activate
-# macOS/Linux:
-source .venv/bin/activate
-
-pip install -r requirements.txt
+.\.venv\Scripts\Activate.ps1        # Windows PowerShell
+# macOS/Linux:  source .venv/bin/activate
 ```
+Your prompt should now start with `(.venv)`. **Run all remaining Python commands inside this activated venv.**
 
-> The heavy extras (`faster-whisper`, `paddleocr`, `torch`) download models on first use. Voice/OCR are optional — the text app runs without those models.
+> If PowerShell blocks activation with an execution-policy error, run once:
+> `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` then re-activate.
 
-### 3. Pull the Gemma models
+### Step 7 — Install all Python dependencies
 
-```bash
-ollama pull gemma4:e4b        # answering model
-ollama pull embeddinggemma    # optional: semantic retrieval
+```powershell
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
 ```
+This installs everything: Flask, ChromaDB, Ollama client, sentence-transformers, transformers, torch, scipy, faster-whisper (voice input), paddlepaddle + paddleocr (document OCR), pypdf + pypdfium2 (PDF handling). It is a large download (~2–3 GB) and can take several minutes.
 
-Keep `ollama serve` running (the Ollama app starts it automatically on Windows/macOS).
+### Step 8 — Build the RAG knowledge base
 
-### 4. Build the RAG knowledge base (one-time)
-
-```bash
+```powershell
 python rag_setup.py
 ```
+This builds four ChromaDB collections, including the ~6,845-chunk official-law corpus. **This is the slow, one-time step** (roughly 10–40 minutes on CPU). Wait for it to print `RAG knowledge base setup complete!`.
 
-This builds four ChromaDB collections. The **official-law corpus (~6,845 chunks) is the slow, one-time step**. Rebuild a single collection without redoing the corpus:
+To rebuild just one collection later (fast), use `python rag_setup.py --only rights` or `--only official_law`.
 
-```bash
-python rag_setup.py --only rights        # curated datasets only
-python rag_setup.py --only official_law  # statute corpus only
-```
+### Step 9 — Start the app
 
-### 5. Run
-
-```bash
+```powershell
 python app.py
 ```
+Leave this terminal running. Open **http://localhost:5000** in your browser. (Chrome/Edge recommended.)
 
-Open **http://localhost:5000**. Disable Wi-Fi — it still works.
+### Step 10 — Warm up the voice and OCR models (one-time downloads)
 
-### 6. (Optional) verify
+The first use of each downloads its model once, then works offline. Do each once now so the demo is instant later:
 
-```bash
+- **Speech-to-text:** click the **mic** in the chat and speak a sentence (downloads faster-whisper "small", ~460 MB).
+- **Text-to-speech:** click **Listen** on any answer (downloads the MMS-TTS voice for your selected language).
+- **Document OCR:** open **Translate Legal Document** and upload any PDF/image (downloads the PaddleOCR models, ~100 MB).
+
+### Step 11 — Enable the microphone (HTTPS / secure context)
+
+Browsers only allow microphone access on a **secure context** — `http://localhost` or **HTTPS**.
+
+- **Using the app on this same PC:** open `http://localhost:5000` (not a `127.x`/LAN IP). The mic works. Allow the permission prompt.
+- **Accessing from another device / over the network:** you need HTTPS. Install Cloudflare Tunnel and expose an HTTPS URL while all processing stays on this machine:
+```powershell
+winget install --id Cloudflare.cloudflared     # Windows (one-time)
+# macOS:  brew install cloudflared
+cloudflared tunnel --url http://localhost:5000
+```
+Open the printed `https://….trycloudflare.com` URL on any device — the model and data never leave your PC; the tunnel only relays traffic. Keep both the `python app.py` and `cloudflared` terminals open.
+
+### Step 12 — Add the RTI Act to the corpus
+
+```powershell
+# Download the official RTI Act 2005 (English) PDF from https://rti.dopt.gov.in/rtiact.html
+# Save it exactly as:  data\raw\rti_act_2005.pdf
+python scripts/rti_to_jsonl.py
+python rag_setup.py --only official_law
+```
+
+### Step 13 — Add the IndicLegalQA dataset
+
+```powershell
+# Download from Kaggle: https://www.kaggle.com/datasets/kmldas/indiclegalqa-dataset
+# Save the JSON file exactly as:  data\raw\indic_legal_qa.json
+python rag_setup.py --only rights
+```
+
+### Step 14 — Verify the install
+
+```powershell
 python test_convert_match.py
 python test_corpus_ingest.py
 python test_checklist_match.py
 python test_lawsteps_verify.py
 python test_doc_rag.py
 ```
+All five should print an `OK` line.
 
 ---
 
-## Voice & Remote Access (HTTPS)
+### Every time you run it afterwards
 
-Browsers only allow the **microphone** on a **secure context** — `http://localhost` or **HTTPS**. Over a plain `http://<LAN-IP>` the mic is blocked by the browser (not a bug).
-
-- **On the server machine:** just open `http://localhost:5000` — mic works.
-- **Remote, with a working mic:** expose an HTTPS URL with a free tunnel while keeping all inference local:
-
-```bash
-cloudflared tunnel --url http://localhost:5000
+```powershell
+# 1. Ensure Ollama is running (Ollama app, or: ollama serve)
+# 2. In the project folder, with the venv activated:
+.\.venv\Scripts\Activate.ps1
+python app.py
+# 3. Open http://localhost:5000
 ```
 
-Open the printed `https://….trycloudflare.com` URL — the model and data still run on your machine; the tunnel only relays traffic.
+### Quick troubleshooting
 
-- **First voice use** downloads the Whisper model (~460 MB, once). **First TTS** per language downloads its MMS-TTS model. Then fully offline.
-
----
-
-## Optional Data
-
-Skipped cleanly if absent:
-
-- **RTI Act corpus** — place the official PDF at `data/raw/rti_act_2005.pdf`, then `python scripts/rti_to_jsonl.py` → `python rag_setup.py --only official_law`.
-- **IndicLegalQA** — place the Kaggle file at `data/raw/indic_legal_qa.json`, then `python rag_setup.py --only rights`.
+| Symptom | Fix |
+|---|---|
+| `ModuleNotFoundError: flask/chromadb` | The venv isn't activated — run `.\.venv\Scripts\Activate.ps1` (prompt must show `(.venv)`). |
+| Chat 500s / "could not connect to Ollama" | Ollama isn't running, or the model isn't pulled. Start `ollama serve` and `ollama pull gemma4:e4b`. |
+| `/api/health` shows no corpus / empty answers | Re-run `python rag_setup.py`. |
+| Mic button does nothing / says "needs a secure connection" | Open `http://localhost:5000`, or use the Cloudflare Tunnel HTTPS URL (Step 11). |
+| Answers cut off | Ensure you're on the latest `main` (long-answer caps were removed). |
 
 ---
 
