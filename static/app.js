@@ -1591,11 +1591,11 @@ async function askDocFollowup() {
 
   try {
     await ensureDocIndexed();
-    const data = await apiCall('/api/chat', {
+    const data = await apiCall('/api/ask-document', {
       method: 'POST',
-      body: JSON.stringify({ message: q, language: state.language, session_id: state.sessionId }),
+      body: JSON.stringify({ question: q, language: state.language, session_id: state.sessionId }),
     });
-    const answer = (data.response || '').trim();
+    const answer = (data.answer || '').trim();
     item.querySelector('.doc-qa-a').innerHTML = answer
       ? `<div class="markdown-body">${renderMarkdown(answer)}</div>`
       : `<span class="doc-qa-err">No answer came back. Try rephrasing, or re-upload the document.</span>`;
