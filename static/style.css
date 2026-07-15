@@ -3,8 +3,11 @@
    Light Theme · Village-Friendly · Premium Design
    ══════════════════════════════════════════════════════════ */
 
-/* ── Google Fonts ── */
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap');
+/* ── Fonts ──
+   Self-hosted. This used to @import from fonts.googleapis.com, which handed
+   Google an IP + Referer on every load of a legal-aid tool and broke the
+   "nothing leaves your computer" claim. Loaded via <link> in index.html so it
+   downloads in parallel instead of chaining behind this file. */
 
 /* ── CSS Custom Properties ── */
 :root {
@@ -40,8 +43,28 @@
 
   --text: #1C1917;
   --text-secondary: #57534E;
-  --text-tertiary: #A8A29E;
+  /* Was #A8A29E, which measured 2.25:1 against bg-input and 2.40:1 against bg
+     — it carried every placeholder, the mobile nav labels and the mic button.
+     #746D68 is the lightest step on this hue that still clears 4.5:1 on all
+     three surfaces, so the ramp keeps three distinct steps and stays readable. */
+  --text-tertiary: #746D68;
   --text-inverse: #FFFFFF;
+
+  /* Ink colours for coloured surfaces. Each semantic colour is a *wash* in this
+     system, and the wash needs a label dark/light enough to read on it — the
+     semantic hue itself never is. White on #F59E0B is 2.15:1; --danger on
+     --danger-bg is 3.08:1; --success on --success-bg is 2.24:1. */
+  --accent-ink: #451A03;   /* on --accent / --accent-dark   4.70:1 */
+  --on-primary: #FFFFFF;   /* on the primary gradient       7.90:1 */
+  --primary-ink: #3730A3;  /* on --primary-bg / -subtle     8.20:1 */
+  --danger-ink: #991B1B;   /* on --danger-bg                6.80:1 */
+  --success-ink: #065F46;  /* on --success-bg               6.78:1 */
+  --warning-ink: #78350F;  /* on --warning-bg               7.31:1 */
+  --info-ink: #1E40AF;     /* on --info-bg                  6.63:1 */
+  /* On solid --danger (the recording mic). 3.76:1 — under the 4.5:1 text bar
+     but over the 3:1 WCAG 1.4.11 bar for non-text UI, and this surface only
+     ever carries an icon. --danger is not re-themed, so neither is this. */
+  --on-danger: #FFFFFF;
 
   --border: #E9E6E0;
   --border-strong: #D8D4CC;
@@ -117,9 +140,16 @@ button {
   font-family: var(--font);
   cursor: pointer;
   border: none;
-  outline: none;
   background: none;
   font-size: var(--font-size-base);
+}
+
+/* The reset above used to carry `outline: none` with nothing replacing it,
+   which left every button in the app with no visible focus (WCAG 2.4.7).
+   One ring, theme-aware, for everything keyboard-reachable. */
+:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
 }
 
 input, textarea, select {
@@ -169,7 +199,7 @@ input, textarea, select {
   align-items: center;
   justify-content: center;
   font-size: 1.5rem;
-  color: white;
+  color: var(--on-primary);
   box-shadow: var(--shadow-md);
 }
 
@@ -392,7 +422,7 @@ input, textarea, select {
 
 .btn-primary {
   background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-  color: white;
+  color: var(--on-primary);
   box-shadow: var(--shadow-md), 0 0 0 0 rgba(67, 56, 202, 0);
 }
 
@@ -419,7 +449,9 @@ input, textarea, select {
 
 .btn-accent {
   background: linear-gradient(135deg, var(--accent), var(--accent-dark));
-  color: white;
+  /* Ink, not white: a white label on turmeric is 2.15:1. Dark ink reads 4.70:1
+     against the darkest end of the gradient and 6.97:1 against the lightest. */
+  color: var(--accent-ink);
   box-shadow: var(--shadow-md);
 }
 
@@ -430,7 +462,7 @@ input, textarea, select {
 
 .btn-danger {
   background: var(--danger-bg);
-  color: var(--danger);
+  color: var(--danger-ink);
   border: 1px solid var(--danger);
 }
 
@@ -683,7 +715,7 @@ input, textarea, select {
 
 .message.user .message-content {
   background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-  color: white;
+  color: var(--on-primary);
   border-top-right-radius: 4px;
 }
 
@@ -823,7 +855,7 @@ input, textarea, select {
 .voice-btn.recording {
   background: var(--danger);
   border-color: var(--danger);
-  color: white;
+  color: var(--on-danger);
   animation: pulseRing 1.5s infinite;
 }
 
@@ -832,7 +864,7 @@ input, textarea, select {
   height: 44px;
   border-radius: var(--radius-full);
   background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-  color: white;
+  color: var(--on-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -947,7 +979,7 @@ input, textarea, select {
 
 .toggle-btn.active {
   background: var(--primary);
-  color: white;
+  color: var(--on-primary);
   border-color: var(--primary);
 }
 
@@ -990,12 +1022,12 @@ input, textarea, select {
 
 .section-badge.ipc {
   background: var(--danger-bg);
-  color: var(--danger);
+  color: var(--danger-ink);
 }
 
 .section-badge.bns {
   background: var(--success-bg);
-  color: #059669;
+  color: var(--success-ink);
 }
 
 .section-arrow {
@@ -1290,21 +1322,33 @@ input, textarea, select {
    RIGHTS CARD MODAL
    ══════════════════════════════════════════════ */
 
+/* Native <dialog>. showModal() puts it in the top layer, so no z-index needed;
+   the UA chrome (border, background, size caps) gets reset and .modal inside
+   carries the actual surface. */
 .modal-overlay {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.5);
-  backdrop-filter: blur(4px);
-  z-index: 1000;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  border: none;
+  background: transparent;
+  overflow: visible;
   align-items: center;
   justify-content: center;
   padding: var(--space-lg);
 }
 
-.modal-overlay.active {
+.modal-overlay[open] {
   display: flex;
   animation: fadeIn 0.2s ease;
+}
+
+.modal-overlay::backdrop {
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
 }
 
 .modal {
@@ -1361,9 +1405,13 @@ input, textarea, select {
 }
 
 /* Rights Card Preview */
+/* Deliberately hard-coded, not tokenised: this card gets rasterised to a PNG
+   by html2canvas and shared outside the app, so it must look identical whether
+   the user is in light or dark mode. The old teal (#0F766E/#0D9488) was both a
+   third accent the system never declared and 3.74:1 under its white text. */
 .rights-card-preview {
-  background: linear-gradient(135deg, #0F766E, #0D9488);
-  color: white;
+  background: linear-gradient(135deg, #312E81, #4338CA);
+  color: #FFFFFF;
   border-radius: var(--radius-lg);
   padding: var(--space-lg);
   margin-bottom: var(--space-lg);
@@ -1909,7 +1957,7 @@ input, textarea, select {
 
 /* ── Lucide icon sizing ── */
 .nav-icon svg, .mob-nav-icon svg { width: 20px; height: 20px; }
-.logo-icon svg { width: 24px; height: 24px; color: var(--text-inverse); }
+.logo-icon svg { width: 24px; height: 24px; color: var(--on-primary); }
 .card-icon svg { width: 26px; height: 26px; }
 svg.inline-icon, .inline-icon { width: 16px; height: 16px; vertical-align: -2px; }
 .hero-badge svg { width: 15px; height: 15px; vertical-align: -2px; margin-right: 4px; }
@@ -1971,6 +2019,18 @@ svg.inline-icon, .inline-icon { width: 16px; height: 16px; vertical-align: -2px;
 
   --accent-subtle: #451A03;
 
+  /* The dark theme flips --primary to a pale lavender, which is right for links
+     and active states on a dark ground but makes it a *background* the old
+     hard-coded white label sat on at 2.98:1. Dark ink on the light button is the
+     standard dark-mode inversion. --accent is not re-themed, so --accent-ink
+     carries over from :root unchanged. */
+  --on-primary: #1E1B4B;   /* on the dark primary gradient  5.36:1 */
+  --primary-ink: #C7D2FE;  /* on --primary-bg / -subtle     7.30:1 */
+  --danger-ink: #FCA5A5;   /* on --danger-bg  #450A0A       8.51:1 */
+  --success-ink: #6EE7B7;  /* on --success-bg #064E3B       6.38:1 */
+  --warning-ink: #FCD34D;  /* on --warning-bg #451A03       8.30:1 */
+  --info-ink: #93C5FD;     /* on --info-bg    #172554       7.44:1 */
+
   --success-bg: #064E3B;
   --warning-bg: #451A03;
   --danger-bg: #450A0A;
@@ -1984,7 +2044,9 @@ svg.inline-icon, .inline-icon { width: 16px; height: 16px; vertical-align: -2px;
 
   --text: #F5F4F9;
   --text-secondary: #C6C2D6;
-  --text-tertiary: #6E6A80;
+  /* Was #6E6A80 — 2.81:1 on bg-input. #8E8E98 is the darkest step here that
+     clears 4.5:1 on bg, bg-card and bg-input alike. */
+  --text-tertiary: #8E8E98;
   --text-inverse: #14121A;
 
   --border: #2E2B3A;
@@ -1997,7 +2059,6 @@ svg.inline-icon, .inline-icon { width: 16px; height: 16px; vertical-align: -2px;
   --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.5), 0 8px 10px -6px rgba(0,0,0,0.4);
 }
 
-:root[data-theme="dark"] .logo-icon svg { color: #F5F4F9; }
 
 /* ── Theme toggle button ── */
 .theme-toggle { width: 100%; margin-bottom: var(--space-md); }
@@ -2132,13 +2193,13 @@ svg.inline-icon, .inline-icon { width: 16px; height: 16px; vertical-align: -2px;
 .case-deadline {
   font-size: var(--font-size-xs);
   background: var(--info-bg);
-  color: var(--info);
+  color: var(--info-ink);
   padding: 4px 10px;
   border-radius: var(--radius-sm);
   margin-bottom: var(--space-sm);
 }
 
-.case-deadline.deadline-soon { background: var(--danger-bg); color: var(--danger); }
+.case-deadline.deadline-soon { background: var(--danger-bg); color: var(--danger-ink); }
 
 .case-actions { display: flex; gap: var(--space-sm); }
 .case-actions svg { width: 14px; height: 14px; }
@@ -2279,180 +2340,6 @@ svg.inline-icon, .inline-icon { width: 16px; height: 16px; vertical-align: -2px;
   border-radius: var(--radius-lg);
   padding: var(--space-xl);
 }
-
-/* ══════════════════════════════════════════════════════════
-   Virtual Courtroom
-   ══════════════════════════════════════════════════════════ */
-
-.courtroom-setup {
-  max-width: 900px;
-  margin: 0 auto;
-  width: 100%;
-}
-
-.court-setup-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-md);
-  padding: var(--space-xl);
-  margin-bottom: var(--space-xl);
-}
-
-.court-setup-card label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  margin-bottom: var(--space-sm);
-}
-
-.court-setup-card label svg { width: 16px; height: 16px; color: var(--primary); }
-
-.courtroom-setup textarea {
-  width: 100%;
-  min-height: 130px;
-  background: var(--bg-input);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: var(--space-md);
-  font-family: var(--font);
-  font-size: var(--font-size-sm);
-  color: var(--text);
-  margin-bottom: var(--space-md);
-  resize: vertical;
-}
-
-.courtroom-setup textarea:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.12);
-}
-
-.court-examples {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  flex-wrap: wrap;
-  margin-bottom: var(--space-lg);
-  font-size: var(--font-size-xs);
-  color: var(--text-tertiary);
-}
-
-.court-examples button {
-  background: var(--primary-bg);
-  color: var(--primary-darker);
-  border: 1px solid var(--primary-subtle);
-  border-radius: var(--radius-full);
-  padding: 4px 12px;
-  font-size: var(--font-size-xs);
-  transition: var(--transition);
-}
-
-.court-examples button:hover { background: var(--primary-subtle); }
-
-.court-start-row { display: flex; justify-content: center; }
-
-.court-roles {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-md);
-  margin-bottom: var(--space-xl);
-}
-
-.court-role-card {
-  border-radius: var(--radius-lg);
-  padding: var(--space-lg);
-  text-align: center;
-  border: 1px solid var(--border);
-}
-
-.court-role-card svg { width: 26px; height: 26px; margin-bottom: var(--space-sm); }
-.court-role-card h3 { font-size: var(--font-size-sm); margin-bottom: 4px; }
-.court-role-card p { font-size: var(--font-size-xs); color: var(--text-secondary); }
-
-.court-role-card.role-you { background: var(--primary-bg); border-color: var(--primary-subtle); }
-.court-role-card.role-you svg { color: var(--primary-dark); }
-.court-role-card.role-opp { background: var(--danger-bg); border-color: var(--danger); }
-.court-role-card.role-opp svg { color: var(--danger); }
-.court-role-card.role-judge { background: var(--warning-bg); border-color: var(--accent); }
-.court-role-card.role-judge svg { color: var(--accent-dark); }
-
-.court-rounds-strip {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-md);
-}
-
-.court-rounds-strip > div {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: var(--space-md);
-  font-size: var(--font-size-xs);
-  color: var(--text-secondary);
-}
-
-.court-rounds-strip .step-num { display: block; margin-bottom: 4px; }
-
-.courtroom-stage { max-width: 900px; margin: 0 auto; width: 100%; }
-
-@media (max-width: 900px) {
-  .court-roles, .court-rounds-strip { grid-template-columns: 1fr; }
-}
-
-.court-round { margin-bottom: var(--space-xl); }
-
-.court-round-label {
-  text-align: center;
-  font-size: var(--font-size-xs);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-tertiary);
-  margin-bottom: var(--space-md);
-}
-
-.court-loading {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  color: var(--text-tertiary);
-  font-size: var(--font-size-sm);
-  justify-content: center;
-  padding: var(--space-md);
-}
-
-.court-bubble {
-  border-radius: var(--radius-lg);
-  padding: var(--space-md) var(--space-lg);
-  margin-bottom: var(--space-md);
-  border: 1px solid var(--border);
-  max-width: 88%;
-}
-
-.court-bubble.your-lawyer { background: var(--primary-bg); border-color: var(--primary-subtle); margin-right: auto; }
-.court-bubble.opposing { background: var(--danger-bg); border-color: var(--danger); margin-left: auto; }
-.court-bubble.judge { background: var(--warning-bg); border-color: var(--accent); margin: 0 auto var(--space-md); }
-
-.court-speaker {
-  font-size: var(--font-size-xs);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: var(--space-xs);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.court-bubble.your-lawyer .court-speaker { color: var(--primary-dark); }
-.court-bubble.opposing .court-speaker { color: var(--danger); }
-.court-bubble.judge .court-speaker { color: var(--accent-dark); }
-.court-speaker svg { width: 14px; height: 14px; }
-
-.courtroom-controls { display: flex; gap: var(--space-sm); justify-content: center; }
 
 /* ══════════════════════════════════════════════════════════
    Kiosk / Voice-first mode
@@ -2908,7 +2795,7 @@ svg.inline-icon, .inline-icon { width: 16px; height: 16px; vertical-align: -2px;
 
 .chat-history-item.active {
   background: var(--primary-subtle);
-  color: var(--primary);
+  color: var(--primary-ink);
   border-color: var(--primary-subtle);
   font-weight: 500;
 }
@@ -2973,7 +2860,7 @@ svg.inline-icon, .inline-icon { width: 16px; height: 16px; vertical-align: -2px;
   margin-bottom: 8px;
   padding: 8px 12px;
   background: var(--primary-subtle);
-  color: var(--primary);
+  color: var(--primary-ink);
   border: 1px solid var(--border);
   border-radius: var(--radius-full);
   font-size: 0.9rem;
@@ -3085,8 +2972,8 @@ svg.inline-icon, .inline-icon { width: 16px; height: 16px; vertical-align: -2px;
   white-space: nowrap;
 }
 
-.ls-badge.ok { background: var(--success-bg); color: var(--success); }
-.ls-badge.warn { background: var(--warning-bg); color: #92400E; }
+.ls-badge.ok { background: var(--success-bg); color: var(--success-ink); }
+.ls-badge.warn { background: var(--warning-bg); color: var(--warning-ink); }
 
 .ls-claim { color: var(--text); font-weight: 500; }
 .ls-support { font-size: var(--font-size-xs); color: var(--text-tertiary); }

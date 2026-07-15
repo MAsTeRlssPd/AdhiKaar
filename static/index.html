@@ -6,17 +6,19 @@
   <title>अधिKaar — AI Legal Assistant | Know Your Rights</title>
   <meta name="description" content="Free AI-powered legal assistant for Indian citizens. Understand your rights, get legal guidance in your language, and find legal aid near you.">
   <meta name="theme-color" content="#4338CA">
-  <link rel="stylesheet" href="style.css?v=3">
-  <!-- html2canvas for Rights Card image generation -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
-  <!-- Tesseract.js for OCR -->
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js" defer></script>
-  <!-- pdf.js for extracting text from uploaded PDFs (text layer, OCR fallback) -->
-  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js" defer></script>
-  <!-- Marked.js for Markdown rendering -->
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
-  <!-- Lucide SVG icons -->
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+  <link rel="preload" href="fonts/noto-sans-latin-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="fonts/fonts.css?v=4">
+  <link rel="stylesheet" href="style.css?v=4">
+
+  <!-- Every dependency is served from this machine. Nothing here reaches the
+       network, which is what makes "runs on your device" and "works offline"
+       true rather than aspirational. Versions are pinned to exact copies in
+       static/vendor/ so an upstream publish can never change this app. -->
+
+  <!-- Lucide SVG icons (v1.24.0) - needed at first paint, every view has icons -->
+  <script src="vendor/lucide.min.js" defer></script>
+  <!-- Marked.js (v15.0.12) - renders every AI reply -->
+  <script src="vendor/marked.min.js" defer></script>
 </head>
 <body>
   <div class="app-container">
@@ -53,43 +55,38 @@
       </div>
 
       <nav class="sidebar-nav">
-        <div class="nav-item active" data-view="home" id="nav-home">
+        <div class="nav-item active" role="button" tabindex="0" aria-current="page" data-view="home" id="nav-home">
           <span class="nav-icon"><i data-lucide="home"></i></span>
           <span class="nav-label">Home</span>
         </div>
-        <div class="nav-item" data-view="chat" id="nav-chat">
+        <div class="nav-item" role="button" tabindex="0" data-view="chat" id="nav-chat">
           <span class="nav-icon"><i data-lucide="message-circle"></i></span>
           <span class="nav-label">Talk to Legal Helper</span>
         </div>
-        <div class="nav-item" data-view="lawsteps" id="nav-lawsteps">
+        <div class="nav-item" role="button" tabindex="0" data-view="lawsteps" id="nav-lawsteps">
           <span class="nav-icon"><i data-lucide="clipboard-check"></i></span>
           <span class="nav-label">Law &amp; Next Steps</span>
         </div>
-        <div class="nav-item" data-view="cases" id="nav-cases">
+        <div class="nav-item" role="button" tabindex="0" data-view="cases" id="nav-cases">
           <span class="nav-icon"><i data-lucide="folder-open"></i></span>
           <span class="nav-label">My Cases</span>
         </div>
 
         <div class="nav-divider"></div>
 
-        <div class="nav-item" data-view="draft" id="nav-draft">
+        <div class="nav-item" role="button" tabindex="0" data-view="draft" id="nav-draft">
           <span class="nav-icon"><i data-lucide="file-pen-line"></i></span>
           <span class="nav-label">Draft a Document</span>
         </div>
-        <div class="nav-item" data-view="courtroom" id="nav-courtroom">
-          <span class="nav-icon"><i data-lucide="gavel"></i></span>
-          <span class="nav-label">Virtual Courtroom</span>
-        </div>
-
-        <div class="nav-item" data-view="bns" id="nav-bns">
+        <div class="nav-item" role="button" tabindex="0" data-view="bns" id="nav-bns">
           <span class="nav-icon"><i data-lucide="repeat"></i></span>
           <span class="nav-label">Section Converter</span>
         </div>
-        <div class="nav-item" data-view="legal-aid" id="nav-legal-aid">
+        <div class="nav-item" role="button" tabindex="0" data-view="legal-aid" id="nav-legal-aid">
           <span class="nav-icon"><i data-lucide="phone"></i></span>
           <span class="nav-label">Find Legal Aid</span>
         </div>
-        <div class="nav-item" data-view="document" id="nav-document">
+        <div class="nav-item" role="button" tabindex="0" data-view="document" id="nav-document">
           <span class="nav-icon"><i data-lucide="file-text"></i></span>
           <span class="nav-label">Translate Legal Document</span>
         </div>
@@ -195,61 +192,55 @@
 
         <h2 class="section-title features-title">Everything अधिKaar Can Do</h2>
         <div class="features-grid">
-          <div class="feature-card" onclick="navigateTo('chat')">
+          <div class="feature-card" role="button" tabindex="0" onclick="navigateTo('chat')">
             <div class="card-icon teal"><i data-lucide="message-circle"></i></div>
             <h3>Talk to Legal Helper</h3>
             <p>Describe your problem in any of 11 languages — get your rights, action steps, and deadlines.</p>
             <span class="card-go">Open <i data-lucide="arrow-right"></i></span>
           </div>
-          <div class="feature-card" onclick="navigateTo('cases')">
+          <div class="feature-card" role="button" tabindex="0" onclick="navigateTo('cases')">
             <div class="card-icon blue"><i data-lucide="folder-open"></i></div>
             <h3>My Cases</h3>
             <p>Keep each legal matter organized — conversations, documents, and deadlines in one place, private on your device.</p>
             <span class="card-go">Open <i data-lucide="arrow-right"></i></span>
           </div>
-          <div class="feature-card" onclick="navigateTo('draft')">
+          <div class="feature-card" role="button" tabindex="0" onclick="navigateTo('draft')">
             <div class="card-icon amber"><i data-lucide="file-pen-line"></i></div>
             <h3>Draft a Document</h3>
             <p>Generate ready-to-print legal notices, consumer complaints, RTI applications, and police complaints.</p>
             <span class="card-go">Open <i data-lucide="arrow-right"></i></span>
           </div>
-          <div class="feature-card" onclick="navigateTo('courtroom')">
-            <div class="card-icon red"><i data-lucide="gavel"></i></div>
-            <h3>Virtual Courtroom</h3>
-            <p>Watch both sides argue your case before an AI judge — find your weak points before the other side does.</p>
-            <span class="card-go">Open <i data-lucide="arrow-right"></i></span>
-          </div>
-          <div class="feature-card" onclick="openConverter('ipc_bns')">
+          <div class="feature-card" role="button" tabindex="0" onclick="openConverter('ipc_bns')">
             <div class="card-icon teal"><i data-lucide="repeat"></i></div>
             <h3>IPC ↔ BNS Converter</h3>
             <p>India's criminal law changed on 1 July 2024. Convert old IPC sections to new BNS sections instantly.</p>
             <span class="card-go">Open <i data-lucide="arrow-right"></i></span>
           </div>
-          <div class="feature-card" onclick="navigateTo('legal-aid')">
+          <div class="feature-card" role="button" tabindex="0" onclick="navigateTo('legal-aid')">
             <div class="card-icon green"><i data-lucide="phone"></i></div>
             <h3>Find Legal Aid</h3>
             <p>Free legal aid offices, helpline numbers, and Tele-Law services in your district.</p>
             <span class="card-go">Open <i data-lucide="arrow-right"></i></span>
           </div>
-          <div class="feature-card" onclick="navigateTo('document')">
+          <div class="feature-card" role="button" tabindex="0" onclick="navigateTo('document')">
             <div class="card-icon blue"><i data-lucide="file-text"></i></div>
             <h3>Translate Legal Documents</h3>
             <p>Upload a legal notice, FIR, or court summons — get it explained in plain language.</p>
             <span class="card-go">Open <i data-lucide="arrow-right"></i></span>
           </div>
-          <div class="feature-card" onclick="enterKioskMode()">
+          <div class="feature-card" role="button" tabindex="0" onclick="enterKioskMode()">
             <div class="card-icon amber"><i data-lucide="accessibility"></i></div>
             <h3>Voice Mode</h3>
             <p>No typing needed — speak your question and hear the answer aloud, in your language.</p>
             <span class="card-go">Open <i data-lucide="arrow-right"></i></span>
           </div>
-          <div class="feature-card" onclick="openConverter('crpc_bnss')">
+          <div class="feature-card" role="button" tabindex="0" onclick="openConverter('crpc_bnss')">
             <div class="card-icon teal"><i data-lucide="repeat-2"></i></div>
             <h3>CrPC ↔ BNSS Converter</h3>
             <p>Criminal procedure changed on 1 July 2024. Convert old CrPC sections to new BNSS sections instantly.</p>
             <span class="card-go">Open <i data-lucide="arrow-right"></i></span>
           </div>
-          <div class="feature-card" onclick="navigateTo('lawsteps')">
+          <div class="feature-card" role="button" tabindex="0" onclick="navigateTo('lawsteps')">
             <div class="card-icon blue"><i data-lucide="clipboard-check"></i></div>
             <h3>Law &amp; Next Steps</h3>
             <p>One verified answer: the law that applies, both sides stress-tested, official sources, and a rights card you can share.</p>
@@ -378,7 +369,7 @@
           <div class="search-box">
             <div class="search-input-wrapper">
               <span class="search-icon">🔍</span>
-              <input type="text" id="bns-search" placeholder="Search by section number or offence name (e.g., 420, theft, murder)" oninput="searchBns()">
+              <input type="text" id="bns-search" aria-label="Search by section number or offence name" placeholder="Search by section number or offence name (e.g., 420, theft, murder)" oninput="searchBns()">
             </div>
           </div>
           <div class="results-container" id="bns-results"></div>
@@ -394,7 +385,7 @@
           <div class="search-box">
             <div class="search-input-wrapper">
               <span class="search-icon">🔍</span>
-              <input type="text" id="crpc-search" placeholder="Search by section number (e.g., 144, 154, 41, 438)" oninput="searchCrpc()">
+              <input type="text" id="crpc-search" aria-label="Search by section number" placeholder="Search by section number (e.g., 144, 154, 41, 438)" oninput="searchCrpc()">
             </div>
           </div>
           <div class="results-container" id="crpc-results"></div>
@@ -461,7 +452,7 @@
 
         <div class="text-input-area">
           <p style="text-align:center; color: var(--text-tertiary); margin-bottom: var(--space-md);">— OR paste the document text below —</p>
-          <textarea id="doc-text-input" placeholder="Paste your legal document text here..."></textarea>
+          <textarea id="doc-text-input" aria-label="Paste your legal document text" placeholder="Paste your legal document text here..."></textarea>
           <div class="input-actions">
             <button class="btn btn-primary" onclick="translateDocument()">📄 Translate & Explain</button>
           </div>
@@ -558,50 +549,6 @@
         </div>
       </section>
 
-      <!-- ════ VIRTUAL COURTROOM VIEW ════ -->
-      <section class="view courtroom-view" id="view-courtroom">
-        <div class="view-header">
-          <h2><i data-lucide="gavel" class="inline-icon"></i> Virtual Courtroom</h2>
-          <p>Watch both sides argue your case before an AI judge — and find your weak points before the other side does.</p>
-        </div>
-
-        <div class="courtroom-setup" id="courtroom-setup">
-          <div class="court-setup-card">
-            <label for="courtroom-situation"><i data-lucide="scroll-text"></i> Your case</label>
-            <textarea id="courtroom-situation" placeholder="Describe your case here — or start a chat first and it will be filled automatically..."></textarea>
-            <div class="court-examples">
-              <span>Try an example:</span>
-              <button onclick="courtExample(0)">Security deposit</button>
-              <button onclick="courtExample(1)">Unpaid salary</button>
-              <button onclick="courtExample(2)">Cheque bounce</button>
-            </div>
-            <div class="court-start-row">
-              <button class="btn btn-primary" onclick="startCourtroom()"><i data-lucide="gavel"></i> Start Hearing</button>
-            </div>
-          </div>
-
-          <div class="court-roles">
-            <div class="court-role-card role-you">
-              <i data-lucide="shield"></i>
-              <h3>Your Lawyer</h3>
-              <p>Argues your side with law citations and precedents</p>
-            </div>
-            <div class="court-role-card role-opp">
-              <i data-lucide="swords"></i>
-              <h3>Opposing Lawyer</h3>
-              <p>Attacks your case the way the other side really will</p>
-          </div>
-
-        </div>
-
-        <div class="courtroom-stage" id="courtroom-stage" style="display:none">
-          <div class="courtroom-rounds" id="courtroom-rounds"></div>
-          <div class="courtroom-controls" id="courtroom-controls">
-            <button class="btn btn-secondary" onclick="resetCourtroom()">New Hearing</button>
-          </div>
-        </div>
-      </section>
-
       <!-- ════ GLOBAL QUICK-ASK BAR (all feature pages) ════ -->
       <div class="global-ask" id="global-ask" style="display:none">
         <div class="global-ask-inner home-chat-input">
@@ -635,23 +582,23 @@
   <!-- ══════ MOBILE BOTTOM NAV ══════ -->
   <nav class="mobile-nav" id="mobile-nav">
     <div class="mobile-nav-items">
-      <div class="mobile-nav-item active" data-view="home" onclick="navigateTo('home')">
+      <div class="mobile-nav-item active" role="button" tabindex="0" aria-current="page" data-view="home" onclick="navigateTo('home')">
         <span class="mob-nav-icon"><i data-lucide="home"></i></span>
         <span>Home</span>
       </div>
-      <div class="mobile-nav-item" data-view="chat" onclick="navigateTo('chat')">
+      <div class="mobile-nav-item" role="button" tabindex="0" data-view="chat" onclick="navigateTo('chat')">
         <span class="mob-nav-icon"><i data-lucide="message-circle"></i></span>
         <span>Chat</span>
       </div>
-      <div class="mobile-nav-item" data-view="bns" onclick="navigateTo('bns')">
+      <div class="mobile-nav-item" role="button" tabindex="0" data-view="bns" onclick="navigateTo('bns')">
         <span class="mob-nav-icon"><i data-lucide="repeat"></i></span>
         <span>IPC/BNS</span>
       </div>
-      <div class="mobile-nav-item" data-view="legal-aid" onclick="navigateTo('legal-aid')">
+      <div class="mobile-nav-item" role="button" tabindex="0" data-view="legal-aid" onclick="navigateTo('legal-aid')">
         <span class="mob-nav-icon"><i data-lucide="phone"></i></span>
         <span>Help</span>
       </div>
-      <div class="mobile-nav-item" data-view="document" onclick="navigateTo('document')">
+      <div class="mobile-nav-item" role="button" tabindex="0" data-view="document" onclick="navigateTo('document')">
         <span class="mob-nav-icon"><i data-lucide="file-text"></i></span>
         <span>Docs</span>
       </div>
@@ -664,10 +611,10 @@
   </button>
 
   <!-- ══════ RIGHTS CARD MODAL ══════ -->
-  <div class="modal-overlay" id="rights-card-modal">
+  <dialog class="modal-overlay" id="rights-card-modal" aria-labelledby="rights-card-modal-title">
     <div class="modal">
       <div class="modal-header">
-        <h3>🪪 Your Rights Card</h3>
+        <h3 id="rights-card-modal-title">🪪 Your Rights Card</h3>
         <button class="modal-close" onclick="closeModal('rights-card-modal')">✕</button>
       </div>
       <div class="modal-body">
@@ -690,21 +637,21 @@
         <button class="btn btn-primary btn-sm" onclick="shareRightsCard()">📤 Share</button>
       </div>
     </div>
-  </div>
+  </dialog>
 
   <!-- ══════ LANGUAGE PICKER MODAL (Mobile) ══════ -->
-  <div class="modal-overlay" id="lang-modal">
+  <dialog class="modal-overlay" id="lang-modal" aria-labelledby="lang-modal-title">
     <div class="modal">
       <div class="modal-header">
-        <h3>🌐 Choose Language / भाषा चुनें</h3>
+        <h3 id="lang-modal-title">🌐 Choose Language / भाषा चुनें</h3>
         <button class="modal-close" onclick="closeModal('lang-modal')">✕</button>
       </div>
       <div class="modal-body" id="lang-modal-options" style="display:flex; flex-direction:column; gap:8px;">
         <!-- Populated by JS -->
       </div>
     </div>
-  </div>
+  </dialog>
 
-  <script src="app.js?v=3"></script>
+  <script src="app.js?v=4"></script>
 </body>
 </html>
