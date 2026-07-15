@@ -1257,6 +1257,64 @@ def index_session_document(session_id, text, filename, language):
     return {"doc_id": doc_id, "filename": filename, "summary": summary, "chunks": len(chunks)}
 
 
+@app.route('/api/ask-document', methods=['POST'])
+def ask_document():
+    """Answer a question strictly from the user's uploaded document.
+
+    A focused, grounded path — unlike /api/chat it skips keyword expansion,
+    power-imbalance detection, IPC/BNS retrieval and history, which on top of a
+    long, OCR-garbled document could crowd out the answer. Retries once if the
+    (thinking) model returns empty content."""
+    try:
+        data = request.get_json(silent=True) or {}
+        question = (data.get('question') or '').strip()
+        session_id = data.get('session_id', '')
+        language = data.get('language', 'en')
+        if not question:
+            return jsonify({"error": "No question provided"}), 400
+
+        # Use the WHOLE document, not semantic snippets. RAG top-k over a big
+        # OCR-garbled doc often misses the exact line (e.g. the FIR number), so the
+        # model answers generically. The frontend sends the visible document text
+        # directly, which also means grounding never depends on server-side session
+        # state (lost on restart) or on whether an index build happened.
+        context = (data.get('document') or '').strip()
+        if not context:
+            safe_session = re.sub(r'[^a-zA-Z0-9_-]', '', session_id) or 'default'
+            upload_path = os.path.join(UPLOADS_DIR, f"{safe_session}.txt")
+            if os.path.exists(upload_path):
+                with open(upload_path, 'r', encoding='utf-8') as fh:
+                    context = fh.read()
+        if not context.strip():
+            doc_col = load_doc_collection(session_id)
+            if doc_col is not None:
+                got = doc_col.get(include=['documents'])
+                context = "\n".join(got.get('documents') or [])
+        if not context.strip():
+            return jsonify({"answer": "", "error": "no_document"}), 200
+
+        context = context[:16000]  # fits num_ctx 8192 alongside the question + answer
+        system = (
+            "You are a legal assistant. Answer the user's question using ONLY the document text below. "
+            "The text comes from imperfect OCR of a scanned document, so it has typos and stray characters — "
+            "read through them and extract the actual facts (names, numbers, sections, dates). Quote the specific "
+            "value from the document when asked for one. If the answer is genuinely not in the document, say so.\n\n"
+            "DOCUMENT:\n" + context
+        )
+        messages = [
+            {"role": "system", "content": system},
+            {"role": "user", "content": question},
+        ]
+        answer = (call_gemma_lang(messages, language, temperature=0.3, num_ctx=8192) or "").strip()
+        if not answer:  # thinking model occasionally returns empty content — one retry
+            answer = (call_gemma_lang(messages, language, temperature=0.5, num_ctx=8192) or "").strip()
+
+        return jsonify({"answer": answer})
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route('/api/upload-document', methods=['POST'])
 def upload_document():
     """Save + index an uploaded document for the session so chat can answer from it."""

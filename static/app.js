@@ -1590,12 +1590,14 @@ async function askDocFollowup() {
   item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
   try {
-    await ensureDocIndexed();
-    const data = await apiCall('/api/chat', {
+    // Send the document text straight from the page — grounding then never depends
+    // on server-side session/index state (which resets on restart).
+    const docText = ($('ocr-text')?.textContent || '').trim();
+    const data = await apiCall('/api/ask-document', {
       method: 'POST',
-      body: JSON.stringify({ message: q, language: state.language, session_id: state.sessionId }),
+      body: JSON.stringify({ question: q, document: docText, language: state.language, session_id: state.sessionId }),
     });
-    const answer = (data.response || '').trim();
+    const answer = (data.answer || '').trim();
     item.querySelector('.doc-qa-a').innerHTML = answer
       ? `<div class="markdown-body">${renderMarkdown(answer)}</div>`
       : `<span class="doc-qa-err">No answer came back. Try rephrasing, or re-upload the document.</span>`;
