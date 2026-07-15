@@ -754,15 +754,15 @@ def call_gemma_lang(messages, language, **kwargs):
     ]
     return call_gemma(messages, **kwargs)
 
-def call_gemma(messages, temperature=0.7, fallback_cpu=False, num_ctx=4096, response_format=None, num_predict=2048):
+def call_gemma(messages, temperature=0.7, fallback_cpu=False, num_ctx=8192, response_format=None, num_predict=-1):
     """Call the working LLM model via Ollama (auto-detected at first call).
 
-    num_ctx is shared between the prompt and the generation. The larger default here
-    avoids the short-answer truncation that happens when the model runs out of room
-    for a long reply. num_predict caps how much the model writes in one turn — 900
-    was cutting long replies (e.g. the document explanation) mid-sentence, so the
-    default is 2048; callers with a big prompt should also raise num_ctx to match.
-    GPU crashes still fall back to CPU below.
+    num_ctx is the total token budget shared by the prompt AND the generation; the
+    8192 default leaves plenty of room so long, detailed answers are not squeezed.
+    num_predict is the hard cap on generated tokens — a fixed cap (900/2048) was
+    chopping detailed replies mid-sentence, so the default is -1 (no cap): the model
+    writes until it naturally finishes, bounded only by num_ctx. GPU crashes still
+    fall back to CPU below.
 
     response_format: pass 'json' (or a JSON schema dict) to grammar-constrain the
     output via Ollama's format= — the reliable fix for JSON that won't parse.
@@ -974,8 +974,8 @@ def devil_advocate():
             {"role": "user", "content": f"Here is the person's legal situation:\n{situation}\n\nConversation history:{history_text}\n\nNow argue against their position and then help them prepare."}
         ]
 
-        response_text = call_gemma_lang(messages, language, temperature=0.8, num_ctx=4096, num_predict=900)
-        
+        response_text = call_gemma_lang(messages, language, temperature=0.8)
+
         return jsonify({"response": response_text})
     
     except Exception as e:
@@ -1206,8 +1206,8 @@ def translate_document():
         ]
 
         # A full document explanation runs long; give it room for both the OCR
-        # prompt and the answer so it is not cut off by the num_predict cap.
-        response_text = call_gemma_lang(messages, language, temperature=0.5, num_ctx=8192, num_predict=2048)
+        # prompt and the answer so it is not cut off (num_predict defaults to -1).
+        response_text = call_gemma_lang(messages, language, temperature=0.5, num_ctx=8192)
 
         return jsonify({"response": response_text})
     
