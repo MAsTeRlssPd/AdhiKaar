@@ -842,6 +842,17 @@ def detect_power_imbalance(text):
 
 @app.route('/')
 def index():
+    # Serve the React landing page if it has been built, otherwise fall back to
+    # the app itself so a missing/failed build never takes the product down.
+    landing = os.path.join(app.static_folder, 'landing', 'index.html')
+    if os.path.exists(landing):
+        return send_from_directory(os.path.join('static', 'landing'), 'index.html')
+    return send_from_directory('static', 'index.html')
+
+
+@app.route('/app')
+def app_view():
+    # The working product. The landing's call-to-action links here.
     return send_from_directory('static', 'index.html')
 
 
@@ -2420,4 +2431,10 @@ if __name__ == '__main__':
     print(f"  Make sure model is pulled: ollama pull {GEMMA_MODEL_PREFERRED}")
     print()
     
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # use_reloader=False: the auto-reloader (watchdog) watches the whole project
+    # folder, venv/ included, so any package or static-file change restarts the
+    # server — and a chat request in flight during a restart fails with
+    # "could not connect to the AI model". Static/frontend edits don't need a
+    # restart (files are re-served on refresh); restart manually for app.py
+    # changes. Keeps debug error pages, drops the mid-request restarts.
+    app.run(debug=True, use_reloader=False, host='0.0.0.0', port=5000)

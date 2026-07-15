@@ -137,9 +137,10 @@ function navigateTo(viewName) {
     v.style.display = v.classList.contains('active') ? 'flex' : 'none';
   });
 
-  // Quick-ask bar shows on feature pages (chat and home have their own inputs)
+  // Quick-ask bar shows on the reference tools only. Home, chat, and the case
+  // workspace all carry their own case-bound inputs.
   const ga = $('global-ask');
-  if (ga) ga.style.display = (viewName === 'chat' || viewName === 'home') ? 'none' : 'block';
+  if (ga) ga.style.display = (viewName === 'chat' || viewName === 'home' || viewName === 'workspace' || viewName === 'cases') ? 'none' : 'block';
 
   // Update sidebar active state
   document.querySelectorAll('.nav-item').forEach(n => {
@@ -166,6 +167,8 @@ function navigateTo(viewName) {
   // Initialize view-specific content
   if (viewName === 'legal-aid') initLegalAid();
   if (viewName === 'draft') loadDraftTemplates();
+  if (viewName === 'cases') renderCases();
+  if (viewName === 'workspace') { loadDraftTemplates(); renderWorkspace(); }
   if (viewName === 'lawsteps') {
     const ta = $('ls-situation');
     if (ta && !ta.value.trim() && state.lastSituation) ta.value = state.lastSituation;
@@ -249,10 +252,10 @@ function sendSuggestion(text) {
   sendMessage();
 }
 
-// Jump from home hero chips straight into chat with the question sent
+// Jump from home hero chips straight into the case conversation with the
+// question sent.
 function goToChatWith(text) {
-  navigateTo('chat');
-  sendSuggestion(text);
+  enterConversation(text);
 }
 
 // Re-render lucide icons after dynamic DOM changes
@@ -458,8 +461,10 @@ async function handleChatDocUpload(event) {
   event.target.value = '';   // allow re-selecting the same file later
   if (!file) return;
 
-  // Ensure the chat view (chip + bubbles) is visible
-  if (state.currentView !== 'chat') navigateTo('chat');
+  // Ensure the case conversation (chip + bubbles) is visible
+  requireActiveCase();
+  if (state.currentView !== 'workspace') { navigateTo('workspace'); renderWorkspace(); }
+  switchWsTab('conversation');
   const welcome = $('chat-welcome');
   if (welcome) welcome.style.display = 'none';
 
@@ -557,7 +562,7 @@ function addMessage(role, content, options = {}) {
         { label: t('qa_elder'), icon: 'users', cls: '', fn: () => runPanchayatBridge() },
         { label: t('qa_card'), icon: 'id-card', cls: '', fn: () => generateRightsCard() },
         { label: t('qa_checklist'), icon: 'list-checks', cls: '', fn: () => generateChecklist() },
-        { label: t('qa_full'), icon: 'clipboard-check', cls: '', fn: () => { navigateTo('lawsteps'); runLawSteps(); } },
+        { label: t('qa_full'), icon: 'clipboard-check', cls: '', fn: () => { switchWsTab('overview'); runCaseAnalysis(); } },
       ];
 
       actions.forEach(action => {
@@ -1715,6 +1720,10 @@ document.addEventListener('DOMContentLoaded', () => {
     v.style.display = v.classList.contains('active') ? 'flex' : 'none';
   });
 
+  // Move the chat + draft-builder DOM into the case workspace up front, so the
+  // conversation and drafting flows are already case-bound on first open.
+  relocateWorkspaceDom();
+
   // Set initial language
   setLanguage(state.language);
 
@@ -1804,8 +1813,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function loadCases() {
   try {
-    return JSON.parse(localStorage.getItem('adhikaar_cases')) || [];
+    return migrateCases(JSON.parse(localStorage.getItem('adhikaar_cases')) || []);
   } catch (e) { return []; }
+}
+
+// Bring older, feature-era case records up to the case-centric schema so every
+// case has the same shape (documents / analysis / timeline / status). Non-
+// destructive: existing history/drafts/deadlines are preserved untouched.
+function migrateCases(cases) {
+  if (!Array.isArray(cases)) return [];
+  cases.forEach(c => {
+    if (!c.status) c.status = 'active';
+    if (!Array.isArray(c.history)) c.history = [];
+    if (!Array.isArray(c.drafts)) c.drafts = [];
+    if (!Array.isArray(c.deadlines)) c.deadlines = [];
+    if (!Array.isArray(c.documents)) c.documents = [];
+    if (!Array.isArray(c.timeline)) c.timeline = [];
+    if (c.analysis === undefined) c.analysis = null;
+    // Backfill ids/fields on nested records so later code can address them.
+    c.drafts.forEach(d => { if (!d.id) d.id = generateId(); });
+    c.deadlines.forEach(d => { if (!d.id) d.id = generateId(); });
+  });
+  return cases;
 }
 
 function saveCases(cases) {
@@ -1815,6 +1844,78 @@ function saveCases(cases) {
 function getActiveCase() {
   const id = localStorage.getItem('adhikaar_active_case');
   return loadCases().find(c => c.id === id) || null;
+}
+
+// Read-modify-write the active case in one place. `mutator(caseObj)` edits the
+// case in place; the change is persisted and the workspace re-rendered. Returns
+// the updated case, or null if there is no active case.
+function updateActiveCase(mutator) {
+  const id = localStorage.getItem('adhikaar_active_case');
+  if (!id) return null;
+  const cases = loadCases();
+  const c = cases.find(x => x.id === id);
+  if (!c) return null;
+  mutator(c);
+  c.updatedAt = Date.now();
+  saveCases(cases);
+  return c;
+}
+
+// Append an event to a case's activity log (rendered on the Overview tab).
+function pushTimeline(c, type, label) {
+  if (!c) return;
+  if (!Array.isArray(c.timeline)) c.timeline = [];
+  c.timeline.push({ type, label, at: Date.now() });
+}
+
+// Guarantee there is an active case to work inside. If one is open, return it;
+// otherwise create a fresh untitled case so every tool always has a home. This
+// is what makes the app case-centric: no feature runs "loose" any more.
+function requireActiveCase() {
+  let c = getActiveCase();
+  if (c) return c;
+  const cases = loadCases();
+  const newCase = {
+    id: generateId(),
+    title: 'Untitled case',
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    sessionId: generateId(),
+    status: 'active',
+    summary: '',
+    history: [],
+    drafts: [],
+    deadlines: [],
+    documents: [],
+    analysis: null,
+    timeline: [],
+  };
+  cases.unshift(newCase);
+  saveCases(cases);
+  localStorage.setItem('adhikaar_active_case', newCase.id);
+  state.sessionId = newCase.sessionId;
+  localStorage.setItem('adhikaar_session', newCase.sessionId);
+  state.chatHistory = [];
+  state.lastSituation = '';
+  state.lastAdvice = '';
+  // Fresh case → clear any conversation left over from a previous one.
+  if (state.attachedDoc) { setDocChip('', false); state.attachedDoc = null; }
+  const container = $('chat-messages');
+  if (container) clearChatWelcomeOnly(container);
+  updateCaseBanner();
+  renderChatSidebar();
+  return newCase;
+}
+
+// Case counts used across the hub cards and the workspace overview.
+function caseCounts(c) {
+  const today = new Date().toISOString().slice(0, 10);
+  return {
+    messages: (c.history || []).length,
+    documents: (c.documents || []).length,
+    drafts: (c.drafts || []).length,
+    openDeadlines: (c.deadlines || []).filter(d => !d.done && d.date >= today).length,
+  };
 }
 
 function renderChatSidebar() {
@@ -1858,29 +1959,39 @@ function persistToActiveCase(role, content) {
       createdAt: Date.now(),
       updatedAt: Date.now(),
       sessionId: state.sessionId, // reuse the current sessionId
+      status: 'active',
       summary: content.slice(0, 120),
       history: [],
       drafts: [],
       deadlines: [],
+      documents: [],
+      analysis: null,
+      timeline: [],
     };
     cases.unshift(newCase);
     saveCases(cases);
     localStorage.setItem('adhikaar_active_case', newCase.id);
     c = newCase;
-    
+
     // Update UI
     updateCaseBanner();
   }
-  
+
   if (!c) return;
-  
+
+  // First real message names an untitled case after the situation.
+  if ((!c.title || c.title === 'Untitled case') && role === 'user') {
+    c.title = content.slice(0, 30) + (content.length > 30 ? '…' : '');
+  }
   c.history.push({ role, content, time: Date.now() });
   c.updatedAt = Date.now();
   if (!c.summary && role === 'user') c.summary = content.slice(0, 120);
+  if (role === 'user') pushTimeline(c, 'message', content.slice(0, 60));
   saveCases(cases);
-  
+
   renderChatSidebar();
   if (state.currentView === 'cases') renderCases();
+  if (state.currentView === 'workspace') { updateWorkspaceHeader(); if (wsTab === 'overview') renderWorkspaceOverview(); }
 }
 
 function createCase() {
@@ -1893,10 +2004,14 @@ function createCase() {
     createdAt: Date.now(),
     updatedAt: Date.now(),
     sessionId: generateId(),
+    status: 'active',
     summary: '',
     history: [],
     drafts: [],
     deadlines: [],
+    documents: [],
+    analysis: null,
+    timeline: [],
   };
   cases.unshift(newCase);
   saveCases(cases);
@@ -1929,7 +2044,9 @@ function openCase(id) {
     state.chatHistory = c.history.map(m => ({ role: m.role, content: m.content }));
   }
   updateCaseBanner();
-  navigateTo('chat');
+  wsTab = 'overview';
+  navigateTo('workspace');
+  renderWorkspace();
   renderCases();
   renderChatSidebar();
 }
@@ -2019,22 +2136,26 @@ function renderCases() {
     const dl = nearestDeadline(c);
     const today = new Date().toISOString().slice(0, 10);
     const soon = dl && (new Date(dl.date) - new Date(today)) / 86400000 <= 7;
+    const n = caseCounts(c);
+    const closed = c.status === 'closed';
     return `
-    <div class="case-card ${c.id === activeId ? 'active-case' : ''}" onclick="openCase('${c.id}')">
+    <div class="case-card ${c.id === activeId ? 'active-case' : ''} ${closed ? 'closed-case' : ''}" onclick="openCase('${c.id}')">
       <div class="case-card-header">
         <h3>${escapeHtml(c.title)}</h3>
-        ${c.id === activeId ? '<span class="case-badge">Active</span>' : ''}
+        <span class="case-badge ${closed ? 'closed' : ''}">${closed ? 'Closed' : 'Active'}</span>
       </div>
       <p class="case-summary">${escapeHtml(c.summary || 'No conversation yet')}</p>
       <div class="case-meta">
-        <span><i data-lucide="message-circle"></i> ${c.history.length} messages</span>
-        <span><i data-lucide="file-text"></i> ${(c.drafts || []).length} drafts</span>
+        <span><i data-lucide="message-circle"></i> ${n.messages}</span>
+        <span><i data-lucide="file-text"></i> ${n.documents}</span>
+        <span><i data-lucide="file-pen-line"></i> ${n.drafts}</span>
+        <span><i data-lucide="alarm-clock"></i> ${n.openDeadlines}</span>
       </div>
       ${dl ? `<div class="case-deadline ${soon ? 'deadline-soon' : ''}">
         <i data-lucide="alarm-clock"></i> ${escapeHtml(dl.label)} — ${dl.date}
       </div>` : ''}
       <div class="case-actions">
-        <button class="btn btn-sm btn-secondary" onclick="addDeadline('${c.id}', event)"><i data-lucide="calendar-plus"></i> Deadline</button>
+        <button class="btn btn-sm btn-secondary" onclick="openCase('${c.id}')"><i data-lucide="folder-open"></i> Open workspace</button>
         <button class="btn btn-sm btn-secondary case-delete" onclick="deleteCase('${c.id}', event)"><i data-lucide="trash-2"></i></button>
       </div>
     </div>`;
@@ -2046,6 +2167,509 @@ function updateCaseBanner() {
   const c = getActiveCase();
   const statusEl = document.querySelector('.chat-status span:last-child');
   if (statusEl) statusEl.textContent = c ? `Case: ${c.title}` : 'Ready to help';
+}
+
+// ══════════════════════════════════════════════════════════════
+// CASE WORKSPACE — the connected surface. Opening a case lands here;
+// conversation, documents, drafts, deadlines and analysis all live in
+// one place and auto-link to the case. No feature runs "loose" any more.
+// ══════════════════════════════════════════════════════════════
+
+let wsTab = 'overview';
+let wsDomRelocated = false;
+
+// Move the existing chat + draft-builder DOM into the workspace panes once.
+// Every feature addresses its elements by id, so relocation is transparent —
+// sendMessage(), generateDraft() etc. keep working unchanged, only now they
+// live inside the open case instead of in standalone tabs.
+function relocateWorkspaceDom() {
+  if (wsDomRelocated) return;
+  const chatMain = document.querySelector('#view-chat .chat-main');
+  const convPane = $('ws-pane-conversation');
+  if (chatMain && convPane) convPane.appendChild(chatMain);
+
+  const builder = $('ws-draft-builder');
+  if (builder) {
+    const dc = document.querySelector('#view-draft .draft-content');
+    if (dc) builder.appendChild(dc);
+    ['draft-form-container', 'draft-result-container'].forEach(id => {
+      const el = $(id); if (el) builder.appendChild(el);
+    });
+  }
+  wsDomRelocated = true;
+}
+
+function renderWorkspace() {
+  relocateWorkspaceDom();
+  const c = getActiveCase();
+  if (!c) { navigateTo('cases'); return; }
+  updateWorkspaceHeader();
+  switchWsTab(wsTab, true);
+}
+
+function updateWorkspaceHeader() {
+  const c = getActiveCase();
+  if (!c) return;
+  const titleEl = $('ws-title');
+  if (titleEl) titleEl.textContent = c.title || 'Untitled case';
+  const closed = c.status === 'closed';
+  const statusEl = $('ws-status');
+  if (statusEl) { statusEl.textContent = closed ? 'Closed' : 'Active'; statusEl.classList.toggle('closed', closed); }
+  const btn = $('ws-status-btn');
+  if (btn) { const lbl = btn.querySelector('.ws-btn-label'); if (lbl) lbl.textContent = closed ? 'Reopen' : 'Close'; }
+
+  const dl = nearestDeadline(c);
+  const chip = $('ws-deadline-chip');
+  if (chip) {
+    if (dl) {
+      const today = new Date().toISOString().slice(0, 10);
+      const soon = (new Date(dl.date) - new Date(today)) / 86400000 <= 7;
+      chip.style.display = '';
+      chip.classList.toggle('soon', soon);
+      chip.innerHTML = `<i data-lucide="alarm-clock" class="inline-icon"></i> ${escapeHtml(dl.label)} — ${dl.date}`;
+    } else {
+      chip.style.display = 'none';
+    }
+  }
+  refreshIcons();
+}
+
+function switchWsTab(tab, force) {
+  wsTab = tab;
+  document.querySelectorAll('.ws-tab').forEach(b => {
+    const on = b.dataset.ws === tab;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-selected', on ? 'true' : 'false');
+  });
+  document.querySelectorAll('.ws-pane').forEach(p => p.classList.remove('active'));
+  const pane = $(`ws-pane-${tab}`);
+  if (pane) pane.classList.add('active');
+
+  if (tab === 'overview') renderWorkspaceOverview();
+  else if (tab === 'documents') renderWorkspaceDocuments();
+  else if (tab === 'drafts') renderWorkspaceDrafts();
+  else if (tab === 'conversation') { const i = $('chat-input'); if (i) setTimeout(() => i.focus(), 80); }
+  refreshIcons();
+}
+
+function timeAgo(ts) {
+  const s = Math.floor((Date.now() - ts) / 1000);
+  if (s < 60) return 'just now';
+  const m = Math.floor(s / 60); if (m < 60) return m + 'm ago';
+  const h = Math.floor(m / 60); if (h < 24) return h + 'h ago';
+  const d = Math.floor(h / 24); if (d < 7) return d + 'd ago';
+  return new Date(ts).toLocaleDateString();
+}
+
+function renderCaseTimeline(c, limit) {
+  const items = [...(c.timeline || [])].sort((a, b) => b.at - a.at).slice(0, limit || 8);
+  if (!items.length) return `<p class="ws-empty">Nothing yet. Your conversation, documents, drafts and deadlines will show up here as you work.</p>`;
+  const icons = { message: 'message-circle', document: 'file-text', draft: 'file-pen-line', deadline: 'alarm-clock', analysis: 'scale' };
+  return `<ul class="ws-timeline">${items.map(ev => `
+    <li><span class="ws-tl-icon"><i data-lucide="${icons[ev.type] || 'dot'}"></i></span>
+      <span class="ws-tl-label">${escapeHtml(ev.label || ev.type)}</span>
+      <span class="ws-tl-time">${timeAgo(ev.at)}</span></li>`).join('')}</ul>`;
+}
+
+// ── Overview tab ──────────────────────────────────────────────
+function renderWorkspaceOverview() {
+  const c = getActiveCase();
+  const pane = $('ws-pane-overview');
+  if (!c || !pane) return;
+  const n = caseCounts(c);
+  const stats = [
+    ['message-circle', n.messages, 'messages'],
+    ['file-text', n.documents, 'documents'],
+    ['file-pen-line', n.drafts, 'drafts'],
+    ['alarm-clock', n.openDeadlines, 'open deadlines'],
+  ].map(([icon, val, label]) => `
+    <div class="ws-stat">
+      <span class="ws-stat-icon"><i data-lucide="${icon}"></i></span>
+      <span class="ws-stat-num">${val}</span>
+      <span class="ws-stat-label">${label}</span>
+    </div>`).join('');
+
+  const summary = c.summary
+    ? `<p class="ws-summary-text">${escapeHtml(c.summary)}</p>`
+    : `<p class="ws-summary-text ws-empty">No summary yet — start the conversation and it fills in from your own words.</p>`;
+
+  const recos = c.analysis
+    ? renderCaseAnalysisSummary(c.analysis)
+    : `<div class="ws-reco-empty">
+        <p>Get one verified read on this case — the law that applies, both sides stress-tested, and a rights card you can share.</p>
+        <button class="btn btn-primary" onclick="runCaseAnalysis()"><i data-lucide="sparkles"></i> Run legal analysis</button>
+      </div>`;
+
+  pane.innerHTML = `
+    <div class="ws-overview-grid">
+      <div class="ws-card ws-summary-card">
+        <div class="ws-card-head"><h3><i data-lucide="notebook-pen" class="inline-icon"></i> Case summary</h3></div>
+        ${summary}
+        <div class="ws-stats">${stats}</div>
+      </div>
+      <div class="ws-card ws-actions-card">
+        <div class="ws-card-head"><h3><i data-lucide="zap" class="inline-icon"></i> Quick actions</h3></div>
+        <div class="ws-quick-actions">
+          <button class="ws-qa" onclick="switchWsTab('conversation')"><i data-lucide="message-circle"></i> Continue conversation</button>
+          <button class="ws-qa" onclick="switchWsTab('documents')"><i data-lucide="upload"></i> Add a document</button>
+          <button class="ws-qa" onclick="startCaseDraft()"><i data-lucide="file-pen-line"></i> Draft a document</button>
+          <button class="ws-qa" onclick="promptCaseDeadline()"><i data-lucide="calendar-plus"></i> Add a deadline</button>
+        </div>
+      </div>
+      <div class="ws-card ws-reco-card">
+        <div class="ws-card-head"><h3><i data-lucide="scale" class="inline-icon"></i> AI recommendations</h3></div>
+        <div class="ws-reco-body">${recos}</div>
+      </div>
+      <div class="ws-card ws-timeline-card">
+        <div class="ws-card-head"><h3><i data-lucide="history" class="inline-icon"></i> Recent activity</h3></div>
+        ${renderCaseTimeline(c, 6)}
+      </div>
+    </div>`;
+  refreshIcons();
+}
+
+function renderCaseAnalysisSummary(a) {
+  const rc = a.rights_card || {};
+  const rights = (rc.rights || []).slice(0, 6).map(x =>
+    `<li>${escapeHtml(x.text || '')}${x.source ? `<span class="ws-rc-src">${escapeHtml(x.source)}</span>` : ''}</li>`).join('');
+  const law = a.situation_and_law
+    ? `<details class="ws-reco-law"><summary>The law that applies</summary><div class="markdown-body">${renderMarkdown(a.situation_and_law)}</div></details>` : '';
+  return `
+    ${a.explain_simply ? `<div class="markdown-body ws-reco-explain">${renderMarkdown(a.explain_simply)}</div>` : ''}
+    ${rights ? `<div class="ws-reco-rights"><h4><i data-lucide="id-card" class="inline-icon"></i> ${escapeHtml(rc.title || 'Your rights')}</h4><ul class="card-rights">${rights}</ul></div>` : ''}
+    ${law}
+    <div class="ws-reco-actions">
+      <button class="btn btn-sm btn-secondary" onclick="runCaseAnalysis()"><i data-lucide="refresh-cw"></i> Re-run analysis</button>
+    </div>`;
+}
+
+async function runCaseAnalysis() {
+  const c = requireActiveCase();
+  const situation = (c.summary || state.lastSituation || '').trim()
+    || ((c.history || []).find(m => m.role === 'user') || {}).content || '';
+  if (!situation) {
+    showToast('Tell me what happened in the conversation first, then I can analyse it.');
+    switchWsTab('conversation');
+    return;
+  }
+  const recoBody = document.querySelector('#ws-pane-overview .ws-reco-body');
+  if (recoBody) {
+    recoBody.innerHTML = `<div class="ls-loading"><div class="typing-dots"><span></span><span></span><span></span></div> <span>Analysing this case… local AI can take up to a minute.</span></div>`;
+    refreshIcons();
+  }
+  try {
+    const data = await apiCall('/api/law-and-steps', {
+      method: 'POST',
+      body: JSON.stringify({ situation, language: state.language, session_id: c.sessionId }),
+    });
+    updateActiveCase(cc => { cc.analysis = data.result || {}; pushTimeline(cc, 'analysis', 'Legal analysis generated'); });
+    renderWorkspaceOverview();
+    updateWorkspaceHeader();
+  } catch (e) {
+    showToast('Could not run the analysis. Check that the server and Ollama are running.');
+    renderWorkspaceOverview();
+  }
+}
+
+// ── Documents tab ─────────────────────────────────────────────
+function renderWorkspaceDocuments() {
+  const c = getActiveCase();
+  const pane = $('ws-pane-documents');
+  if (!c || !pane) return;
+  const docs = c.documents || [];
+  const list = docs.length
+    ? docs.map(renderCaseDocCard).join('')
+    : `<p class="ws-empty">No documents yet. Upload a legal notice, FIR, or court summons — it's read on this device and filed under this case.</p>`;
+  pane.innerHTML = `
+    <div class="ws-card">
+      <div class="ws-card-head"><h3><i data-lucide="upload" class="inline-icon"></i> Add a document</h3></div>
+      <button class="ws-upload" onclick="document.getElementById('ws-doc-input').click()">
+        <span class="ws-upload-icon"><i data-lucide="camera"></i></span>
+        <span class="ws-upload-text"><strong>Tap to upload a document</strong><small>Photo, PDF, or text file. Read only on this device.</small></span>
+      </button>
+      <input type="file" id="ws-doc-input" accept="image/*,.pdf,.txt" style="display:none" onchange="handleCaseDocUpload(event)">
+    </div>
+    <div class="ws-doc-list">${list}</div>`;
+  refreshIcons();
+}
+
+function renderCaseDocCard(d) {
+  const text = (d.text || '').trim();
+  const preview = text.slice(0, 500);
+  return `
+  <div class="ws-doc-card">
+    <div class="ws-doc-head">
+      <span class="ws-doc-name"><i data-lucide="file-text" class="inline-icon"></i> ${escapeHtml(d.filename || 'Document')}</span>
+      <button class="ws-doc-x" onclick="removeCaseDocument('${d.id}')" title="Remove document"><i data-lucide="trash-2"></i></button>
+    </div>
+    ${d.summary ? `<p class="ws-doc-summary">${escapeHtml(d.summary)}</p>` : ''}
+    ${d.translation
+      ? `<div class="ws-doc-translation markdown-body">${renderMarkdown(d.translation)}</div>`
+      : `<div class="ws-doc-actions"><button class="btn btn-sm btn-primary" onclick="explainCaseDocument('${d.id}')"><i data-lucide="languages"></i> Explain in plain language</button></div>`}
+    ${text ? `<details class="ws-doc-ocr"><summary>Extracted text</summary><div class="ws-doc-ocr-text">${escapeHtml(preview)}${text.length > 500 ? '…' : ''}</div></details>` : ''}
+  </div>`;
+}
+
+async function handleCaseDocUpload(event) {
+  const file = event.target.files[0];
+  event.target.value = '';
+  if (!file) return;
+  const c = requireActiveCase();
+  showToast('Reading ' + file.name + '…');
+  try {
+    const text = await extractDocText(file);
+    if (!text || !text.trim()) throw new Error('No readable text found in that document.');
+    let summary = '';
+    try {
+      const data = await apiCall('/api/upload-document', {
+        method: 'POST',
+        body: JSON.stringify({ text, filename: file.name, language: state.language, session_id: c.sessionId }),
+      });
+      summary = (data.summary || '').trim();
+    } catch (e) { /* summary is optional; keep the document either way */ }
+    updateActiveCase(cc => {
+      cc.documents.push({ id: generateId(), filename: file.name, text: text.trim(), summary, translation: '', source: 'upload', addedAt: Date.now() });
+      pushTimeline(cc, 'document', 'Added ' + file.name);
+    });
+    renderWorkspaceDocuments();
+    updateWorkspaceHeader();
+    showToast(file.name + ' added to this case.');
+  } catch (e) {
+    showToast(e.message || 'Could not read that document.');
+  }
+}
+
+async function explainCaseDocument(id) {
+  const c = getActiveCase();
+  if (!c) return;
+  const d = (c.documents || []).find(x => x.id === id);
+  if (!d) return;
+  showToast('Explaining in plain language…');
+  try {
+    const data = await apiCall('/api/translate-document', {
+      method: 'POST',
+      body: JSON.stringify({ text: d.text, language: state.language }),
+    });
+    updateActiveCase(cc => {
+      const target = cc.documents.find(x => x.id === id);
+      if (target) target.translation = data.response;
+      pushTimeline(cc, 'document', 'Explained ' + d.filename);
+    });
+    renderWorkspaceDocuments();
+  } catch (e) {
+    showToast('Could not explain the document. Check the server and Ollama.');
+  }
+}
+
+function removeCaseDocument(id) {
+  if (!confirm('Remove this document from the case?')) return;
+  updateActiveCase(cc => { cc.documents = (cc.documents || []).filter(x => x.id !== id); });
+  renderWorkspaceDocuments();
+  updateWorkspaceHeader();
+}
+
+// ── Drafts & Deadlines tab ────────────────────────────────────
+function renderWorkspaceDrafts() {
+  const c = getActiveCase();
+  const wrap = $('ws-drafts-content');
+  if (!c || !wrap) return;
+
+  const drafts = c.drafts || [];
+  const draftList = drafts.length ? drafts.map(d => `
+    <div class="ws-draft-card">
+      <div class="ws-doc-head">
+        <span class="ws-doc-name"><i data-lucide="file-pen-line" class="inline-icon"></i> ${escapeHtml(d.title || d.type || 'Document')}</span>
+        <span class="ws-draft-btns">
+          <button class="btn btn-sm btn-secondary" onclick="downloadCaseDraft('${d.id}')" title="Download (.doc)"><i data-lucide="download"></i></button>
+          <button class="btn btn-sm btn-secondary" onclick="printCaseDraft('${d.id}')" title="Print"><i data-lucide="printer"></i></button>
+          <button class="ws-doc-x" onclick="removeCaseDraft('${d.id}')" title="Remove draft"><i data-lucide="trash-2"></i></button>
+        </span>
+      </div>
+      <details class="ws-doc-ocr"><summary>Preview</summary><div class="markdown-body ws-draft-preview">${renderMarkdown(d.text || '')}</div></details>
+    </div>`).join('')
+    : `<p class="ws-empty">No drafts yet. Generate a legal notice, complaint, or RTI — it saves here automatically.</p>`;
+
+  const today = new Date().toISOString().slice(0, 10);
+  const deadlines = [...(c.deadlines || [])].sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+  const dlList = deadlines.length ? deadlines.map(d => {
+    const soon = !d.done && d.date >= today && (new Date(d.date) - new Date(today)) / 86400000 <= 7;
+    const past = !d.done && d.date < today;
+    return `<li class="ws-dl ${d.done ? 'done' : ''} ${soon ? 'soon' : ''} ${past ? 'past' : ''}">
+      <button class="ws-dl-check" onclick="toggleDeadlineDone('${d.id}')" aria-label="Mark done"><i data-lucide="${d.done ? 'check-circle-2' : 'circle'}"></i></button>
+      <span class="ws-dl-label">${escapeHtml(d.label)}</span>
+      <span class="ws-dl-date">${d.date}${past ? ' · overdue' : ''}</span>
+      <button class="ws-doc-x" onclick="removeDeadline('${d.id}')" title="Remove"><i data-lucide="x"></i></button>
+    </li>`;
+  }).join('') : `<li class="ws-empty ws-dl-empty">No deadlines set.</li>`;
+
+  wrap.innerHTML = `
+    <div class="ws-card">
+      <div class="ws-card-head"><h3><i data-lucide="file-pen-line" class="inline-icon"></i> Drafts</h3>
+        <button class="btn btn-sm btn-primary" onclick="startCaseDraft()"><i data-lucide="plus"></i> New draft</button></div>
+      <div class="ws-draft-list">${draftList}</div>
+    </div>
+    <div class="ws-card">
+      <div class="ws-card-head"><h3><i data-lucide="alarm-clock" class="inline-icon"></i> Deadlines</h3>
+        <button class="btn btn-sm btn-secondary" onclick="promptCaseDeadline()"><i data-lucide="calendar-plus"></i> Add deadline</button></div>
+      <ul class="ws-dl-list">${dlList}</ul>
+    </div>
+    <div class="ws-card ws-timeline-card">
+      <div class="ws-card-head"><h3><i data-lucide="history" class="inline-icon"></i> Timeline</h3></div>
+      ${renderCaseTimeline(c, 20)}
+    </div>`;
+
+  const builder = $('ws-draft-builder');
+  if (builder && !builder.dataset.open) builder.style.display = 'none';
+  refreshIcons();
+}
+
+// "New draft" — reveal the (relocated) draft builder, reset it to step 1, and
+// prefill the situation from the case so the flow is already in context.
+function startCaseDraft() {
+  const c = requireActiveCase();
+  if (state.currentView !== 'workspace') { navigateTo('workspace'); }
+  switchWsTab('drafts');
+  const builder = $('ws-draft-builder');
+  if (builder) { builder.style.display = 'block'; builder.dataset.open = '1'; }
+  const describe = $('draft-step-describe');
+  if (describe) describe.style.display = 'block';
+  ['draft-step-suggest', 'draft-form-container', 'draft-result-container'].forEach(id => {
+    const el = $(id); if (el) el.style.display = 'none';
+  });
+  const ta = $('draft-situation');
+  if (ta && !ta.value.trim()) {
+    ta.value = (c.summary || state.lastSituation || ((c.history || []).find(m => m.role === 'user') || {}).content || '');
+  }
+  loadDraftTemplates();
+  if (builder) builder.scrollIntoView({ behavior: 'smooth' });
+  refreshIcons();
+}
+
+// Auto-file a freshly generated draft under the active case — the fix for the
+// "0 drafts" bug: no more remembering to click "Save to case".
+function autoSaveDraftToActiveCase(text) {
+  const documentText = stripHowToUseSection(text);
+  const c = updateActiveCase(cc => {
+    cc.drafts.push({ id: generateId(), type: currentDraftType, title: currentDraftTitle, text: documentText, createdAt: Date.now() });
+    pushTimeline(cc, 'draft', 'Drafted ' + (currentDraftTitle || 'document'));
+  });
+  if (c) {
+    showToast('Draft saved to case: ' + c.title);
+    if (state.currentView === 'workspace') { renderWorkspaceDrafts(); updateWorkspaceHeader(); }
+    renderCases();
+  }
+  return c;
+}
+
+function findCaseDraft(id) { const c = getActiveCase(); return c ? (c.drafts || []).find(d => d.id === id) : null; }
+
+function downloadCaseDraft(id) {
+  const d = findCaseDraft(id); if (!d) return;
+  const html = `<html><head><meta charset="utf-8"></head><body style="font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.6;">${renderMarkdown(d.text)}</body></html>`;
+  const blob = new Blob([html], { type: 'application/msword' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${d.title || 'document'}.doc`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function printCaseDraft(id) {
+  const d = findCaseDraft(id); if (!d) return;
+  const w = window.open('', '_blank');
+  w.document.write(`<html><head><title>Print</title></head><body style="font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.6; padding: 2cm;">${renderMarkdown(d.text)}</body></html>`);
+  w.document.close();
+  w.print();
+}
+
+function removeCaseDraft(id) {
+  if (!confirm('Remove this draft from the case?')) return;
+  updateActiveCase(cc => { cc.drafts = (cc.drafts || []).filter(d => d.id !== id); });
+  renderWorkspaceDrafts();
+  updateWorkspaceHeader();
+  renderCases();
+}
+
+function promptCaseDeadline() {
+  const c = requireActiveCase();
+  const label = prompt('What is the deadline for? (e.g., "Reply to legal notice")');
+  if (!label) return;
+  const date = prompt('Deadline date (YYYY-MM-DD):');
+  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) { alert('Please use YYYY-MM-DD format.'); return; }
+  updateActiveCase(cc => {
+    cc.deadlines.push({ id: generateId(), label: label.trim(), date, done: false });
+    pushTimeline(cc, 'deadline', 'Deadline: ' + label.trim() + ' (' + date + ')');
+  });
+  if (state.currentView === 'workspace') {
+    updateWorkspaceHeader();
+    if (wsTab === 'drafts') renderWorkspaceDrafts();
+    if (wsTab === 'overview') renderWorkspaceOverview();
+  }
+  renderCases();
+}
+
+function toggleDeadlineDone(id) {
+  updateActiveCase(cc => { const d = (cc.deadlines || []).find(x => x.id === id); if (d) d.done = !d.done; });
+  renderWorkspaceDrafts();
+  updateWorkspaceHeader();
+}
+
+function removeDeadline(id) {
+  updateActiveCase(cc => { cc.deadlines = (cc.deadlines || []).filter(x => x.id !== id); });
+  renderWorkspaceDrafts();
+  updateWorkspaceHeader();
+}
+
+// ── Case entry points (used from home, hero, feature cards) ──
+function enterConversation(prefill) {
+  requireActiveCase();
+  wsTab = 'conversation';
+  navigateTo('workspace');
+  renderWorkspace();
+  switchWsTab('conversation');
+  if (prefill) {
+    const input = $('chat-input');
+    if (input) { input.value = prefill; sendMessage(); }
+  }
+}
+
+function openCaseTool(tab) {
+  requireActiveCase();
+  wsTab = (tab === 'drafts' || tab === 'documents') ? tab : 'overview';
+  navigateTo('workspace');
+  renderWorkspace();
+  if (tab === 'drafts') startCaseDraft();
+}
+
+// ── Workspace header actions ──
+function renameActiveCase() {
+  const c = getActiveCase(); if (!c) return;
+  const title = prompt('Rename this case:', c.title || '');
+  if (title === null) return;
+  const trimmed = title.trim();
+  if (!trimmed) return;
+  updateActiveCase(cc => { cc.title = trimmed; });
+  updateWorkspaceHeader();
+  renderCases();
+  renderChatSidebar();
+  updateCaseBanner();
+}
+
+function toggleCaseStatus() {
+  updateActiveCase(cc => { cc.status = cc.status === 'closed' ? 'active' : 'closed'; });
+  updateWorkspaceHeader();
+  renderCases();
+}
+
+function deleteActiveCase() {
+  const c = getActiveCase(); if (!c) return;
+  if (!confirm('Delete this case and everything in it — conversation, documents, drafts and deadlines? This cannot be undone.')) return;
+  saveCases(loadCases().filter(x => x.id !== c.id));
+  localStorage.removeItem('adhikaar_active_case');
+  updateCaseBanner();
+  navigateTo('cases');
+  renderCases();
+  renderChatSidebar();
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -2222,6 +2846,8 @@ async function generateDraft() {
     $('draft-result').innerHTML = renderMarkdown(data.response);
     $('draft-result-container').style.display = 'block';
     $('draft-result-container').scrollIntoView({ behavior: 'smooth' });
+    // Case-centric: file the finished draft under the active case automatically.
+    autoSaveDraftToActiveCase(data.response);
   } catch (e) {
     showToast('Could not generate the document. Check that the server and Ollama are running.');
   } finally {
@@ -2252,18 +2878,16 @@ function printDraft() {
   w.print();
 }
 
+// Manual "Save to case" — now a safe fallback. Drafts already auto-save on
+// generation (autoSaveDraftToActiveCase), so this just guards against a double
+// save and ensures there is a case to save into.
 function saveDraftToCase() {
   if (!lastDraftText) return;
-  const c = getActiveCase();
-  if (!c) { alert('Open or create a case first (My Cases), then save the draft to it.'); return; }
-  const cases = loadCases();
-  const target = cases.find(x => x.id === c.id);
+  requireActiveCase();
   const documentText = stripHowToUseSection(lastDraftText);
-  target.drafts.push({ type: currentDraftType, text: documentText, createdAt: Date.now() });
-  target.updatedAt = Date.now();
-  saveCases(cases);
-  alert(`Draft saved to case: ${target.title}`);
-  renderCases();
+  const already = (getActiveCase().drafts || []).some(d => d.text === documentText);
+  if (already) { showToast('Already saved to this case.'); return; }
+  autoSaveDraftToActiveCase(lastDraftText);
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -2574,19 +3198,14 @@ function homeChatVoice() {
   startDictation(input, $('home-chat-mic'), { onStop: () => { if (input) input.focus(); } });
 }
 
-// The home input is a doorway into the real chatbot: it navigates to the
-// chat view and sends the question through the normal chat flow.
+// The home input is a doorway into a case: it opens (or creates) a case and
+// sends the question through the normal chat flow, now bound to that case.
 function homeChatSend() {
   const input = $('home-chat-input');
   const message = input.value.trim();
   if (!message) return;
   input.value = '';
-  navigateTo('chat');
-  const chatInput = $('chat-input');
-  if (chatInput) {
-    chatInput.value = message;
-    sendMessage();
-  }
+  enterConversation(message);
 }
 
 // ── Global quick-ask bar (visible on all feature pages) ──
@@ -2596,12 +3215,7 @@ function quickAskSend() {
   const message = input.value.trim();
   if (!message) return;
   input.value = '';
-  navigateTo('chat');
-  const chatInput = $('chat-input');
-  if (chatInput) {
-    chatInput.value = message;
-    sendMessage();
-  }
+  enterConversation(message);
 }
 
 function quickAskVoice() {

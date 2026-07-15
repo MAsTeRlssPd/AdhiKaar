@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#4338CA">
   <link rel="preload" href="fonts/noto-sans-latin-400.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="fonts/fonts.css?v=4">
-  <link rel="stylesheet" href="style.css?v=4">
+  <link rel="stylesheet" href="style.css?v=6">
 
   <!-- Every dependency is served from this machine. Nothing here reaches the
        network, which is what makes "runs on your device" and "works offline"
@@ -55,17 +55,10 @@
       </div>
 
       <nav class="sidebar-nav">
+        <div class="nav-section-label">Workspace</div>
         <div class="nav-item active" role="button" tabindex="0" aria-current="page" data-view="home" id="nav-home">
           <span class="nav-icon"><i data-lucide="home"></i></span>
           <span class="nav-label">Home</span>
-        </div>
-        <div class="nav-item" role="button" tabindex="0" data-view="chat" id="nav-chat">
-          <span class="nav-icon"><i data-lucide="message-circle"></i></span>
-          <span class="nav-label">Talk to Legal Helper</span>
-        </div>
-        <div class="nav-item" role="button" tabindex="0" data-view="lawsteps" id="nav-lawsteps">
-          <span class="nav-icon"><i data-lucide="clipboard-check"></i></span>
-          <span class="nav-label">Law &amp; Next Steps</span>
         </div>
         <div class="nav-item" role="button" tabindex="0" data-view="cases" id="nav-cases">
           <span class="nav-icon"><i data-lucide="folder-open"></i></span>
@@ -73,11 +66,8 @@
         </div>
 
         <div class="nav-divider"></div>
+        <div class="nav-section-label">Tools</div>
 
-        <div class="nav-item" role="button" tabindex="0" data-view="draft" id="nav-draft">
-          <span class="nav-icon"><i data-lucide="file-pen-line"></i></span>
-          <span class="nav-label">Draft a Document</span>
-        </div>
         <div class="nav-item" role="button" tabindex="0" data-view="bns" id="nav-bns">
           <span class="nav-icon"><i data-lucide="repeat"></i></span>
           <span class="nav-label">Section Converter</span>
@@ -85,10 +75,6 @@
         <div class="nav-item" role="button" tabindex="0" data-view="legal-aid" id="nav-legal-aid">
           <span class="nav-icon"><i data-lucide="phone"></i></span>
           <span class="nav-label">Find Legal Aid</span>
-        </div>
-        <div class="nav-item" role="button" tabindex="0" data-view="document" id="nav-document">
-          <span class="nav-icon"><i data-lucide="file-text"></i></span>
-          <span class="nav-label">Translate Legal Document</span>
         </div>
       </nav>
 
@@ -116,7 +102,7 @@
               Salary not paid? Deposit stuck? Got a legal notice? Ask in Hindi, English, or 9 other languages — free, offline, nothing leaves your computer.
             </p>
             <div class="hero-cta">
-              <button class="btn btn-primary" onclick="navigateTo('chat')">
+              <button class="btn btn-primary" onclick="enterConversation()">
                 <i data-lucide="message-circle"></i> Ask Your Question
               </button>
               <button class="btn btn-secondary" onclick="document.getElementById('how-it-works').scrollIntoView({behavior:'smooth'})">
@@ -192,10 +178,10 @@
 
         <h2 class="section-title features-title">Everything अधिKaar Can Do</h2>
         <div class="features-grid">
-          <div class="feature-card" role="button" tabindex="0" onclick="navigateTo('chat')">
+          <div class="feature-card" role="button" tabindex="0" onclick="enterConversation()">
             <div class="card-icon teal"><i data-lucide="message-circle"></i></div>
             <h3>Talk to Legal Helper</h3>
-            <p>Describe your problem in any of 11 languages — get your rights, action steps, and deadlines.</p>
+            <p>Describe your problem in any of 11 languages — get your rights, action steps, and deadlines, all saved to your case.</p>
             <span class="card-go">Open <i data-lucide="arrow-right"></i></span>
           </div>
           <div class="feature-card" role="button" tabindex="0" onclick="navigateTo('cases')">
@@ -204,10 +190,10 @@
             <p>Keep each legal matter organized — conversations, documents, and deadlines in one place, private on your device.</p>
             <span class="card-go">Open <i data-lucide="arrow-right"></i></span>
           </div>
-          <div class="feature-card" role="button" tabindex="0" onclick="navigateTo('draft')">
+          <div class="feature-card" role="button" tabindex="0" onclick="openCaseTool('drafts')">
             <div class="card-icon amber"><i data-lucide="file-pen-line"></i></div>
             <h3>Draft a Document</h3>
-            <p>Generate ready-to-print legal notices, consumer complaints, RTI applications, and police complaints.</p>
+            <p>Generate ready-to-print legal notices, consumer complaints, RTI applications, and police complaints — saved to your case.</p>
             <span class="card-go">Open <i data-lucide="arrow-right"></i></span>
           </div>
           <div class="feature-card" role="button" tabindex="0" onclick="openConverter('ipc_bns')">
@@ -222,10 +208,10 @@
             <p>Free legal aid offices, helpline numbers, and Tele-Law services in your district.</p>
             <span class="card-go">Open <i data-lucide="arrow-right"></i></span>
           </div>
-          <div class="feature-card" role="button" tabindex="0" onclick="navigateTo('document')">
+          <div class="feature-card" role="button" tabindex="0" onclick="openCaseTool('documents')">
             <div class="card-icon blue"><i data-lucide="file-text"></i></div>
             <h3>Translate Legal Documents</h3>
-            <p>Upload a legal notice, FIR, or court summons — get it explained in plain language.</p>
+            <p>Upload a legal notice, FIR, or court summons — get it explained in plain language, filed under your case.</p>
             <span class="card-go">Open <i data-lucide="arrow-right"></i></span>
           </div>
           <div class="feature-card" role="button" tabindex="0" onclick="enterKioskMode()">
@@ -494,6 +480,44 @@
         <div class="cases-grid" id="cases-grid"></div>
       </section>
 
+      <!-- ════ CASE WORKSPACE VIEW ════ -->
+      <section class="view workspace-view" id="view-workspace">
+        <div class="ws-header">
+          <button class="ws-back" onclick="navigateTo('cases')" aria-label="Back to all cases">
+            <i data-lucide="arrow-left"></i> <span>Cases</span>
+          </button>
+          <div class="ws-title-block">
+            <h2 id="ws-title">Case</h2>
+            <div class="ws-meta">
+              <span class="ws-status-pill" id="ws-status">Active</span>
+              <span class="ws-deadline-chip" id="ws-deadline-chip" style="display:none"></span>
+            </div>
+          </div>
+          <div class="ws-header-actions">
+            <button class="btn btn-sm btn-secondary" onclick="renameActiveCase()" title="Rename case"><i data-lucide="pencil"></i> <span class="ws-btn-label">Rename</span></button>
+            <button class="btn btn-sm btn-secondary" id="ws-status-btn" onclick="toggleCaseStatus()" title="Close or reopen case"><i data-lucide="check-circle"></i> <span class="ws-btn-label">Close</span></button>
+            <button class="btn btn-sm btn-secondary case-delete" onclick="deleteActiveCase()" title="Delete case"><i data-lucide="trash-2"></i></button>
+          </div>
+        </div>
+
+        <div class="ws-rail" role="tablist">
+          <button class="ws-tab active" role="tab" data-ws="overview" onclick="switchWsTab('overview')"><i data-lucide="layout-dashboard" class="inline-icon"></i> Overview</button>
+          <button class="ws-tab" role="tab" data-ws="conversation" onclick="switchWsTab('conversation')"><i data-lucide="message-circle" class="inline-icon"></i> Conversation</button>
+          <button class="ws-tab" role="tab" data-ws="documents" onclick="switchWsTab('documents')"><i data-lucide="file-text" class="inline-icon"></i> Documents</button>
+          <button class="ws-tab" role="tab" data-ws="drafts" onclick="switchWsTab('drafts')"><i data-lucide="file-pen-line" class="inline-icon"></i> Drafts &amp; Deadlines</button>
+        </div>
+
+        <div class="ws-body">
+          <div class="ws-pane active" id="ws-pane-overview"></div>
+          <div class="ws-pane" id="ws-pane-conversation"><!-- chat is relocated here at init --></div>
+          <div class="ws-pane" id="ws-pane-documents"></div>
+          <div class="ws-pane" id="ws-pane-drafts">
+            <div id="ws-drafts-content"><!-- saved drafts + deadlines, rendered dynamically --></div>
+            <div id="ws-draft-builder"><!-- draft builder relocated here at init --></div>
+          </div>
+        </div>
+      </section>
+
       <!-- ════ DRAFT DOCUMENT VIEW ════ -->
       <section class="view draft-view" id="view-draft">
         <div class="view-header">
@@ -587,21 +611,21 @@
         <span class="mob-nav-icon"><i data-lucide="home"></i></span>
         <span>Home</span>
       </div>
-      <div class="mobile-nav-item" role="button" tabindex="0" data-view="chat" onclick="navigateTo('chat')">
-        <span class="mob-nav-icon"><i data-lucide="message-circle"></i></span>
-        <span>Chat</span>
+      <div class="mobile-nav-item" role="button" tabindex="0" data-view="cases" onclick="navigateTo('cases')">
+        <span class="mob-nav-icon"><i data-lucide="folder-open"></i></span>
+        <span>Cases</span>
       </div>
       <div class="mobile-nav-item" role="button" tabindex="0" data-view="bns" onclick="navigateTo('bns')">
         <span class="mob-nav-icon"><i data-lucide="repeat"></i></span>
-        <span>IPC/BNS</span>
+        <span>Convert</span>
       </div>
       <div class="mobile-nav-item" role="button" tabindex="0" data-view="legal-aid" onclick="navigateTo('legal-aid')">
         <span class="mob-nav-icon"><i data-lucide="phone"></i></span>
-        <span>Help</span>
+        <span>Aid</span>
       </div>
-      <div class="mobile-nav-item" role="button" tabindex="0" data-view="document" onclick="navigateTo('document')">
-        <span class="mob-nav-icon"><i data-lucide="file-text"></i></span>
-        <span>Docs</span>
+      <div class="mobile-nav-item" role="button" tabindex="0" onclick="enterKioskMode()">
+        <span class="mob-nav-icon"><i data-lucide="accessibility"></i></span>
+        <span>Voice</span>
       </div>
     </div>
   </nav>
@@ -653,6 +677,6 @@
     </div>
   </dialog>
 
-  <script src="app.js?v=7"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>
