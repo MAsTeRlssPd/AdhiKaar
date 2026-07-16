@@ -9,6 +9,7 @@ Section 0 is the whole system in one view. Sections 1-8 are zoom-ins on each par
 ## 0. Master Architecture - Everything In One View
 
 ```mermaid
+%%{init: {'theme':'base','themeVariables':{'background':'#FFFFFF','primaryColor':'#EEF2FF','primaryTextColor':'#1C1917','primaryBorderColor':'#4338CA','secondaryColor':'#FAF9F6','tertiaryColor':'#FFFFFF','lineColor':'#57534E','textColor':'#1C1917','mainBkg':'#FFFFFF','nodeBorder':'#4338CA','clusterBkg':'#FFFFFF','clusterBorder':'#4338CA','edgeLabelBackground':'#FFFFFF','actorBkg':'#EEF2FF','actorTextColor':'#1C1917','actorBorder':'#4338CA','signalColor':'#1C1917','signalTextColor':'#1C1917','noteBkgColor':'#FEF3C7','noteTextColor':'#1C1917','noteBorderColor':'#F59E0B','labelBoxBkgColor':'#EEF2FF','labelTextColor':'#1C1917','sequenceNumberColor':'#FFFFFF'}}}%%
 flowchart TB
     U(("Citizen<br/>types or speaks<br/>in 11 languages"))
 
@@ -150,20 +151,20 @@ flowchart TB
     HOST -. "one time only" .-> NET
     HOST --- BLOCK
 
-    classDef safe fill:#D1FAE5,stroke:#10B981,stroke-width:2px
-    classDef warn fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
-    classDef danger fill:#FEE2E2,stroke:#EF4444,stroke-width:2px
-    classDef store fill:#C7D2FE,stroke:#4338CA
+    classDef safe fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#1C1917
+    classDef warn fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#1C1917
+    classDef danger fill:#FEE2E2,stroke:#EF4444,stroke-width:2px,color:#1C1917
+    classDef store fill:#C7D2FE,stroke:#4338CA,color:#1C1917
 
     class GD warn
     class RP,PANELS,SAN safe
     class BLOCK danger
     class C1,C2,C3,C4,C5,LS,SESS,UPL store
     class NET warn
-    style HOST fill:#EEF2FF,stroke:#4338CA,stroke-width:3px
-    style BROWSER fill:#FAF9F6,stroke:#57534E,stroke-width:2px
-    style PIPE fill:#FFFFFF,stroke:#4338CA,stroke-width:2px
-    style LOGIC fill:#FFFFFF,stroke:#10B981
+    style HOST fill:#EEF2FF,stroke:#4338CA,stroke-width:3px,color:#1C1917
+    style BROWSER fill:#FAF9F6,stroke:#57534E,stroke-width:2px,color:#1C1917
+    style PIPE fill:#FFFFFF,stroke:#4338CA,stroke-width:2px,color:#1C1917
+    style LOGIC fill:#FFFFFF,stroke:#10B981,color:#1C1917
 ```
 
 ### How to read it
@@ -181,6 +182,7 @@ flowchart TB
 The whole product is one local process plus a browser. There is no server, no account, no outbound call at runtime.
 
 ```mermaid
+%%{init: {'theme':'base','themeVariables':{'background':'#FFFFFF','primaryColor':'#EEF2FF','primaryTextColor':'#1C1917','primaryBorderColor':'#4338CA','secondaryColor':'#FAF9F6','tertiaryColor':'#FFFFFF','lineColor':'#57534E','textColor':'#1C1917','mainBkg':'#FFFFFF','nodeBorder':'#4338CA','clusterBkg':'#FFFFFF','clusterBorder':'#4338CA','edgeLabelBackground':'#FFFFFF','actorBkg':'#EEF2FF','actorTextColor':'#1C1917','actorBorder':'#4338CA','signalColor':'#1C1917','signalTextColor':'#1C1917','noteBkgColor':'#FEF3C7','noteTextColor':'#1C1917','noteBorderColor':'#F59E0B','labelBoxBkgColor':'#EEF2FF','labelTextColor':'#1C1917','sequenceNumberColor':'#FFFFFF'}}}%%
 graph TB
     subgraph BROWSER["Browser - vanilla JS SPA, zero build"]
         UI["index.html / app.js / style.css"]
@@ -217,10 +219,10 @@ graph TB
     API --> PIPE
     PIPE --> OLLAMA
 
-    style HOST fill:#EEF2FF,stroke:#4338CA,stroke-width:2px
-    style BROWSER fill:#FAF9F6,stroke:#57534E
-    style OLLAMA fill:#C7D2FE,stroke:#4338CA
-    style CHROMA fill:#C7D2FE,stroke:#4338CA
+    style HOST fill:#EEF2FF,stroke:#4338CA,stroke-width:2px,color:#1C1917
+    style BROWSER fill:#FAF9F6,stroke:#57534E,color:#1C1917
+    style OLLAMA fill:#C7D2FE,stroke:#4338CA,color:#1C1917
+    style CHROMA fill:#C7D2FE,stroke:#4338CA,color:#1C1917
 ```
 
 ---
@@ -230,6 +232,7 @@ graph TB
 `rag_setup.py` builds four ChromaDB collections from curated JSON plus the official-law corpus. Each corpus chunk keeps its act, section and official source URL, which is what lets citations resolve to real government pages.
 
 ```mermaid
+%%{init: {'theme':'base','themeVariables':{'background':'#FFFFFF','primaryColor':'#EEF2FF','primaryTextColor':'#1C1917','primaryBorderColor':'#4338CA','secondaryColor':'#FAF9F6','tertiaryColor':'#FFFFFF','lineColor':'#57534E','textColor':'#1C1917','mainBkg':'#FFFFFF','nodeBorder':'#4338CA','clusterBkg':'#FFFFFF','clusterBorder':'#4338CA','edgeLabelBackground':'#FFFFFF','actorBkg':'#EEF2FF','actorTextColor':'#1C1917','actorBorder':'#4338CA','signalColor':'#1C1917','signalTextColor':'#1C1917','noteBkgColor':'#FEF3C7','noteTextColor':'#1C1917','noteBorderColor':'#F59E0B','labelBoxBkgColor':'#EEF2FF','labelTextColor':'#1C1917','sequenceNumberColor':'#FFFFFF'}}}%%
 graph LR
     subgraph SRC["data/ - source of truth"]
         A1["ipc_bns_mapping.json<br/>216 mappings"]
@@ -267,8 +270,8 @@ graph LR
     RS --> C3
     RS --> C4
 
-    style COLS fill:#EEF2FF,stroke:#4338CA
-    style SRC fill:#FAF9F6,stroke:#57534E
+    style COLS fill:#EEF2FF,stroke:#4338CA,color:#1C1917
+    style SRC fill:#FAF9F6,stroke:#57534E,color:#1C1917
 ```
 
 ---
@@ -278,6 +281,7 @@ graph LR
 The multilingual expansion is why a Hinglish phrase like "mera malik ne salary nahi di" still reaches English-indexed unpaid-wages knowledge.
 
 ```mermaid
+%%{init: {'theme':'base','themeVariables':{'background':'#FFFFFF','primaryColor':'#EEF2FF','primaryTextColor':'#1C1917','primaryBorderColor':'#4338CA','secondaryColor':'#FAF9F6','tertiaryColor':'#FFFFFF','lineColor':'#57534E','textColor':'#1C1917','mainBkg':'#FFFFFF','nodeBorder':'#4338CA','clusterBkg':'#FFFFFF','clusterBorder':'#4338CA','edgeLabelBackground':'#FFFFFF','actorBkg':'#EEF2FF','actorTextColor':'#1C1917','actorBorder':'#4338CA','signalColor':'#1C1917','signalTextColor':'#1C1917','noteBkgColor':'#FEF3C7','noteTextColor':'#1C1917','noteBorderColor':'#F59E0B','labelBoxBkgColor':'#EEF2FF','labelTextColor':'#1C1917','sequenceNumberColor':'#FFFFFF'}}}%%
 sequenceDiagram
     autonumber
     actor U as User
@@ -313,6 +317,7 @@ sequenceDiagram
 The core anti-hallucination design. A claim naming a section that its own cited sources do not contain is rejected deterministically, before any model is trusted to grade itself.
 
 ```mermaid
+%%{init: {'theme':'base','themeVariables':{'background':'#FFFFFF','primaryColor':'#EEF2FF','primaryTextColor':'#1C1917','primaryBorderColor':'#4338CA','secondaryColor':'#FAF9F6','tertiaryColor':'#FFFFFF','lineColor':'#57534E','textColor':'#1C1917','mainBkg':'#FFFFFF','nodeBorder':'#4338CA','clusterBkg':'#FFFFFF','clusterBorder':'#4338CA','edgeLabelBackground':'#FFFFFF','actorBkg':'#EEF2FF','actorTextColor':'#1C1917','actorBorder':'#4338CA','signalColor':'#1C1917','signalTextColor':'#1C1917','noteBkgColor':'#FEF3C7','noteTextColor':'#1C1917','noteBorderColor':'#F59E0B','labelBoxBkgColor':'#EEF2FF','labelTextColor':'#1C1917','sequenceNumberColor':'#FFFFFF'}}}%%
 flowchart TD
     S["Situation"] --> R["retrieve_chunks<br/>official_law + rights<br/>(keeps metadata + official_url)"]
     R --> D["DRAFT - LLM call 1<br/>temp 0.2, format=json<br/>six panels + claims citing chunk ids"]
@@ -335,10 +340,10 @@ flowchart TD
     ASM --> P5["e. Rights card"]
     ASM --> P6["f. Explain to someone you trust"]
 
-    style G fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
-    style X fill:#FEE2E2,stroke:#EF4444
-    style OK fill:#D1FAE5,stroke:#10B981
-    style P3 fill:#D1FAE5,stroke:#10B981
+    style G fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#1C1917
+    style X fill:#FEE2E2,stroke:#EF4444,color:#1C1917
+    style OK fill:#D1FAE5,stroke:#10B981,color:#1C1917
+    style P3 fill:#D1FAE5,stroke:#10B981,color:#1C1917
 ```
 
 Typical cost: 2 LLM calls (draft + verify). The guard is free and runs first, so the cheapest check kills the most dangerous error.
@@ -350,6 +355,7 @@ Typical cost: 2 LLM calls (draft + verify). The guard is free and runs first, so
 OCR picks its model from the document's script, not the UI language, because Indian legal papers are routinely Hindi plus English on one page.
 
 ```mermaid
+%%{init: {'theme':'base','themeVariables':{'background':'#FFFFFF','primaryColor':'#EEF2FF','primaryTextColor':'#1C1917','primaryBorderColor':'#4338CA','secondaryColor':'#FAF9F6','tertiaryColor':'#FFFFFF','lineColor':'#57534E','textColor':'#1C1917','mainBkg':'#FFFFFF','nodeBorder':'#4338CA','clusterBkg':'#FFFFFF','clusterBorder':'#4338CA','edgeLabelBackground':'#FFFFFF','actorBkg':'#EEF2FF','actorTextColor':'#1C1917','actorBorder':'#4338CA','signalColor':'#1C1917','signalTextColor':'#1C1917','noteBkgColor':'#FEF3C7','noteTextColor':'#1C1917','noteBorderColor':'#F59E0B','labelBoxBkgColor':'#EEF2FF','labelTextColor':'#1C1917','sequenceNumberColor':'#FFFFFF'}}}%%
 flowchart TD
     U["User uploads PDF / image"] --> T{"/api/extract-document<br/>server OCR available?"}
 
@@ -373,8 +379,8 @@ flowchart TD
     WHOLE --> G2["Gemma - answer strictly<br/>from this document"]
     G2 --> ANS["grounded answer rendered inline"]
 
-    style WHOLE fill:#D1FAE5,stroke:#10B981
-    style T fill:#FEF3C7,stroke:#F59E0B
+    style WHOLE fill:#D1FAE5,stroke:#10B981,color:#1C1917
+    style T fill:#FEF3C7,stroke:#F59E0B,color:#1C1917
 ```
 
 ---
@@ -382,6 +388,7 @@ flowchart TD
 ## 6. Voice Flow
 
 ```mermaid
+%%{init: {'theme':'base','themeVariables':{'background':'#FFFFFF','primaryColor':'#EEF2FF','primaryTextColor':'#1C1917','primaryBorderColor':'#4338CA','secondaryColor':'#FAF9F6','tertiaryColor':'#FFFFFF','lineColor':'#57534E','textColor':'#1C1917','mainBkg':'#FFFFFF','nodeBorder':'#4338CA','clusterBkg':'#FFFFFF','clusterBorder':'#4338CA','edgeLabelBackground':'#FFFFFF','actorBkg':'#EEF2FF','actorTextColor':'#1C1917','actorBorder':'#4338CA','signalColor':'#1C1917','signalTextColor':'#1C1917','noteBkgColor':'#FEF3C7','noteTextColor':'#1C1917','noteBorderColor':'#F59E0B','labelBoxBkgColor':'#EEF2FF','labelTextColor':'#1C1917','sequenceNumberColor':'#FFFFFF'}}}%%
 sequenceDiagram
     autonumber
     actor U as User
@@ -416,6 +423,7 @@ sequenceDiagram
 ## 7. Model Call Path and Safety Rails
 
 ```mermaid
+%%{init: {'theme':'base','themeVariables':{'background':'#FFFFFF','primaryColor':'#EEF2FF','primaryTextColor':'#1C1917','primaryBorderColor':'#4338CA','secondaryColor':'#FAF9F6','tertiaryColor':'#FFFFFF','lineColor':'#57534E','textColor':'#1C1917','mainBkg':'#FFFFFF','nodeBorder':'#4338CA','clusterBkg':'#FFFFFF','clusterBorder':'#4338CA','edgeLabelBackground':'#FFFFFF','actorBkg':'#EEF2FF','actorTextColor':'#1C1917','actorBorder':'#4338CA','signalColor':'#1C1917','signalTextColor':'#1C1917','noteBkgColor':'#FEF3C7','noteTextColor':'#1C1917','noteBorderColor':'#F59E0B','labelBoxBkgColor':'#EEF2FF','labelTextColor':'#1C1917','sequenceNumberColor':'#FFFFFF'}}}%%
 flowchart LR
     C["caller"] --> CG["call_gemma()"]
     CG --> RES{"model resolved?"}
@@ -428,8 +436,8 @@ flowchart LR
     ERR -->|no| OUT["response"]
     CPU --> OUT
 
-    style OPT fill:#D1FAE5,stroke:#10B981
-    style CPU fill:#FEF3C7,stroke:#F59E0B
+    style OPT fill:#D1FAE5,stroke:#10B981,color:#1C1917
+    style CPU fill:#FEF3C7,stroke:#F59E0B,color:#1C1917
 ```
 
 Notes that matter:
@@ -441,6 +449,7 @@ Notes that matter:
 ## 8. Privacy Boundary
 
 ```mermaid
+%%{init: {'theme':'base','themeVariables':{'background':'#FFFFFF','primaryColor':'#EEF2FF','primaryTextColor':'#1C1917','primaryBorderColor':'#4338CA','secondaryColor':'#FAF9F6','tertiaryColor':'#FFFFFF','lineColor':'#57534E','textColor':'#1C1917','mainBkg':'#FFFFFF','nodeBorder':'#4338CA','clusterBkg':'#FFFFFF','clusterBorder':'#4338CA','edgeLabelBackground':'#FFFFFF','actorBkg':'#EEF2FF','actorTextColor':'#1C1917','actorBorder':'#4338CA','signalColor':'#1C1917','signalTextColor':'#1C1917','noteBkgColor':'#FEF3C7','noteTextColor':'#1C1917','noteBorderColor':'#F59E0B','labelBoxBkgColor':'#EEF2FF','labelTextColor':'#1C1917','sequenceNumberColor':'#FFFFFF'}}}%%
 flowchart TB
     subgraph DEV["User's device - the entire product"]
         direction TB
@@ -457,9 +466,9 @@ flowchart TB
     DEV -. "one time: install deps,<br/>pull Gemma / Whisper / TTS / OCR models" .-> SETUP
     DEV --- BLOCKED
 
-    style DEV fill:#D1FAE5,stroke:#10B981,stroke-width:3px
-    style SETUP fill:#FEF3C7,stroke:#F59E0B
-    style BLOCKED fill:#FEE2E2,stroke:#EF4444,stroke-width:2px
+    style DEV fill:#D1FAE5,stroke:#10B981,stroke-width:3px,color:#1C1917
+    style SETUP fill:#FEF3C7,stroke:#F59E0B,color:#1C1917
+    style BLOCKED fill:#FEE2E2,stroke:#EF4444,stroke-width:2px,color:#1C1917
 ```
 
 ---

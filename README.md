@@ -69,6 +69,7 @@ The whole product runs as one local process plus a browser. The only arrow leavi
 machine is a one-time setup fetch; no question, document, transcript or voice clip ever does.
 
 ```mermaid
+%%{init: {'theme':'base','themeVariables':{'background':'#FFFFFF','primaryColor':'#EEF2FF','primaryTextColor':'#1C1917','primaryBorderColor':'#4338CA','secondaryColor':'#FAF9F6','tertiaryColor':'#FFFFFF','lineColor':'#57534E','textColor':'#1C1917','mainBkg':'#FFFFFF','nodeBorder':'#4338CA','clusterBkg':'#FFFFFF','clusterBorder':'#4338CA','edgeLabelBackground':'#FFFFFF','actorBkg':'#EEF2FF','actorTextColor':'#1C1917','actorBorder':'#4338CA','signalColor':'#1C1917','signalTextColor':'#1C1917','noteBkgColor':'#FEF3C7','noteTextColor':'#1C1917','noteBorderColor':'#F59E0B','labelBoxBkgColor':'#EEF2FF','labelTextColor':'#1C1917','sequenceNumberColor':'#FFFFFF'}}}%%
 flowchart TB
     U(("Citizen<br/>types or speaks<br/>in 11 languages"))
 
@@ -210,20 +211,20 @@ flowchart TB
     HOST -. "one time only" .-> NET
     HOST --- BLOCK
 
-    classDef safe fill:#D1FAE5,stroke:#10B981,stroke-width:2px
-    classDef warn fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
-    classDef danger fill:#FEE2E2,stroke:#EF4444,stroke-width:2px
-    classDef store fill:#C7D2FE,stroke:#4338CA
+    classDef safe fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#1C1917
+    classDef warn fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#1C1917
+    classDef danger fill:#FEE2E2,stroke:#EF4444,stroke-width:2px,color:#1C1917
+    classDef store fill:#C7D2FE,stroke:#4338CA,color:#1C1917
 
     class GD warn
     class RP,PANELS,SAN safe
     class BLOCK danger
     class C1,C2,C3,C4,C5,LS,SESS,UPL store
     class NET warn
-    style HOST fill:#EEF2FF,stroke:#4338CA,stroke-width:3px
-    style BROWSER fill:#FAF9F6,stroke:#57534E,stroke-width:2px
-    style PIPE fill:#FFFFFF,stroke:#4338CA,stroke-width:2px
-    style LOGIC fill:#FFFFFF,stroke:#10B981
+    style HOST fill:#EEF2FF,stroke:#4338CA,stroke-width:3px,color:#1C1917
+    style BROWSER fill:#FAF9F6,stroke:#57534E,stroke-width:2px,color:#1C1917
+    style PIPE fill:#FFFFFF,stroke:#4338CA,stroke-width:2px,color:#1C1917
+    style LOGIC fill:#FFFFFF,stroke:#10B981,color:#1C1917
 ```
 
 **How to read it:** green is deterministic logic no model can override (the section-fabrication
