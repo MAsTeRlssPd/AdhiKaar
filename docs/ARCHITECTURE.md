@@ -9,100 +9,101 @@ Section 0 is the whole system in one view. Sections 1-8 are zoom-ins on each par
 ## 0. Master Architecture - Everything In One View
 
 ```mermaid
-%%{init: {'theme':'base','themeVariables':{'background':'#FFFFFF','primaryColor':'#EEF2FF','primaryTextColor':'#1C1917','primaryBorderColor':'#4338CA','secondaryColor':'#FAF9F6','tertiaryColor':'#FFFFFF','lineColor':'#57534E','textColor':'#1C1917','mainBkg':'#FFFFFF','nodeBorder':'#4338CA','clusterBkg':'#FFFFFF','clusterBorder':'#4338CA','edgeLabelBackground':'#FFFFFF','actorBkg':'#EEF2FF','actorTextColor':'#1C1917','actorBorder':'#4338CA','signalColor':'#1C1917','signalTextColor':'#1C1917','noteBkgColor':'#FEF3C7','noteTextColor':'#1C1917','noteBorderColor':'#F59E0B','labelBoxBkgColor':'#EEF2FF','labelTextColor':'#1C1917','sequenceNumberColor':'#FFFFFF'}}}%%
+%%{init: {'theme':'base','flowchart':{'htmlLabels':true,'wrappingWidth':260,'nodeSpacing':45,'rankSpacing':55,'useMaxWidth':true},'themeVariables':{'primaryColor':'#EEF2FF','primaryTextColor':'#1C1917','primaryBorderColor':'#4338CA','secondaryColor':'#FAF9F6','tertiaryColor':'#FFFFFF','lineColor':'#57534E','textColor':'#1C1917','mainBkg':'#FFFFFF','nodeBorder':'#4338CA','clusterBkg':'#FFFFFF','clusterBorder':'#4338CA','edgeLabelBackground':'#FFFFFF','fontSize':'14px'}}}%%
 flowchart TB
     subgraph SYS[" "]
     direction TB
-    U(("Citizen<br/>types or speaks<br/>in 11 languages"))
 
-    subgraph BROWSER["BROWSER - vanilla JS SPA, zero build step"]
+    U(("Citizen<br/>types or speaks<br/>11 languages"))
+
+    subgraph BROWSER["BROWSER - vanilla JS SPA"]
         direction TB
-        VIEWS["Views: Home · Talk to Legal Helper · Law and Next Steps<br/>My Cases · Section Converter · Find Legal Aid<br/>Translate Document · Draft a Document · Voice Mode"]
-        JS["app.js - navigateTo, i18n 11 langs, karaoke read-aloud,<br/>MediaRecorder mic capture, inline doc Q and A"]
-        VEND["vendor/ pinned local copies:<br/>pdf.js, Tesseract.js, marked, lucide + Noto fonts"]
-        LS[("localStorage<br/>cases, transcripts,<br/>drafts, deadlines")]
+        VIEWS["9 views:<br/>Chat, Law and Next Steps,<br/>Cases, Converter, Legal Aid,<br/>Translate, Draft, Voice"]
+        JS["app.js<br/>i18n 11 langs<br/>karaoke read-aloud<br/>mic capture"]
+        VEND["vendor - pinned local<br/>pdf.js, Tesseract.js<br/>marked, lucide, fonts"]
+        LS[("localStorage<br/>cases, transcripts<br/>drafts, deadlines")]
         VIEWS --- JS
         JS --- VEND
         JS --- LS
     end
 
-    subgraph HOST["YOUR COMPUTER - the entire product lives here. No cloud. No account. Works with Wi-Fi off."]
+    subgraph HOST["YOUR COMPUTER - works Wi-Fi off"]
         direction TB
 
-        subgraph API["Flask service - 127.0.0.1:5000 - 19 REST endpoints"]
+        subgraph API["Flask - 127.0.0.1:5000"]
             direction LR
             E1["/api/chat"]
             E2["/api/law-and-steps"]
-            E3["/api/extract-document<br/>/api/upload-document<br/>/api/ask-document<br/>/api/translate-document"]
+            E3["document endpoints:<br/>extract, upload,<br/>ask, translate"]
             E4["/api/bns-convert<br/>/api/crpc-convert"]
             E5["/api/draft-document<br/>/api/document-templates"]
             E6["/api/legal-aid<br/>/api/evidence-checklists"]
-            E7["/api/rights-card<br/>/api/consequence-simulator<br/>/api/panchayat-bridge<br/>/api/devil-advocate"]
+            E7["rights-card, consequence,<br/>elder, devil-advocate"]
             E8["/api/transcribe<br/>/api/tts"]
         end
 
-        SESS[("sessions - in memory<br/>history + attached doc<br/>rehydrated from client<br/>after a restart")]
-        UPL[("data/uploads/<br/>session doc text")]
+        SESS[("sessions - in memory<br/>history + doc<br/>rehydrated on restart")]
+        UPL[("data/uploads<br/>session doc text")]
 
-        subgraph LOGIC["Deterministic grounding and safety logic - no model involved"]
-            direction TB
-            EXP["preprocess_query_for_rag<br/>multilingual expansion, KEYWORD_MAPPINGS<br/>'mera malik ne salary nahi di' -> unpaid wages"]
-            PI["detect_power_imbalance<br/>injects protective advisories"]
-            MC["match_checklist<br/>ranks expanded, tie-breaks on raw,<br/>returns none when ambiguous"]
-            NORM["_norm_section / _match_entries<br/>318 matches 318(4), offence-name search"]
-            SAN["_sanitize_sources<br/>a URL survives only if it was retrieved"]
+        subgraph LOGIC["Deterministic logic - no model"]
+            direction LR
+            EXP["preprocess_query_for_rag<br/>multilingual expansion<br/>Hinglish finds English law"]
+            PI["detect_power_imbalance<br/>protective advisories"]
+            MC["match_checklist<br/>none when ambiguous"]
+            NORM["_norm_section<br/>318 matches 318(4)<br/>+ offence-name search"]
+            SAN["_sanitize_sources<br/>URL survives only<br/>if retrieved"]
         end
 
-        subgraph PIPE["lawsteps_pipeline.py - the verified answer, 2 LLM calls"]
+        subgraph PIPE["Verified answer - 2 LLM calls"]
             direction TB
-            DR["DRAFT - LLM call 1, temp 0.2, format=json<br/>six panels + claims, each citing chunk ids"]
-            GD{"GUARD - FREE, runs before any model is trusted<br/>uncited_section_references()<br/>does a claim name a section absent<br/>from its own cited excerpts?"}
-            VF["VERIFY - LLM call 2, batched, temp 0<br/>each claim vs ONLY its cited excerpts"]
-            RP["REPAIR - deterministic<br/>unsupported claims dropped from<br/>law, rights and sources"]
+            DR["DRAFT - LLM 1<br/>six panels + claims<br/>citing chunk ids"]
+            GD{"GUARD - free<br/>claim names a section<br/>absent from its sources?"}
+            VF["VERIFY - LLM 2<br/>claim vs only<br/>its own excerpts"]
+            RP["REPAIR<br/>drop unsupported from<br/>law, rights, sources"]
             DR --> GD
-            GD -->|"fabricated section"| RP
+            GD -->|"fabricated"| RP
             GD -->|"clean"| VF
-            VF -->|"supported / unsupported"| RP
+            VF -->|"verdict"| RP
         end
 
-        PANELS["Six panels assembled in Python:<br/>a. situation and the law · b. how each statement was checked<br/>c. official sources - only URLs of verified claims<br/>d. stress test both sides · e. rights card · f. explain to someone you trust"]
+        PANELS["Six panels built in Python<br/>a. situation and law<br/>b. how each was checked<br/>c. sources - verified only<br/>d. stress test<br/>e. rights card<br/>f. explain simply"]
 
-        CG["call_gemma()<br/>num_ctx 8192 - num_predict -1 so long answers never truncate<br/>format=json for structured output<br/>OLLAMA_HOST normalised to loopback<br/>GPU crash -> automatic CPU retry"]
+        CG["call_gemma()<br/>num_ctx 8192<br/>num_predict -1 - no cutoff<br/>GPU crash to CPU retry"]
 
-        subgraph MODELS["Local models - downloaded once, then offline"]
+        subgraph MODELS["Local models - offline"]
             direction LR
-            OL["Ollama<br/>gemma4:e4b<br/>-> gemma3:4b fallback"]
-            WH["faster-whisper small<br/>VAD + no_speech gating<br/>kills phantom 'Thank you'"]
-            TS["MMS-TTS<br/>11 languages, lazy per language<br/>browser speechSynthesis fallback"]
-            PD["PaddleOCR PP-OCRv6 / v5<br/>model chosen by DOCUMENT script,<br/>Devanagari reads Devanagari + Latin"]
+            OL["Ollama<br/>gemma4:e4b<br/>gemma3:4b fallback"]
+            WH["faster-whisper<br/>VAD + silence gating"]
+            TS["MMS-TTS<br/>11 languages<br/>browser fallback"]
+            PD["PaddleOCR v6 / v5<br/>picked by doc script<br/>Devanagari + Latin"]
         end
 
-        subgraph RAG["ChromaDB - persistent vector store"]
+        subgraph RAG["ChromaDB"]
             direction LR
-            C1[("ipc_bns<br/>216 mappings")]
-            C2[("rights_knowledge<br/>142 docs")]
-            C3[("legal_aid<br/>143 entries")]
-            C4[("official_law<br/>6,845 chunks<br/>act + section + official_url")]
+            C1[("ipc_bns<br/>216")]
+            C2[("rights_knowledge<br/>142")]
+            C3[("legal_aid<br/>143")]
+            C4[("official_law<br/>6,845 chunks<br/>+ official_url")]
             C5[("doc_session<br/>per upload")]
         end
 
-        subgraph DATA["data/ - source of truth, human curated"]
+        subgraph DATA["data - human curated"]
             direction LR
-            D1["ipc_bns 216 · bnss_crpc 80<br/>rights · 20 checklists<br/>22 case studies · 45+ templates"]
-            D2["legal_aid_directory<br/>28 states + 8 UTs<br/>NALSA 15100, Tele-Law 14454"]
-            D3["corpus/ 27 JSONL<br/>BNS, BNSS, BSA, Constitution,<br/>Consumer, Wages, Rent, NALSA"]
+            D1["mappings 216 + 80<br/>20 checklists<br/>22 cases, 45 templates"]
+            D2["legal_aid_directory<br/>28 states + 8 UTs<br/>NALSA 15100"]
+            D3["corpus - 27 JSONL<br/>BNS, BNSS, BSA,<br/>Constitution, Consumer"]
         end
 
-        RS["rag_setup.py<br/>--only rebuilds one collection"]
+        RS["rag_setup.py<br/>--only rebuilds one"]
     end
 
-    NET(["Internet - ONE TIME SETUP ONLY<br/>pip install, ollama pull,<br/>first Whisper / TTS / OCR model fetch"])
-    BLOCK["NEVER crosses at runtime:<br/>questions, documents, transcripts, voice, telemetry"]
+    NET(["Internet<br/>ONE TIME SETUP ONLY<br/>pip install, ollama pull"])
+    BLOCK["NEVER crosses at runtime:<br/>questions, documents,<br/>transcripts, voice"]
     end
 
     %% client to server
     U --> VIEWS
-    JS -->|"HTTP JSON, loopback"| API
+    JS -->|"HTTP, loopback"| API
 
     %% endpoint routing
     E1 --> EXP
@@ -122,7 +123,7 @@ flowchart TB
     %% grounding
     EXP -->|"retrieve"| RAG
     MC --> C2
-    PIPE -->|"retrieve_chunks<br/>keeps metadata + URL"| C4
+    PIPE -->|"retrieve_chunks<br/>keeps URL"| C4
     PIPE --> SAN
     SAN --> PANELS
     RP --> PANELS
@@ -158,17 +159,22 @@ flowchart TB
     classDef warn fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#1C1917
     classDef danger fill:#FEE2E2,stroke:#EF4444,stroke-width:2px,color:#1C1917
     classDef store fill:#C7D2FE,stroke:#4338CA,color:#1C1917
+    classDef default fill:#FFFFFF,stroke:#4338CA,color:#1C1917
 
     class GD warn
     class RP,PANELS,SAN safe
     class BLOCK danger
     class C1,C2,C3,C4,C5,LS,SESS,UPL store
     class NET warn
+    style SYS fill:#F4F2ED,stroke:#D8D4CC,stroke-width:2px,color:#1C1917
     style HOST fill:#EEF2FF,stroke:#4338CA,stroke-width:3px,color:#1C1917
     style BROWSER fill:#FAF9F6,stroke:#57534E,stroke-width:2px,color:#1C1917
     style PIPE fill:#FFFFFF,stroke:#4338CA,stroke-width:2px,color:#1C1917
     style LOGIC fill:#FFFFFF,stroke:#10B981,color:#1C1917
-    style SYS fill:#F4F2ED,stroke:#D8D4CC,stroke-width:2px,color:#1C1917
+    style API fill:#FFFFFF,stroke:#4338CA,color:#1C1917
+    style MODELS fill:#FFFFFF,stroke:#4338CA,color:#1C1917
+    style RAG fill:#FFFFFF,stroke:#4338CA,color:#1C1917
+    style DATA fill:#FFFFFF,stroke:#57534E,color:#1C1917
 ```
 
 ### How to read it
@@ -186,7 +192,7 @@ flowchart TB
 The whole product is one local process plus a browser. There is no server, no account, no outbound call at runtime.
 
 ```mermaid
-%%{init: {'theme':'base','themeVariables':{'background':'#FFFFFF','primaryColor':'#EEF2FF','primaryTextColor':'#1C1917','primaryBorderColor':'#4338CA','secondaryColor':'#FAF9F6','tertiaryColor':'#FFFFFF','lineColor':'#57534E','textColor':'#1C1917','mainBkg':'#FFFFFF','nodeBorder':'#4338CA','clusterBkg':'#FFFFFF','clusterBorder':'#4338CA','edgeLabelBackground':'#FFFFFF','actorBkg':'#EEF2FF','actorTextColor':'#1C1917','actorBorder':'#4338CA','signalColor':'#1C1917','signalTextColor':'#1C1917','noteBkgColor':'#FEF3C7','noteTextColor':'#1C1917','noteBorderColor':'#F59E0B','labelBoxBkgColor':'#EEF2FF','labelTextColor':'#1C1917','sequenceNumberColor':'#FFFFFF'}}}%%
+%%{init: {'theme':'base','flowchart':{'htmlLabels':true,'wrappingWidth':260,'useMaxWidth':true},'themeVariables':{'background':'#FFFFFF','primaryColor':'#EEF2FF','primaryTextColor':'#1C1917','primaryBorderColor':'#4338CA','secondaryColor':'#FAF9F6','tertiaryColor':'#FFFFFF','lineColor':'#57534E','textColor':'#1C1917','mainBkg':'#FFFFFF','nodeBorder':'#4338CA','clusterBkg':'#FFFFFF','clusterBorder':'#4338CA','edgeLabelBackground':'#FFFFFF','actorBkg':'#EEF2FF','actorTextColor':'#1C1917','actorBorder':'#4338CA','signalColor':'#1C1917','signalTextColor':'#1C1917','noteBkgColor':'#FEF3C7','noteTextColor':'#1C1917','noteBorderColor':'#F59E0B','labelBoxBkgColor':'#EEF2FF','labelTextColor':'#1C1917','sequenceNumberColor':'#FFFFFF'}}}%%
 graph TB
     subgraph BROWSER["Browser - vanilla JS SPA, zero build"]
         UI["index.html / app.js / style.css"]
@@ -236,7 +242,7 @@ graph TB
 `rag_setup.py` builds four ChromaDB collections from curated JSON plus the official-law corpus. Each corpus chunk keeps its act, section and official source URL, which is what lets citations resolve to real government pages.
 
 ```mermaid
-%%{init: {'theme':'base','themeVariables':{'background':'#FFFFFF','primaryColor':'#EEF2FF','primaryTextColor':'#1C1917','primaryBorderColor':'#4338CA','secondaryColor':'#FAF9F6','tertiaryColor':'#FFFFFF','lineColor':'#57534E','textColor':'#1C1917','mainBkg':'#FFFFFF','nodeBorder':'#4338CA','clusterBkg':'#FFFFFF','clusterBorder':'#4338CA','edgeLabelBackground':'#FFFFFF','actorBkg':'#EEF2FF','actorTextColor':'#1C1917','actorBorder':'#4338CA','signalColor':'#1C1917','signalTextColor':'#1C1917','noteBkgColor':'#FEF3C7','noteTextColor':'#1C1917','noteBorderColor':'#F59E0B','labelBoxBkgColor':'#EEF2FF','labelTextColor':'#1C1917','sequenceNumberColor':'#FFFFFF'}}}%%
+%%{init: {'theme':'base','flowchart':{'htmlLabels':true,'wrappingWidth':260,'useMaxWidth':true},'themeVariables':{'background':'#FFFFFF','primaryColor':'#EEF2FF','primaryTextColor':'#1C1917','primaryBorderColor':'#4338CA','secondaryColor':'#FAF9F6','tertiaryColor':'#FFFFFF','lineColor':'#57534E','textColor':'#1C1917','mainBkg':'#FFFFFF','nodeBorder':'#4338CA','clusterBkg':'#FFFFFF','clusterBorder':'#4338CA','edgeLabelBackground':'#FFFFFF','actorBkg':'#EEF2FF','actorTextColor':'#1C1917','actorBorder':'#4338CA','signalColor':'#1C1917','signalTextColor':'#1C1917','noteBkgColor':'#FEF3C7','noteTextColor':'#1C1917','noteBorderColor':'#F59E0B','labelBoxBkgColor':'#EEF2FF','labelTextColor':'#1C1917','sequenceNumberColor':'#FFFFFF'}}}%%
 graph LR
     subgraph SRC["data/ - source of truth"]
         A1["ipc_bns_mapping.json<br/>216 mappings"]
@@ -285,7 +291,7 @@ graph LR
 The multilingual expansion is why a Hinglish phrase like "mera malik ne salary nahi di" still reaches English-indexed unpaid-wages knowledge.
 
 ```mermaid
-%%{init: {'theme':'base','themeVariables':{'background':'#FFFFFF','primaryColor':'#EEF2FF','primaryTextColor':'#1C1917','primaryBorderColor':'#4338CA','secondaryColor':'#FAF9F6','tertiaryColor':'#FFFFFF','lineColor':'#57534E','textColor':'#1C1917','mainBkg':'#FFFFFF','nodeBorder':'#4338CA','clusterBkg':'#FFFFFF','clusterBorder':'#4338CA','edgeLabelBackground':'#FFFFFF','actorBkg':'#EEF2FF','actorTextColor':'#1C1917','actorBorder':'#4338CA','signalColor':'#1C1917','signalTextColor':'#1C1917','noteBkgColor':'#FEF3C7','noteTextColor':'#1C1917','noteBorderColor':'#F59E0B','labelBoxBkgColor':'#EEF2FF','labelTextColor':'#1C1917','sequenceNumberColor':'#FFFFFF'}}}%%
+%%{init: {'theme':'base','flowchart':{'htmlLabels':true,'wrappingWidth':260,'useMaxWidth':true},'themeVariables':{'background':'#FFFFFF','primaryColor':'#EEF2FF','primaryTextColor':'#1C1917','primaryBorderColor':'#4338CA','secondaryColor':'#FAF9F6','tertiaryColor':'#FFFFFF','lineColor':'#57534E','textColor':'#1C1917','mainBkg':'#FFFFFF','nodeBorder':'#4338CA','clusterBkg':'#FFFFFF','clusterBorder':'#4338CA','edgeLabelBackground':'#FFFFFF','actorBkg':'#EEF2FF','actorTextColor':'#1C1917','actorBorder':'#4338CA','signalColor':'#1C1917','signalTextColor':'#1C1917','noteBkgColor':'#FEF3C7','noteTextColor':'#1C1917','noteBorderColor':'#F59E0B','labelBoxBkgColor':'#EEF2FF','labelTextColor':'#1C1917','sequenceNumberColor':'#FFFFFF'}}}%%
 sequenceDiagram
     autonumber
     actor U as User
@@ -321,7 +327,7 @@ sequenceDiagram
 The core anti-hallucination design. A claim naming a section that its own cited sources do not contain is rejected deterministically, before any model is trusted to grade itself.
 
 ```mermaid
-%%{init: {'theme':'base','themeVariables':{'background':'#FFFFFF','primaryColor':'#EEF2FF','primaryTextColor':'#1C1917','primaryBorderColor':'#4338CA','secondaryColor':'#FAF9F6','tertiaryColor':'#FFFFFF','lineColor':'#57534E','textColor':'#1C1917','mainBkg':'#FFFFFF','nodeBorder':'#4338CA','clusterBkg':'#FFFFFF','clusterBorder':'#4338CA','edgeLabelBackground':'#FFFFFF','actorBkg':'#EEF2FF','actorTextColor':'#1C1917','actorBorder':'#4338CA','signalColor':'#1C1917','signalTextColor':'#1C1917','noteBkgColor':'#FEF3C7','noteTextColor':'#1C1917','noteBorderColor':'#F59E0B','labelBoxBkgColor':'#EEF2FF','labelTextColor':'#1C1917','sequenceNumberColor':'#FFFFFF'}}}%%
+%%{init: {'theme':'base','flowchart':{'htmlLabels':true,'wrappingWidth':260,'useMaxWidth':true},'themeVariables':{'background':'#FFFFFF','primaryColor':'#EEF2FF','primaryTextColor':'#1C1917','primaryBorderColor':'#4338CA','secondaryColor':'#FAF9F6','tertiaryColor':'#FFFFFF','lineColor':'#57534E','textColor':'#1C1917','mainBkg':'#FFFFFF','nodeBorder':'#4338CA','clusterBkg':'#FFFFFF','clusterBorder':'#4338CA','edgeLabelBackground':'#FFFFFF','actorBkg':'#EEF2FF','actorTextColor':'#1C1917','actorBorder':'#4338CA','signalColor':'#1C1917','signalTextColor':'#1C1917','noteBkgColor':'#FEF3C7','noteTextColor':'#1C1917','noteBorderColor':'#F59E0B','labelBoxBkgColor':'#EEF2FF','labelTextColor':'#1C1917','sequenceNumberColor':'#FFFFFF'}}}%%
 flowchart TD
     S["Situation"] --> R["retrieve_chunks<br/>official_law + rights<br/>(keeps metadata + official_url)"]
     R --> D["DRAFT - LLM call 1<br/>temp 0.2, format=json<br/>six panels + claims citing chunk ids"]
@@ -359,7 +365,7 @@ Typical cost: 2 LLM calls (draft + verify). The guard is free and runs first, so
 OCR picks its model from the document's script, not the UI language, because Indian legal papers are routinely Hindi plus English on one page.
 
 ```mermaid
-%%{init: {'theme':'base','themeVariables':{'background':'#FFFFFF','primaryColor':'#EEF2FF','primaryTextColor':'#1C1917','primaryBorderColor':'#4338CA','secondaryColor':'#FAF9F6','tertiaryColor':'#FFFFFF','lineColor':'#57534E','textColor':'#1C1917','mainBkg':'#FFFFFF','nodeBorder':'#4338CA','clusterBkg':'#FFFFFF','clusterBorder':'#4338CA','edgeLabelBackground':'#FFFFFF','actorBkg':'#EEF2FF','actorTextColor':'#1C1917','actorBorder':'#4338CA','signalColor':'#1C1917','signalTextColor':'#1C1917','noteBkgColor':'#FEF3C7','noteTextColor':'#1C1917','noteBorderColor':'#F59E0B','labelBoxBkgColor':'#EEF2FF','labelTextColor':'#1C1917','sequenceNumberColor':'#FFFFFF'}}}%%
+%%{init: {'theme':'base','flowchart':{'htmlLabels':true,'wrappingWidth':260,'useMaxWidth':true},'themeVariables':{'background':'#FFFFFF','primaryColor':'#EEF2FF','primaryTextColor':'#1C1917','primaryBorderColor':'#4338CA','secondaryColor':'#FAF9F6','tertiaryColor':'#FFFFFF','lineColor':'#57534E','textColor':'#1C1917','mainBkg':'#FFFFFF','nodeBorder':'#4338CA','clusterBkg':'#FFFFFF','clusterBorder':'#4338CA','edgeLabelBackground':'#FFFFFF','actorBkg':'#EEF2FF','actorTextColor':'#1C1917','actorBorder':'#4338CA','signalColor':'#1C1917','signalTextColor':'#1C1917','noteBkgColor':'#FEF3C7','noteTextColor':'#1C1917','noteBorderColor':'#F59E0B','labelBoxBkgColor':'#EEF2FF','labelTextColor':'#1C1917','sequenceNumberColor':'#FFFFFF'}}}%%
 flowchart TD
     U["User uploads PDF / image"] --> T{"/api/extract-document<br/>server OCR available?"}
 
@@ -392,7 +398,7 @@ flowchart TD
 ## 6. Voice Flow
 
 ```mermaid
-%%{init: {'theme':'base','themeVariables':{'background':'#FFFFFF','primaryColor':'#EEF2FF','primaryTextColor':'#1C1917','primaryBorderColor':'#4338CA','secondaryColor':'#FAF9F6','tertiaryColor':'#FFFFFF','lineColor':'#57534E','textColor':'#1C1917','mainBkg':'#FFFFFF','nodeBorder':'#4338CA','clusterBkg':'#FFFFFF','clusterBorder':'#4338CA','edgeLabelBackground':'#FFFFFF','actorBkg':'#EEF2FF','actorTextColor':'#1C1917','actorBorder':'#4338CA','signalColor':'#1C1917','signalTextColor':'#1C1917','noteBkgColor':'#FEF3C7','noteTextColor':'#1C1917','noteBorderColor':'#F59E0B','labelBoxBkgColor':'#EEF2FF','labelTextColor':'#1C1917','sequenceNumberColor':'#FFFFFF'}}}%%
+%%{init: {'theme':'base','flowchart':{'htmlLabels':true,'wrappingWidth':260,'useMaxWidth':true},'themeVariables':{'background':'#FFFFFF','primaryColor':'#EEF2FF','primaryTextColor':'#1C1917','primaryBorderColor':'#4338CA','secondaryColor':'#FAF9F6','tertiaryColor':'#FFFFFF','lineColor':'#57534E','textColor':'#1C1917','mainBkg':'#FFFFFF','nodeBorder':'#4338CA','clusterBkg':'#FFFFFF','clusterBorder':'#4338CA','edgeLabelBackground':'#FFFFFF','actorBkg':'#EEF2FF','actorTextColor':'#1C1917','actorBorder':'#4338CA','signalColor':'#1C1917','signalTextColor':'#1C1917','noteBkgColor':'#FEF3C7','noteTextColor':'#1C1917','noteBorderColor':'#F59E0B','labelBoxBkgColor':'#EEF2FF','labelTextColor':'#1C1917','sequenceNumberColor':'#FFFFFF'}}}%%
 sequenceDiagram
     autonumber
     actor U as User
@@ -427,7 +433,7 @@ sequenceDiagram
 ## 7. Model Call Path and Safety Rails
 
 ```mermaid
-%%{init: {'theme':'base','themeVariables':{'background':'#FFFFFF','primaryColor':'#EEF2FF','primaryTextColor':'#1C1917','primaryBorderColor':'#4338CA','secondaryColor':'#FAF9F6','tertiaryColor':'#FFFFFF','lineColor':'#57534E','textColor':'#1C1917','mainBkg':'#FFFFFF','nodeBorder':'#4338CA','clusterBkg':'#FFFFFF','clusterBorder':'#4338CA','edgeLabelBackground':'#FFFFFF','actorBkg':'#EEF2FF','actorTextColor':'#1C1917','actorBorder':'#4338CA','signalColor':'#1C1917','signalTextColor':'#1C1917','noteBkgColor':'#FEF3C7','noteTextColor':'#1C1917','noteBorderColor':'#F59E0B','labelBoxBkgColor':'#EEF2FF','labelTextColor':'#1C1917','sequenceNumberColor':'#FFFFFF'}}}%%
+%%{init: {'theme':'base','flowchart':{'htmlLabels':true,'wrappingWidth':260,'useMaxWidth':true},'themeVariables':{'background':'#FFFFFF','primaryColor':'#EEF2FF','primaryTextColor':'#1C1917','primaryBorderColor':'#4338CA','secondaryColor':'#FAF9F6','tertiaryColor':'#FFFFFF','lineColor':'#57534E','textColor':'#1C1917','mainBkg':'#FFFFFF','nodeBorder':'#4338CA','clusterBkg':'#FFFFFF','clusterBorder':'#4338CA','edgeLabelBackground':'#FFFFFF','actorBkg':'#EEF2FF','actorTextColor':'#1C1917','actorBorder':'#4338CA','signalColor':'#1C1917','signalTextColor':'#1C1917','noteBkgColor':'#FEF3C7','noteTextColor':'#1C1917','noteBorderColor':'#F59E0B','labelBoxBkgColor':'#EEF2FF','labelTextColor':'#1C1917','sequenceNumberColor':'#FFFFFF'}}}%%
 flowchart LR
     C["caller"] --> CG["call_gemma()"]
     CG --> RES{"model resolved?"}
@@ -453,7 +459,7 @@ Notes that matter:
 ## 8. Privacy Boundary
 
 ```mermaid
-%%{init: {'theme':'base','themeVariables':{'background':'#FFFFFF','primaryColor':'#EEF2FF','primaryTextColor':'#1C1917','primaryBorderColor':'#4338CA','secondaryColor':'#FAF9F6','tertiaryColor':'#FFFFFF','lineColor':'#57534E','textColor':'#1C1917','mainBkg':'#FFFFFF','nodeBorder':'#4338CA','clusterBkg':'#FFFFFF','clusterBorder':'#4338CA','edgeLabelBackground':'#FFFFFF','actorBkg':'#EEF2FF','actorTextColor':'#1C1917','actorBorder':'#4338CA','signalColor':'#1C1917','signalTextColor':'#1C1917','noteBkgColor':'#FEF3C7','noteTextColor':'#1C1917','noteBorderColor':'#F59E0B','labelBoxBkgColor':'#EEF2FF','labelTextColor':'#1C1917','sequenceNumberColor':'#FFFFFF'}}}%%
+%%{init: {'theme':'base','flowchart':{'htmlLabels':true,'wrappingWidth':260,'useMaxWidth':true},'themeVariables':{'background':'#FFFFFF','primaryColor':'#EEF2FF','primaryTextColor':'#1C1917','primaryBorderColor':'#4338CA','secondaryColor':'#FAF9F6','tertiaryColor':'#FFFFFF','lineColor':'#57534E','textColor':'#1C1917','mainBkg':'#FFFFFF','nodeBorder':'#4338CA','clusterBkg':'#FFFFFF','clusterBorder':'#4338CA','edgeLabelBackground':'#FFFFFF','actorBkg':'#EEF2FF','actorTextColor':'#1C1917','actorBorder':'#4338CA','signalColor':'#1C1917','signalTextColor':'#1C1917','noteBkgColor':'#FEF3C7','noteTextColor':'#1C1917','noteBorderColor':'#F59E0B','labelBoxBkgColor':'#EEF2FF','labelTextColor':'#1C1917','sequenceNumberColor':'#FFFFFF'}}}%%
 flowchart TB
     subgraph DEV["User's device - the entire product"]
         direction TB
