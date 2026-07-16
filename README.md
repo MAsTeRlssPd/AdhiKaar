@@ -71,6 +71,8 @@ machine is a one-time setup fetch; no question, document, transcript or voice cl
 ```mermaid
 %%{init: {'theme':'base','themeVariables':{'background':'#FFFFFF','primaryColor':'#EEF2FF','primaryTextColor':'#1C1917','primaryBorderColor':'#4338CA','secondaryColor':'#FAF9F6','tertiaryColor':'#FFFFFF','lineColor':'#57534E','textColor':'#1C1917','mainBkg':'#FFFFFF','nodeBorder':'#4338CA','clusterBkg':'#FFFFFF','clusterBorder':'#4338CA','edgeLabelBackground':'#FFFFFF','actorBkg':'#EEF2FF','actorTextColor':'#1C1917','actorBorder':'#4338CA','signalColor':'#1C1917','signalTextColor':'#1C1917','noteBkgColor':'#FEF3C7','noteTextColor':'#1C1917','noteBorderColor':'#F59E0B','labelBoxBkgColor':'#EEF2FF','labelTextColor':'#1C1917','sequenceNumberColor':'#FFFFFF'}}}%%
 flowchart TB
+    subgraph SYS[" "]
+    direction TB
     U(("Citizen<br/>types or speaks<br/>in 11 languages"))
 
     subgraph BROWSER["BROWSER - vanilla JS SPA, zero build step"]
@@ -156,6 +158,7 @@ flowchart TB
 
     NET(["Internet - ONE TIME SETUP ONLY<br/>pip install, ollama pull,<br/>first Whisper / TTS / OCR model fetch"])
     BLOCK["NEVER crosses at runtime:<br/>questions, documents, transcripts, voice, telemetry"]
+    end
 
     %% client to server
     U --> VIEWS
@@ -225,6 +228,7 @@ flowchart TB
     style BROWSER fill:#FAF9F6,stroke:#57534E,stroke-width:2px,color:#1C1917
     style PIPE fill:#FFFFFF,stroke:#4338CA,stroke-width:2px,color:#1C1917
     style LOGIC fill:#FFFFFF,stroke:#10B981,color:#1C1917
+    style SYS fill:#F4F2ED,stroke:#D8D4CC,stroke-width:2px,color:#1C1917
 ```
 
 **How to read it:** green is deterministic logic no model can override (the section-fabrication
