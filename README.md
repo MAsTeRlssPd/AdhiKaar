@@ -65,19 +65,183 @@ Answers are powered by Google's **Gemma** running locally through Ollama, **grou
 
 ## Architecture
 
-```
-Browser (vanilla-JS SPA)  ──HTTP──►  Flask service (127.0.0.1:5000)
-                                        │
-        ┌───────────────────────────────┼───────────────────────────────┐
-        ▼                               ▼                               ▼
-   Ollama (Gemma)              ChromaDB (RAG)                 faster-whisper / MMS-TTS
-   local generation      6,845 official-law chunks +          on-device voice in/out
-                          curated datasets                     PaddleOCR document text
+The whole product runs as one local process plus a browser. The only arrow leaving your
+machine is a one-time setup fetch; no question, document, transcript or voice clip ever does.
+
+```mermaid
+flowchart TB
+    U(("Citizen<br/>types or speaks<br/>in 11 languages"))
+
+    subgraph BROWSER["BROWSER - vanilla JS SPA, zero build step"]
+        direction TB
+        VIEWS["Views: Home · Talk to Legal Helper · Law and Next Steps<br/>My Cases · Section Converter · Find Legal Aid<br/>Translate Document · Draft a Document · Voice Mode"]
+        JS["app.js - navigateTo, i18n 11 langs, karaoke read-aloud,<br/>MediaRecorder mic capture, inline doc Q and A"]
+        VEND["vendor/ pinned local copies:<br/>pdf.js, Tesseract.js, marked, lucide + Noto fonts"]
+        LS[("localStorage<br/>cases, transcripts,<br/>drafts, deadlines")]
+        VIEWS --- JS
+        JS --- VEND
+        JS --- LS
+    end
+
+    subgraph HOST["YOUR COMPUTER - the entire product lives here. No cloud. No account. Works with Wi-Fi off."]
+        direction TB
+
+        subgraph API["Flask service - 127.0.0.1:5000 - 19 REST endpoints"]
+            direction LR
+            E1["/api/chat"]
+            E2["/api/law-and-steps"]
+            E3["/api/extract-document<br/>/api/upload-document<br/>/api/ask-document<br/>/api/translate-document"]
+            E4["/api/bns-convert<br/>/api/crpc-convert"]
+            E5["/api/draft-document<br/>/api/document-templates"]
+            E6["/api/legal-aid<br/>/api/evidence-checklists"]
+            E7["/api/rights-card<br/>/api/consequence-simulator<br/>/api/panchayat-bridge<br/>/api/devil-advocate"]
+            E8["/api/transcribe<br/>/api/tts"]
+        end
+
+        SESS[("sessions - in memory<br/>history + attached doc<br/>rehydrated from client<br/>after a restart")]
+        UPL[("data/uploads/<br/>session doc text")]
+
+        subgraph LOGIC["Deterministic grounding and safety logic - no model involved"]
+            direction TB
+            EXP["preprocess_query_for_rag<br/>multilingual expansion, KEYWORD_MAPPINGS<br/>'mera malik ne salary nahi di' -> unpaid wages"]
+            PI["detect_power_imbalance<br/>injects protective advisories"]
+            MC["match_checklist<br/>ranks expanded, tie-breaks on raw,<br/>returns none when ambiguous"]
+            NORM["_norm_section / _match_entries<br/>318 matches 318(4), offence-name search"]
+            SAN["_sanitize_sources<br/>a URL survives only if it was retrieved"]
+        end
+
+        subgraph PIPE["lawsteps_pipeline.py - the verified answer, 2 LLM calls"]
+            direction TB
+            DR["DRAFT - LLM call 1, temp 0.2, format=json<br/>six panels + claims, each citing chunk ids"]
+            GD{"GUARD - FREE, runs before any model is trusted<br/>uncited_section_references()<br/>does a claim name a section absent<br/>from its own cited excerpts?"}
+            VF["VERIFY - LLM call 2, batched, temp 0<br/>each claim vs ONLY its cited excerpts"]
+            RP["REPAIR - deterministic<br/>unsupported claims dropped from<br/>law, rights and sources"]
+            DR --> GD
+            GD -->|"fabricated section"| RP
+            GD -->|"clean"| VF
+            VF -->|"supported / unsupported"| RP
+        end
+
+        PANELS["Six panels assembled in Python:<br/>a. situation and the law · b. how each statement was checked<br/>c. official sources - only URLs of verified claims<br/>d. stress test both sides · e. rights card · f. explain to someone you trust"]
+
+        CG["call_gemma()<br/>num_ctx 8192 - num_predict -1 so long answers never truncate<br/>format=json for structured output<br/>OLLAMA_HOST normalised to loopback<br/>GPU crash -> automatic CPU retry"]
+
+        subgraph MODELS["Local models - downloaded once, then offline"]
+            direction LR
+            OL["Ollama<br/>gemma4:e4b<br/>-> gemma3:4b fallback"]
+            WH["faster-whisper small<br/>VAD + no_speech gating<br/>kills phantom 'Thank you'"]
+            TS["MMS-TTS<br/>11 languages, lazy per language<br/>browser speechSynthesis fallback"]
+            PD["PaddleOCR PP-OCRv6 / v5<br/>model chosen by DOCUMENT script,<br/>Devanagari reads Devanagari + Latin"]
+        end
+
+        subgraph RAG["ChromaDB - persistent vector store"]
+            direction LR
+            C1[("ipc_bns<br/>216 mappings")]
+            C2[("rights_knowledge<br/>142 docs")]
+            C3[("legal_aid<br/>143 entries")]
+            C4[("official_law<br/>6,845 chunks<br/>act + section + official_url")]
+            C5[("doc_session<br/>per upload")]
+        end
+
+        subgraph DATA["data/ - source of truth, human curated"]
+            direction LR
+            D1["ipc_bns 216 · bnss_crpc 80<br/>rights · 20 checklists<br/>22 case studies · 45+ templates"]
+            D2["legal_aid_directory<br/>28 states + 8 UTs<br/>NALSA 15100, Tele-Law 14454"]
+            D3["corpus/ 27 JSONL<br/>BNS, BNSS, BSA, Constitution,<br/>Consumer, Wages, Rent, NALSA"]
+        end
+
+        RS["rag_setup.py<br/>--only rebuilds one collection"]
+    end
+
+    NET(["Internet - ONE TIME SETUP ONLY<br/>pip install, ollama pull,<br/>first Whisper / TTS / OCR model fetch"])
+    BLOCK["NEVER crosses at runtime:<br/>questions, documents, transcripts, voice, telemetry"]
+
+    %% client to server
+    U --> VIEWS
+    JS -->|"HTTP JSON, loopback"| API
+
+    %% endpoint routing
+    E1 --> EXP
+    E1 --> PI
+    E1 -.->|"doc attached"| C5
+    E2 --> PIPE
+    E3 --> PD
+    E3 --> UPL
+    E3 -->|"chunk + index"| C5
+    E4 --> NORM
+    E5 --> D1
+    E6 --> MC
+    E8 --> WH
+    E8 --> TS
+    API --- SESS
+
+    %% grounding
+    EXP -->|"retrieve"| RAG
+    MC --> C2
+    PIPE -->|"retrieve_chunks<br/>keeps metadata + URL"| C4
+    PIPE --> SAN
+    SAN --> PANELS
+    RP --> PANELS
+
+    %% model calls
+    EXP --> CG
+    PI --> CG
+    E7 --> CG
+    DR --> CG
+    VF --> CG
+    CG --> OL
+
+    %% build path
+    D1 --> RS
+    D2 --> RS
+    D3 --> RS
+    RS --> C1
+    RS --> C2
+    RS --> C3
+    RS --> C4
+
+    %% answers back
+    PANELS -->|"verified JSON"| JS
+    CG -->|"answer"| JS
+    TS -->|"WAV + karaoke"| JS
+    WH -->|"text"| JS
+
+    %% boundary
+    HOST -. "one time only" .-> NET
+    HOST --- BLOCK
+
+    classDef safe fill:#D1FAE5,stroke:#10B981,stroke-width:2px
+    classDef warn fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    classDef danger fill:#FEE2E2,stroke:#EF4444,stroke-width:2px
+    classDef store fill:#C7D2FE,stroke:#4338CA
+
+    class GD warn
+    class RP,PANELS,SAN safe
+    class BLOCK danger
+    class C1,C2,C3,C4,C5,LS,SESS,UPL store
+    class NET warn
+    style HOST fill:#EEF2FF,stroke:#4338CA,stroke-width:3px
+    style BROWSER fill:#FAF9F6,stroke:#57534E,stroke-width:2px
+    style PIPE fill:#FFFFFF,stroke:#4338CA,stroke-width:2px
+    style LOGIC fill:#FFFFFF,stroke:#10B981
 ```
 
-**Request flow:** user input → multilingual query expansion → ChromaDB retrieval (metadata + source URLs preserved) → prompt assembly with official-law context → local Gemma generation → (for verified answers) **draft → guard → verify → repair** → rendered in the SPA.
+**How to read it:** green is deterministic logic no model can override (the section-fabrication
+guard, the source sanitiser, the checklist matcher). Amber is the GUARD - where a wrong legal
+citation dies before the model is ever asked to grade its own work. Blue cylinders are stored
+state; the only durable user data sits in your browser.
 
-**Verified answer pipeline** (Law & Next Steps): the model drafts claims citing chunk IDs → a deterministic regex **guard** rejects any claim naming a section absent from its sources → surviving claims are **verified** against their excerpts → unsupported claims are dropped, and only URLs of verified sources are shown.
+**Request flow:** user input -> multilingual query expansion -> ChromaDB retrieval (metadata and
+source URLs preserved) -> prompt assembly with official-law context -> local Gemma generation ->
+(for verified answers) **draft -> guard -> verify -> repair** -> rendered in the SPA.
+
+**Verified answer pipeline** (Law and Next Steps): the model drafts claims citing chunk IDs -> a
+deterministic regex **guard** rejects any claim naming a section absent from its sources ->
+surviving claims are **verified** against their excerpts -> unsupported claims are dropped, and
+only URLs of verified sources are shown.
+
+Full breakdown with eight zoom-in diagrams (RAG layer, chat flow, document flow, voice, model
+call path, privacy boundary): **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
 
 ---
 
